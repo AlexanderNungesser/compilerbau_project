@@ -1,0 +1,65 @@
+// Test-Skript basierend auf der angegebenen Grammatik
+
+// #define Test
+#define PI 3.14
+#define MAX_COUNT 100
+
+// Variablen-Deklaration
+int x = 10;
+char y = 'A';
+bool flag = true;
+int arr[5];
+int dynamicArr[] = {1, 2, 3, 4, 5};
+
+// Zuweisungen
+x = 20;
+y = 'B';
+arr[0] = 100;
+dynamicArr[2] = 50;
+
+// Inkrement/ Dekrement
+x++;
+--y;
+
+// Funktionsdeklaration
+void printMessage() {
+    return;
+}
+
+int add(int a, int b) {
+    return a + b;
+}
+
+// Funktionsaufrufe
+printMessage();
+int sum = add(5, 10);
+
+// Kontrollstrukturen
+if (x > 10) {
+    x = 0;
+} else if (x == 10) {
+    x = 1;
+} else {
+    x = 2;
+}
+
+while (flag) {
+    x--;
+    if (x <= 0) {
+        flag = false;
+    }
+}
+
+// Arrays
+int values[3] = {1, 2, 3};
+values[0] = add(values[1], values[2]);
+
+// Verschachtelter Block
+{
+    int nestedVar = 42;
+    nestedVar += 1;
+}
+
+// Komplexer Ausdruck
+int result = (x * 2) + (y - 'A') / 3;
+bool comparison = (x < 20) && (y != 'Z');
