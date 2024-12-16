@@ -6,7 +6,9 @@ program :  stmt* EOF ;
 stmt    :   define
         |   var_decl
         |   assign
-        |   fndecl
+        |   dec_inc
+        |   fn_decl
+        |   fn_call
         |   block
         |   while
         |   if
@@ -16,28 +18,30 @@ stmt    :   define
 define  :   '#define' ID expr ;
 
 var_decl:   type ID ('=' expr)? ';'
-        |   type ID '[' (ID | INT) ']' ('=' array)? ';'
+        |   type ID '[' (ID | INT) ']' ';'
+        |   type ID '[' ']' '=' array ';'
         ;
 
 assign  :   ID ASSIGN_OP (expr | array) ';' ;
 
 dec_inc :   (DEC_INC_OP ID | ID DEC_INC_OP) ';' ;
 
-fndecl  :  ('void' | type) ID '(' params? ')' block ;
+fn_decl  :  ('void' | type) ID '(' params? ')' (';' | block) ;
 params  :  type ID (',' type ID)* ;
 return  :  'return' expr ';' ;
 
 block   :   '{' stmt* '}' ;
 while   :   'while' '(' expr ')' block ;
-if      :   'if' '(' expr ')' block ('else' block)? ;
+if      :   'if' '(' expr ')' block ('else' 'if' '(' expr ')' block)* ('else' block)? ;
 
-fncall  :   ID '(' args? ')' ';' ;
+fn_call  :   ID '(' args? ')' ';' ;
 args    :   expr (',' expr)* ;
 
-expr    :   fncall
+expr    :   fn_call
         |   dec_inc
         |   expr CALC_OP expr
         |   expr COMPARE_OP expr
+        |   array_item
         |   array
         |   ID
         |   INT
@@ -47,7 +51,8 @@ expr    :   fncall
         ;
 
 type    :   'int' | 'char' | 'bool' ;
-array   :  '{' (expr (',' expr))* '}';
+array   :  '{' args '}' ;
+array_item :    ID '[' (ID | INT) ']' ;
 
 // Lexer-Regeln
 ID          :   [_a-zA-Z][_a-zA-Z0-9]* ;
