@@ -46,7 +46,7 @@ expr    :   fn_call
         |   array_item
         |   array
         |   ID
-        |   ('+' | '-')?INT
+        |   INT
         |   CHAR
         |   BOOL
         |   '(' expr ')'
@@ -63,7 +63,7 @@ array_item :    ID ('[' (ID | INT) ']')+ ;
 // Lexer-Regeln
 ID          :   '~'? [_a-zA-Z][_a-zA-Z0-9]* ;
 
-INT         :   [0-9]+ ;
+INT         :   [+-]?[0-9]+ ;
 CHAR        :   ('"' | '\'') (~[\n\r"'])? ('"' | '\'') ;
 BOOL        :   'true' | 'false' ;
 
