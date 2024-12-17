@@ -1,0 +1,2 @@
+#define MAX 100
+#define VALUE (2 + 3)
