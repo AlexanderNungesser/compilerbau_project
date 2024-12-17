@@ -20,13 +20,12 @@ stmt    :   define
 define  :   '#define' ID expr ;
 
 var_decl:   type (ref | ID) ('=' expr)? ';'
-        |   type ('(' ref ')' | ID) ('[' (ID | INT) ']')+ ';'
-        |   type ('(' ref ')' | ID) ('[' (ID | INT)? ']')+ '=' array ';'
+        |   type ('(' ref ')' | ID) ('[' (ID | INT)? ']')+ ('=' array)? ';'
         ;
 
-assign  :   ID ASSIGN_OP expr ';' ;
+assign  :   (ID | array_item) ASSIGN_OP expr ';' ;
 
-dec_inc :   (DEC_INC_OP ID | ID DEC_INC_OP) ';' ;
+dec_inc :   (DEC_INC_OP (ID | array_item) | (ID | array_item) DEC_INC_OP) ';' ;
 
 fn_decl  :  ('void' | type) (ID ':' ':')? (ref | ID) '(' params? ')' (';' | block) ;
 params  :  type (ref | ID) (',' type (ref | ID))* ;
