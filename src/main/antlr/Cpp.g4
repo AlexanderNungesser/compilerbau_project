@@ -24,7 +24,7 @@ var_decl:   type ID ('=' expr)? ';'
         |   type ID ('[' (ID | INT)? ']')+ '=' array ';'
         ;
 
-assign  :   ID ASSIGN_OP (expr | array) ';' ;
+assign  :   ID ASSIGN_OP expr ';' ;
 
 dec_inc :   (DEC_INC_OP ID | ID DEC_INC_OP) ';' ;
 
