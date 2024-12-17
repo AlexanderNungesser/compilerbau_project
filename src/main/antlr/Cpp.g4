@@ -13,13 +13,15 @@ stmt    :   define
         |   while
         |   if
         |   return
+        |   class
+        |   main
         ;
 
 define  :   '#define' ID expr ;
 
 var_decl:   type ID ('=' expr)? ';'
-        |   type ID '[' (ID | INT) ']' ';'
-        |   type ID '[' ']' '=' array ';'
+        |   type ID ('[' (ID | INT) ']')+ ';'
+        |   type ID ('[' (ID | INT)? ']')+ '=' array ';'
         ;
 
 assign  :   ID ASSIGN_OP (expr | array) ';' ;
@@ -50,12 +52,16 @@ expr    :   fn_call
         |   '(' expr ')'
         ;
 
+class   :   'class' ID (':' 'public' ID)? '{' 'public' ':' (var_decl | fn_decl)* '}' ';' ;
+
+main    :   ('void' | type) 'main' '(' params? ')' (';' | block) ;
+
 type    :   'int' | 'char' | 'bool' ;
-array   :  '{' args '}' ;
-array_item :    ID '[' (ID | INT) ']' ;
+array   :   '{' (args | array ',') '}' ;
+array_item :    ID ('[' (ID | INT) ']')+ ;
 
 // Lexer-Regeln
-ID          :   [_a-zA-Z][_a-zA-Z0-9]* ;
+ID          :   [~_a-zA-Z][_a-zA-Z0-9]* ;
 
 INT         :   [0-9]+ ;
 CHAR        :   ('"' | '\'') (~[\n\r"'])? ('"' | '\'') ;
