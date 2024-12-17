@@ -28,7 +28,7 @@ assign  :   ID ASSIGN_OP expr ';' ;
 
 dec_inc :   (DEC_INC_OP ID | ID DEC_INC_OP) ';' ;
 
-fn_decl  :  ('void' | type) ID '(' params? ')' (';' | block) ;
+fn_decl  :  ('void' | type) (ID ':' ':')? ID '(' params? ')' (';' | block) ;
 params  :  type ID (',' type ID)* ;
 return  :  'return' expr ';' ;
 
