@@ -1,7 +1,0 @@
-int x;
-char y = 'a';
-bool z = true;
-
-int arr[10];
-char arr2[5] = {'a', 'b', 'c', 'd', 'e'};
-bool flags[3] = {true, false, true};

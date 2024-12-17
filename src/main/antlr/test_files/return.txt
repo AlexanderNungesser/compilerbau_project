@@ -1,3 +1,0 @@
-return x;
-return 5 + 3;
-return 'a';

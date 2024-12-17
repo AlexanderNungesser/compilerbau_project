@@ -1,2 +1,0 @@
-int arr[] = {1, 2, 3, 4};
-char letters[] = {'a', 'b', 'c'};

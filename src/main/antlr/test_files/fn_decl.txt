@@ -1,3 +1,0 @@
-void myFunction();
-int add(int a, int b) { return a + b; }
-char getChar() { return 'c'; }

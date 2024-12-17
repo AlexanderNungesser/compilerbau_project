@@ -1,0 +1,76 @@
+#define MAX 100
+#define VALUE (2 + 3)
+
+int x;
+char y = 'a';
+bool z = true;
+
+int arr[10];
+char arr2[5] = {'a', 'b', 'c', 'd', 'e'};
+bool flags[3] = {true, false, true};
+
+x = 5;
+y += 10;
+z *= 2;
+
+arr[0] = 1;
+flags[2] = false;
+
+x++;
+--y;
+arr[0]++;
+++z;
+
+void myFunction();
+int add(int a, int b) { return a + b; }
+char getChar() { return 'c'; }
+
+return x;
+return 5 + 3;
+return 'a';
+
+{
+    int x = 5;
+    x++;
+    return x;
+}
+
+while (x < 10) {
+    x++;
+}
+
+if (x > 10) {
+    return x;
+} else if (x == 10) {
+    return 0;
+} else {
+    return -1;
+}
+
+myFunction();
+x = add(2, 3);
+getChar();
+
+class MyClass {
+public:
+    int value;
+    void setValue(int v) { value = v; }
+};
+
+int main() {
+    int x = 10;
+    return x;
+}
+
+x = 2 + 3;
+y = (x * 5) - 1;
+
+if (x > y) {
+    z = true;
+}
+
+int arr[] = {1, 2, 3, 4};
+char letters[] = {'a', 'b', 'c'};
+
+x = arr[0];
+letters[2] = 'z';
