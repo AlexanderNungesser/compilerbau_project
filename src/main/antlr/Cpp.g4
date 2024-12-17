@@ -52,7 +52,7 @@ expr    :   fn_call
         |   '(' expr ')'
         ;
 
-class   :   'class' ID (':' 'public' ID)? '{' 'public' ':' (var_decl | fn_decl)* '}' ';' ;
+class   :   'class' ID (':' 'public' ID)? '{' 'public' ':' (var_decl | 'virtual'? fn_decl)* '}' ';' ;
 
 main    :   ('void' | type) 'main' '(' params? ')' (';' | block) ;
 
