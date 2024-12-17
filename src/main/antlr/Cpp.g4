@@ -19,17 +19,17 @@ stmt    :   define
 
 define  :   '#define' ID expr ;
 
-var_decl:   type ID ('=' expr)? ';'
-        |   type ID ('[' (ID | INT) ']')+ ';'
-        |   type ID ('[' (ID | INT)? ']')+ '=' array ';'
+var_decl:   type (ref | ID) ('=' expr)? ';'
+        |   type ('(' ref ')' | ID) ('[' (ID | INT) ']')+ ';'
+        |   type ('(' ref ')' | ID) ('[' (ID | INT)? ']')+ '=' array ';'
         ;
 
 assign  :   ID ASSIGN_OP expr ';' ;
 
 dec_inc :   (DEC_INC_OP ID | ID DEC_INC_OP) ';' ;
 
-fn_decl  :  ('void' | type) (ID ':' ':')? ID '(' params? ')' (';' | block) ;
-params  :  type ID (',' type ID)* ;
+fn_decl  :  ('void' | type) (ID ':' ':')? (ref | ID) '(' params? ')' (';' | block) ;
+params  :  type (ref | ID) (',' type (ref | ID))* ;
 return  :  'return' expr ';' ;
 
 block   :   '{' stmt* '}' ;
@@ -58,7 +58,9 @@ main    :   ('void' | type) 'main' '(' params? ')' (';' | block) ;
 
 type    :   'int' | 'char' | 'bool' ;
 array   :   '{' (args | array ',') '}' ;
-array_item :    ID ('[' (ID | INT) ']')+ ;
+array_item  :   (ref | ID) ('[' (ID | INT) ']')+ ;
+
+ref :   '&' ID ;
 
 // Lexer-Regeln
 ID          :   '~'? [_a-zA-Z][_a-zA-Z0-9]* ;
