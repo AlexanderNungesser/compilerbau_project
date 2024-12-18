@@ -1,46 +1,54 @@
 grammar Cpp;
 
 // Parser-regeln
-program :  stmt* EOF ;
+program :  stmt* main? EOF ;
 
 stmt    :   var_decl
         |   assign
-        |   dec_inc
+        |   dec_inc ';'
         |   fn_decl
-        |   fn_call
+        |   fn_call ';'
         |   block
         |   while
         |   if
         |   return
         |   class
-        |   main
+        |   delete
         ;
 
 var_decl:   'const'? type (ref | ID) ('=' expr)? ';'
-        |   'const'? type ('(' ref ')' | ID) ('[' (ID | INT)? ']')+ ('=' array)? ';'
+        |   'const'? type ('(' ref ')' | ID) ('[' expr? ']')+ ('=' array)? ';'
         ;
 
-assign  :   (ID | array_item) ASSIGN_OP expr ';' ;
+assign  :   (array_item | ID) ('=' | ASSIGN_OP) expr ';' ;
 
-dec_inc :   (DEC_INC_OP (ID | array_item) | (ID | array_item) DEC_INC_OP) ';' ;
+dec_inc :   (DEC_INC_OP (array_item | ID) | (array_item | ID) DEC_INC_OP) ;
 
-fn_decl  :  ('void' | type) (ID ':' ':')? (ref | ID) '(' params? ')' (';' | block) ;
-params  :  type (ref | ID) (',' type (ref | ID))* ;
-return  :  'return' expr ';' ;
+fn_decl  :  ('void' | type) (ref | ID) '(' params? ')' ';'
+         |  ('void' | type) (ID ':' ':')? (ref | ID) '(' params? ')' block
+         ;
+
+abstract_fn : 'virtual' ('void' | type) (ref | ID) '(' params? ')' 'const' '=' '0' ';' ;
+
+params  :  'const'? type (ref | ID) ('=' expr)? (',' 'const'? type (ref | ID) ('=' expr)?)* ;
+return  :  'return' expr? ';' ;
 
 block   :   '{' stmt* '}' ;
 while   :   'while' '(' expr ')' block ;
 if      :   'if' '(' expr ')' block ('else' 'if' '(' expr ')' block)* ('else' block)? ;
 
-fn_call  :   ID '(' args? ')' ';' ;
+fn_call  :   (ID ':' ':')? ID '(' args? ')' ;
 args    :   expr (',' expr)* ;
 
 expr    :   fn_call
         |   dec_inc
-        |   expr CALC_OP expr
-        |   expr COMPARE_OP expr
         |   array_item
         |   array
+        |   ref
+        |   expr CALC_OP expr
+        |   expr COMPARE_OP expr
+        |   expr BOOL_OP expr
+        |   NULL
         |   ID
         |   INT
         |   CHAR
@@ -48,18 +56,25 @@ expr    :   fn_call
         |   '(' expr ')'
         ;
 
-class   :   'class' ID (':' 'public' ID)? '{' 'public' ':' (var_decl | 'virtual'? fn_decl)* '}' ';' ;
+delete : 'delete' ('[' ']')? ID ';' ;
+
+constructor :   ID '(' params? ')' ':'? (ID '(' args? ')')? ';'
+            |  (ID ':' ':')? ID '(' params? ')' ':'? (ID '(' args? ')')? (',' ID '(' args? ')')* block ;
+
+destructor  :   'virtual'? '~' ID '(' params? ')' (';' | block) ;
+
+class   :   'class' ID (':' 'public' ID)? '{' 'public' ':' var_decl* constructor? destructor? ('virtual'? fn_decl | abstract_fn)* '}' ';' ;
 
 main    :   ('void' | type) 'main' '(' params? ')' (';' | block) ;
 
 type    :   'int' | 'char' | 'bool' ;
-array   :   '{' (args | array ',') '}' ;
-array_item  :   (ref | ID) ('[' (ID | INT) ']')+ ;
+array   :   '{' (args | array (',' array)*) '}' ;
+array_item  :   (ref | ID) ('[' expr ']')+ ;
 
 ref :   '&' ID ;
 
 // Lexer-Regeln
-ID          :   '~'? [_a-zA-Z][_a-zA-Z0-9]* ;
+ID          :   [_a-zA-Z][_a-zA-Z0-9]* ;
 
 INT         :   [+-]?[0-9]+ ;
 CHAR        :   ('"' | '\'') (~[\n\r"'])? ('"' | '\'') ;
@@ -67,9 +82,10 @@ BOOL        :   'true' | 'false' ;
 NULL        :   'NULL'  ;
 
 COMPARE_OP  :   '==' | '!=' | '<=' | '>=' | '<' | '>' ;
+BOOL_OP     :   '&&' | '||' ;
 DEC_INC_OP  :   '++' | '--' ;
 CALC_OP     :   '*' | '/' | '+' | '-' ;
-ASSIGN_OP   :   '=' | '*=' | '/=' | '+=' | '-=' ;
+ASSIGN_OP   :   '*=' | '/=' | '+=' | '-=';
 
 COMMENT     :  '//' ~[\n\r]* -> skip ;
 WS          :  [ \t\n\r]+ -> skip ;

@@ -1,9 +1,5 @@
 // Test-Skript basierend auf der angegebenen Grammatik
 
-// #define Test
-#define PI 3.14
-#define MAX_COUNT 100
-
 // Variablen-Deklaration
 int x = 10;
 char y = 'A';
