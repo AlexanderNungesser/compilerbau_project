@@ -3,8 +3,7 @@ grammar Cpp;
 // Parser-regeln
 program :  stmt* EOF ;
 
-stmt    :   define
-        |   var_decl
+stmt    :   var_decl
         |   assign
         |   dec_inc
         |   fn_decl
@@ -16,8 +15,6 @@ stmt    :   define
         |   class
         |   main
         ;
-
-define  :   '#define' ID expr ;
 
 var_decl:   type (ref | ID) ('=' expr)? ';'
         |   type ('(' ref ')' | ID) ('[' (ID | INT)? ']')+ ('=' array)? ';'
