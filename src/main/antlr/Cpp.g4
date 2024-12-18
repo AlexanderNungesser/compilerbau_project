@@ -16,8 +16,8 @@ stmt    :   var_decl
         |   main
         ;
 
-var_decl:   type (ref | ID) ('=' expr)? ';'
-        |   type ('(' ref ')' | ID) ('[' (ID | INT)? ']')+ ('=' array)? ';'
+var_decl:   'const'? type (ref | ID) ('=' expr)? ';'
+        |   'const'? type ('(' ref ')' | ID) ('[' (ID | INT)? ']')+ ('=' array)? ';'
         ;
 
 assign  :   (ID | array_item) ASSIGN_OP expr ';' ;
