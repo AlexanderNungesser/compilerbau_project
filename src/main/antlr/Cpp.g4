@@ -14,6 +14,7 @@ stmt    :   var_decl
         |   return
         |   class
         |   delete
+        |   this
         ;
 
 var_decl:   'const'? type (ref | ID) ('=' expr)? ';'
@@ -45,6 +46,7 @@ expr    :   fn_call
         |   array_item
         |   array
         |   ref
+        |   this
         |   expr CALC_OP expr
         |   expr COMPARE_OP expr
         |   expr BOOL_OP expr
@@ -56,7 +58,7 @@ expr    :   fn_call
         |   '(' expr ')'
         ;
 
-delete : 'delete' ('[' ']')? ID ';' ;
+delete : 'delete' ('[' ']')? (this | ID) ';' ;
 
 constructor :   ID '(' params? ')' ':'? (ID '(' args? ')')? ';'
             |  (ID ':' ':')? ID '(' params? ')' ':'? (ID '(' args? ')')? (',' ID '(' args? ')')* block ;
@@ -72,6 +74,8 @@ array   :   '{' (args | array (',' array)*) '}' ;
 array_item  :   (ref | ID) ('[' expr ']')+ ;
 
 ref :   '&' ID ;
+
+this        :   'this' ('.' (array_item | assign | dec_inc | fn_call | ID))? ;
 
 // Lexer-Regeln
 ID          :   [_a-zA-Z][_a-zA-Z0-9]* ;
