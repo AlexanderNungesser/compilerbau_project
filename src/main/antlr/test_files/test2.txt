@@ -10,12 +10,12 @@ x = 5;
 y += 10;
 z *= 2;
 
-arr[1] = 1;
+arr[0] = 1;
 flags[2] = false;
 
 x++;
 --y;
-arr[1]++;
+arr[0]++;
 ++z;
 
 void myFunction();

@@ -78,7 +78,7 @@ array_item  :   (ref | ID) ('[' expr ']')+ ;
 
 ref :   '&' ID ;
 
-obj_usage   :   ('this' | ID) ('.' (array_item | assign | dec_inc | fn_call | ID))? ;
+obj_usage   :   ('this' | ID) ('.' (array_item ';' | assign | dec_inc ';' | fn_call ';' | ID ';'))? ;
 
 // Lexer-Regeln
 ID          :   [_a-zA-Z][_a-zA-Z0-9]* ;
