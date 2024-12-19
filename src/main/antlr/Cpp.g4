@@ -45,19 +45,19 @@ fn_call  :   (ID ':' ':')? ID '(' args? ')' ;
 args    :   expr (',' expr)* ;
 
 expr    :   fn_call
+        |   array
         |   dec_inc
         |   array_item
-        |   array
         |   ref
-        |   obj_usage
         |   expr CALC_OP expr
         |   expr COMPARE_OP expr
         |   expr BOOL_OP expr
         |   NULL
-        |   ID
+        |   BOOL
         |   INT
         |   CHAR
-        |   BOOL
+        |   obj_usage
+        |   ID
         |   '(' expr ')'
         ;
 
@@ -81,12 +81,11 @@ ref :   '&' ID ;
 obj_usage   :   ('this' | ID) ('.' (array_item ';' | assign | dec_inc ';' | fn_call ';' | ID ';'))? ;
 
 // Lexer-Regeln
-ID          :   [_a-zA-Z][_a-zA-Z0-9]* ;
-
+NULL        :   'NULL'  ;
+BOOL        :   'true' | 'false' ;
 INT         :   [+-]?[0-9]+ ;
 CHAR        :   ('"' | '\'') (~[\n\r"'])? ('"' | '\'') ;
-BOOL        :   'true' | 'false' ;
-NULL        :   'NULL'  ;
+ID          :   [_a-zA-Z][_a-zA-Z0-9]* ;
 
 COMPARE_OP  :   '==' | '!=' | '<=' | '>=' | '<' | '>' ;
 BOOL_OP     :   '&&' | '||' ;
