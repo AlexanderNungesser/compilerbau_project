@@ -20,7 +20,7 @@ stmt    :   var_decl
 var_decl:   const_static type (ref | ID) ('=' expr)? ';'
         |   const_static type ('(' ref ')' | ID) ('[' expr? ']')+ ('=' array)? ';'
         ;
-const_static    :   ('static'? 'const'? | 'const'? 'static'?)? ;
+const_static    :   ('const'? 'static'? | 'static'? 'const'?) ;
 
 assign  :   (array_item | ID) ('=' | ASSIGN_OP) expr ';' ;
 
