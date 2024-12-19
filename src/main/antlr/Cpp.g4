@@ -14,7 +14,7 @@ stmt    :   var_decl
         |   return
         |   class
         |   delete
-        |   this
+        |   obj_usage
         ;
 
 var_decl:   const_static type (ref | ID) ('=' expr)? ';'
@@ -26,11 +26,13 @@ assign  :   (array_item | ID) ('=' | ASSIGN_OP) expr ';' ;
 
 dec_inc :   (DEC_INC_OP (array_item | ID) | (array_item | ID) DEC_INC_OP) ;
 
-fn_decl  :  const_static ('void' | type) (ref | ID) '(' params? ')' ';'
-         |  const_static ('void' | type) (ID ':' ':')? (ref | ID) '(' params? ')' block
+fn_decl  :  const_static ('void' | type) (ref | operator | ID) '(' params? ')' ';'
+         |  const_static ('void' | type) (ID ':' ':')? (ref | operator | ID) '(' params? ')' block
          ;
 
-abstract_fn : 'virtual' ('void' | type) (ref | ID) '(' params? ')' 'const' '=' '0' ';' ;
+operator    :   '&' 'operator' ('=' | DEC_INC_OP) ;
+
+abstract_fn : 'virtual' ('void' | type) (ref | operator | ID) '(' params? ')' 'const' '=' '0' ';' ;
 
 params  :  'const'? type (ref | ID) ('=' expr)? (',' 'const'? type (ref | ID) ('=' expr)?)* ;
 return  :  'return' expr? ';' ;
@@ -47,7 +49,7 @@ expr    :   fn_call
         |   array_item
         |   array
         |   ref
-        |   this
+        |   obj_usage
         |   expr CALC_OP expr
         |   expr COMPARE_OP expr
         |   expr BOOL_OP expr
@@ -59,7 +61,7 @@ expr    :   fn_call
         |   '(' expr ')'
         ;
 
-delete : 'delete' ('[' ']')? (this | ID) ';' ;
+delete : 'delete' ('[' ']')? (obj_usage | ID) ';' ;
 
 constructor :   ID '(' params? ')' (':' ID '(' args? ')')? ';'
             |  (ID ':' ':')? ID '(' params? ')' (':' ID '(' args? ')')? (',' ID '(' args? ')')* block ;
@@ -76,7 +78,7 @@ array_item  :   (ref | ID) ('[' expr ']')+ ;
 
 ref :   '&' ID ;
 
-this        :   'this' ('.' (array_item | assign | dec_inc | fn_call | ID))? ;
+obj_usage   :   ('this' | ID) ('.' (array_item | assign | dec_inc | fn_call | ID))? ;
 
 // Lexer-Regeln
 ID          :   [_a-zA-Z][_a-zA-Z0-9]* ;
