@@ -93,5 +93,6 @@ DEC_INC_OP  :   '++' | '--' ;
 CALC_OP     :   '*' | '/' | '+' | '-' ;
 ASSIGN_OP   :   '*=' | '/=' | '+=' | '-=';
 
-COMMENT     :  '//' ~[\n\r]* -> skip ;
-WS          :  [ \t\n\r]+ -> skip ;
+MULTI_LINE_COMMENT  : '/*' .*? '*/' -> skip;
+COMMENT             :  '//' ~[\n\r]* -> skip ;
+WS                  :  [ \t\n\r]+ -> skip ;
