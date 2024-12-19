@@ -1,6 +1,6 @@
 grammar Cpp;
 
-// Parser-regeln
+// Parser-Regeln
 program :  stmt* main? EOF ;
 
 stmt    :   var_decl
@@ -18,9 +18,10 @@ stmt    :   var_decl
         ;
 
 var_decl:   const_static type (ref | ID) ('=' expr)? ';'
-        |   const_static type ('(' ref ')' | ID) ('[' expr? ']')+ ('=' array)? ';'
-        ;
-const_static    :   ('const'? 'static'? | 'static'? 'const'?) ;
+          | const_static type ('(' ref ')' | ID) ('[' expr? ']')+ ('=' array)? ';'
+          ;
+
+const_static : ('const'? 'static'? | 'static'? 'const'?) ;
 
 assign  :   (array_item | ID) ('=' | ASSIGN_OP) expr ';' ;
 
@@ -35,6 +36,7 @@ operator    :   '&' 'operator' ('=' | DEC_INC_OP) ;
 abstract_fn : 'virtual' ('void' | type) (ref | operator | ID) '(' params? ')' 'const' '=' '0' ';' ;
 
 params  :  'const'? type (ref | ID) ('=' expr)? (',' 'const'? type (ref | ID) ('=' expr)?)* ;
+
 return  :  'return' expr? ';' ;
 
 block   :   '{' stmt* '}' ;
@@ -45,9 +47,8 @@ fn_call  :   (ID ':' ':')? ID '(' args? ')' ;
 args    :   expr (',' expr)* ;
 
 expr    :   fn_call
-        |   array
-        |   dec_inc
         |   array_item
+        |   dec_inc
         |   ref
         |   expr CALC_OP expr
         |   expr COMPARE_OP expr
@@ -64,7 +65,7 @@ expr    :   fn_call
 delete : 'delete' ('[' ']')? (obj_usage | ID) ';' ;
 
 constructor :   ID '(' params? ')' (':' ID '(' args? ')')? ';'
-            |  (ID ':' ':')? ID '(' params? ')' (':' ID '(' args? ')')? (',' ID '(' args? ')')* block ;
+             |  (ID ':' ':')? ID '(' params? ')' (':' ID '(' args? ')')? (',' ID '(' args? ')')* block ;
 
 destructor  :   'virtual'? '~' ID '(' params? ')' (';' | block) ;
 
@@ -73,6 +74,7 @@ class   :   'class' ID (':' 'public' ID)? '{' 'public' ':' var_decl* constructor
 main    :   ('void' | type) 'main' '(' params? ')' (';' | block) ;
 
 type    :   'int' | 'char' | 'bool' | ID;
+
 array   :   '{' (args | array (',' array)*) '}' ;
 array_item  :   (ref | ID) ('[' expr ']')+ ;
 
@@ -93,5 +95,6 @@ DEC_INC_OP  :   '++' | '--' ;
 CALC_OP     :   '*' | '/' | '+' | '-' ;
 ASSIGN_OP   :   '*=' | '/=' | '+=' | '-=';
 
-COMMENT     :  '//' ~[\n\r]* -> skip ;
-WS          :  [ \t\n\r]+ -> skip ;
+MULTI_LINE_COMMENT  : '/*' .*? '*/' -> skip;
+COMMENT             :  '//' ~[\n\r]* -> skip ;
+WS                  :  [ \t\n\r]+ -> skip ;
