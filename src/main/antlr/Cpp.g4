@@ -17,16 +17,17 @@ stmt    :   var_decl
         |   this
         ;
 
-var_decl:   'const'? type (ref | ID) ('=' expr)? ';'
-        |   'const'? type ('(' ref ')' | ID) ('[' expr? ']')+ ('=' array)? ';'
+var_decl:   const_static type (ref | ID) ('=' expr)? ';'
+        |   const_static type ('(' ref ')' | ID) ('[' expr? ']')+ ('=' array)? ';'
         ;
+const_static    :   ('static'? 'const'? | 'const'? 'static'?)? ;
 
 assign  :   (array_item | ID) ('=' | ASSIGN_OP) expr ';' ;
 
 dec_inc :   (DEC_INC_OP (array_item | ID) | (array_item | ID) DEC_INC_OP) ;
 
-fn_decl  :  ('void' | type) (ref | ID) '(' params? ')' ';'
-         |  ('void' | type) (ID ':' ':')? (ref | ID) '(' params? ')' block
+fn_decl  :  const_static ('void' | type) (ref | ID) '(' params? ')' ';'
+         |  const_static ('void' | type) (ID ':' ':')? (ref | ID) '(' params? ')' block
          ;
 
 abstract_fn : 'virtual' ('void' | type) (ref | ID) '(' params? ')' 'const' '=' '0' ';' ;
