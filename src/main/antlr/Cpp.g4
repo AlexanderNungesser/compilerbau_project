@@ -68,7 +68,7 @@ constructor :   ID '(' params? ')' (':' ID '(' args? ')')? ';'
 
 destructor  :   'virtual'? '~' ID '(' params? ')' (';' | block) ;
 
-class   :   'class' ID (':' 'public' ID)? '{' 'public' ':' var_decl* constructor* destructor? ('virtual'? fn_decl | abstract_fn)* '}' ';' ;
+class   :   'class' ID (':' 'public' ID)? '{' 'public' ':' var_decl* constructor+ destructor? ('virtual'? fn_decl | abstract_fn)* '}' ';' ;
 
 main    :   ('void' | type) 'main' '(' params? ')' (';' | block) ;
 
