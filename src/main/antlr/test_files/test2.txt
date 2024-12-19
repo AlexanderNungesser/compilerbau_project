@@ -10,12 +10,12 @@ x = 5;
 y += 10;
 z *= 2;
 
-arr[0] = 1;
+arr[1] = 1;
 flags[2] = false;
 
 x++;
 --y;
-arr[0]++;
+arr[1]++;
 ++z;
 
 void myFunction();
@@ -51,6 +51,7 @@ getChar();
 class MyClass {
 public:
     int value;
+    MyClass();
     void setValue(int v) { value = v; }
 };
 
