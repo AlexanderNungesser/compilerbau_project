@@ -61,16 +61,16 @@ expr    :   fn_call
 
 delete : 'delete' ('[' ']')? (this | ID) ';' ;
 
-constructor :   ID '(' params? ')' ':'? (ID '(' args? ')')? ';'
-            |  (ID ':' ':')? ID '(' params? ')' ':'? (ID '(' args? ')')? (',' ID '(' args? ')')* block ;
+constructor :   ID '(' params? ')' (':' ID '(' args? ')')? ';'
+            |  (ID ':' ':')? ID '(' params? ')' (':' ID '(' args? ')')? (',' ID '(' args? ')')* block ;
 
 destructor  :   'virtual'? '~' ID '(' params? ')' (';' | block) ;
 
-class   :   'class' ID (':' 'public' ID)? '{' 'public' ':' var_decl* constructor? destructor? ('virtual'? fn_decl | abstract_fn)* '}' ';' ;
+class   :   'class' ID (':' 'public' ID)? '{' 'public' ':' var_decl* constructor* destructor? ('virtual'? fn_decl | abstract_fn)* '}' ';' ;
 
 main    :   ('void' | type) 'main' '(' params? ')' (';' | block) ;
 
-type    :   'int' | 'char' | 'bool' ;
+type    :   'int' | 'char' | 'bool' | ID;
 array   :   '{' (args | array (',' array)*) '}' ;
 array_item  :   (ref | ID) ('[' expr ']')+ ;
 
