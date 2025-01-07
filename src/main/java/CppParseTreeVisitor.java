@@ -1,3 +1,5 @@
+import org.antlr.v4.runtime.tree.TerminalNode;
+
 public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
 
   /**
@@ -118,7 +120,20 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
   @Override
   public ASTNode visitParams(CppParser.ParamsContext ctx) {
     ASTNode node = new ASTNode(Type.PARAMS);
+    // TODO: const? und default wert
+    for (int i = 0; i < ctx.type().size(); i++){
+      node.addChild(new ASTNode(Type.valueOf(visit(ctx.type(i)).getType())));
+    }
 
+    for (int i = 0; i < ctx.getChildCount(); i++) {
+      if (ctx.getChild(i).getText().equals("const")) {
+        node.addChild(new ASTNode(ctx.getChild(i).getText()));
+      }else if (ctx.getChild(i) instanceof CppParser.RefContext) {
+        node.addChild(visitRef((CppParser.RefContext) ctx.getChild(i)));
+      }else if (ctx.getChild(i) instanceof TerminalNode) {
+        node.children.getLast().setValue(ctx.getChild(i).getText());
+      }
+    }
     return node;
   }
 
@@ -194,7 +209,14 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
   @Override
   public ASTNode visitFn_call(CppParser.Fn_callContext ctx) {
     ASTNode node = new ASTNode(Type.FN_CALL);
-
+    if(ctx.getChild(1).getText().equals(":")){
+      node.addChild(new ASTNode(Type.CLASS, ctx.getChild(1).getText()));
+    }else {
+      node.setValue(ctx.children.getFirst().getText());
+    }
+    if (ctx.getChild(ctx.getChildCount()-2).equals(ctx.args())) {
+      node.addChild(visit(ctx.getChild(ctx.getChildCount()-2)));
+    }
     return node;
   }
 
