@@ -71,7 +71,7 @@ class   :   'class' ID (':' 'public' ID)? '{' 'public' ':' var_decl* constructor
 
 main    :   ('void' | type) 'main' '(' params? ')' (';' | block) ;
 
-type    :   'int' | 'char' | 'bool' | ID;
+type    :   'int' | 'char' | 'bool' ;
 
 array   :   '{' (args | array (',' array)*) '}' ;
 array_item  :   (ref | ID) ('[' expr ']')+ ;
