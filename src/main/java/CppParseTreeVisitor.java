@@ -233,7 +233,19 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
       } else if (ctx.children.getFirst().equals(ctx.ID())) {
         return new ASTNode(Type.ID, ctx.getChild(0).getText());
       } else if (ctx.getChildCount() == 3) {
-        // TODO: mehr als ein Kind
+        ASTNode node;
+        if (ctx.getChild(1).equals(ctx.CALC_OP())) {
+          node = new ASTNode(Type.CALC_OP, ctx.getChild(1).getText());
+        } else if (ctx.getChild(1).equals(ctx.COMPARE_OP())) {
+          node = new ASTNode(Type.COMPARE_OP, ctx.getChild(1).getText());
+        } else if (ctx.getChild(1).equals(ctx.BOOL_OP())) {
+          node = new ASTNode(Type.BOOL_OP, ctx.getChild(1).getText());
+        } else {
+          return visit(ctx.getChild(1));
+        }
+        node.addChild(visit(ctx.getChild(0)));
+        node.addChild(visit(ctx.getChild(2)));
+        return node;
       } else {
         return visitChildren(ctx);
       }
