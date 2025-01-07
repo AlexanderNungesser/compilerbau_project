@@ -24,4 +24,5 @@ public enum Type {
   BOOL,
   INT,
   CHAR,
+  REF,
 }
