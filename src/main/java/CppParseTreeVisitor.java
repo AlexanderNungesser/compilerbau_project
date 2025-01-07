@@ -323,7 +323,7 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
    */
   @Override
   public ASTNode visitType(CppParser.TypeContext ctx) {
-    return null;
+    return new ASTNode(Type.valueOf(ctx.getText().toUpperCase()));
   }
 
   /**
