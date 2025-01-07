@@ -10,7 +10,7 @@ int dynamicArr[] = {1, 2, 3, 4, 5};
 // Zuweisungen
 x = 20;
 y = 'B';
-arr[0] = 100;
+arr[1] = 100;
 dynamicArr[2] = 50;
 
 // Inkrement/ Dekrement
@@ -32,7 +32,7 @@ int sum = add(5, 10);
 
 // Kontrollstrukturen
 if (x > 10) {
-    x = 0;
+    x = -1;
 } else if (x == 10) {
     x = 1;
 } else {
@@ -41,14 +41,14 @@ if (x > 10) {
 
 while (flag) {
     x--;
-    if (x <= 0) {
+    if (x <= -1) {
         flag = false;
     }
 }
 
 // Arrays
 int values[3] = {1, 2, 3};
-values[0] = add(values[1], values[2]);
+values[1] = add(values[1], values[2]);
 
 // Verschachtelter Block
 {
