@@ -68,7 +68,15 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
   @Override
   public ASTNode visitDec_inc(CppParser.Dec_incContext ctx) {
     ASTNode node = new ASTNode(Type.DEC_INC);
-
+    for (int i = 0; i < ctx.getChildCount(); i++){
+      if (ctx.getChild(i).equals(ctx.DEC_INC_OP())){
+        node.addChild(new ASTNode(ctx.DEC_INC_OP().getText()));
+      } else if (ctx.getChild(i).equals(ctx.ID())) {
+        node.addChild(new ASTNode(Type.ID, ctx.ID().getText()));
+      }else {
+        node.addChild(visit(ctx.getChild(i)));
+      }
+    }
     return node;
   }
 
