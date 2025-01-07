@@ -22,8 +22,7 @@ public class Main {
 
     String relativePath = "src/main/antlr/test_files/test1.txt";
 
-    // String input = readFileWithPaths(relativePath);
-    String input = "return i;";
+    String input = readFileWithPaths(relativePath);
     if (input != null) {
       System.out.println("Input file:\n" + input);
     }
