@@ -250,13 +250,12 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
   @Override
   public ASTNode visitDelete(CppParser.DeleteContext ctx) {
     ASTNode node = new ASTNode(Type.DELETE);
-    if (ctx.getChildCount() == 5) {
-      if (ctx.getChild(3).equals(ctx.ID())) {
-        node.addChild(new ASTNode(Type.ID, ctx.ID().getText()));
-      }
-      node.addChild(visit(ctx.getChild(3)));
+    int index = (ctx.getChildCount() == 5) ? 3 : 1;
+    if (ctx.getChild(index).equals(ctx.ID())) {
+      node.addChild(new ASTNode(Type.ID, ctx.ID().getText()));
+    } else {
+      node.addChild(visit(ctx.getChild(index)));
     }
-
     return node;
   }
 
