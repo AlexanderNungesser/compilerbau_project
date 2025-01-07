@@ -17,18 +17,16 @@ stmt    :   var_decl
         |   obj_usage
         ;
 
-var_decl:   const_static type (ref | ID) ('=' expr)? ';'
-          | const_static type ('(' ref ')' | ID) ('[' expr? ']')+ ('=' array)? ';'
+var_decl:   ('const'? 'static'? | 'static'? 'const'?) type (ref | ID) ('=' expr)? ';'
+          | ('const'? 'static'? | 'static'? 'const'?) type ('(' ref ')' | ID) ('[' expr? ']')+ ('=' array)? ';'
           ;
-
-const_static : ('const'? 'static'? | 'static'? 'const'?) ;
 
 assign  :   (array_item | ID) ('=' | ASSIGN_OP) expr ';' ;
 
 dec_inc :   (DEC_INC_OP (array_item | ID) | (array_item | ID) DEC_INC_OP) ;
 
-fn_decl  :  const_static ('void' | type) (ref | operator | ID) '(' params? ')' ';'
-         |  const_static ('void' | type) (ID ':' ':')? (ref | operator | ID) '(' params? ')' block
+fn_decl  :  ('const'? 'static'? | 'static'? 'const'?) ('void' | type) (ref | operator | ID) '(' params? ')' ';'
+         |  ('const'? 'static'? | 'static'? 'const'?) ('void' | type) (ID ':' ':')? (ref | operator | ID) '(' params? ')' block
          ;
 
 operator    :   '&' 'operator' ('=' | DEC_INC_OP) ;
