@@ -68,12 +68,12 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
   @Override
   public ASTNode visitDec_inc(CppParser.Dec_incContext ctx) {
     ASTNode node = new ASTNode(Type.DEC_INC);
-    for (int i = 0; i < ctx.getChildCount(); i++){
-      if (ctx.getChild(i).equals(ctx.DEC_INC_OP())){
+    for (int i = 0; i < ctx.getChildCount(); i++) {
+      if (ctx.getChild(i).equals(ctx.DEC_INC_OP())) {
         node.addChild(new ASTNode(ctx.DEC_INC_OP().getText()));
       } else if (ctx.getChild(i).equals(ctx.ID())) {
         node.addChild(new ASTNode(Type.ID, ctx.ID().getText()));
-      }else {
+      } else {
         node.addChild(visit(ctx.getChild(i)));
       }
     }
@@ -104,7 +104,7 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
     ASTNode node = new ASTNode(Type.OPERATOR);
     if (ctx.children.getLast().equals(ctx.DEC_INC_OP())) {
       node.setValue(ctx.DEC_INC_OP().getChild(0).getText());
-    }else {
+    } else {
       node.setValue(ctx.children.getLast().getText());
     }
     return node;
@@ -133,16 +133,16 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
   public ASTNode visitParams(CppParser.ParamsContext ctx) {
     ASTNode node = new ASTNode(Type.PARAMS);
     // TODO: const? und default wert
-    for (int i = 0; i < ctx.type().size(); i++){
+    for (int i = 0; i < ctx.type().size(); i++) {
       node.addChild(new ASTNode(Type.valueOf(visit(ctx.type(i)).getType())));
     }
 
     for (int i = 0; i < ctx.getChildCount(); i++) {
       if (ctx.getChild(i).getText().equals("const")) {
         node.addChild(new ASTNode(ctx.getChild(i).getText()));
-      }else if (ctx.getChild(i) instanceof CppParser.RefContext) {
+      } else if (ctx.getChild(i) instanceof CppParser.RefContext) {
         node.addChild(visitRef((CppParser.RefContext) ctx.getChild(i)));
-      }else if (ctx.getChild(i) instanceof TerminalNode) {
+      } else if (ctx.getChild(i) instanceof TerminalNode) {
         node.children.getLast().setValue(ctx.getChild(i).getText());
       }
     }
@@ -221,13 +221,13 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
   @Override
   public ASTNode visitFn_call(CppParser.Fn_callContext ctx) {
     ASTNode node = new ASTNode(Type.FN_CALL);
-    if(ctx.getChild(1).getText().equals(":")){
+    if (ctx.getChild(1).getText().equals(":")) {
       node.addChild(new ASTNode(Type.CLASS, ctx.getChild(1).getText()));
-    }else {
+    } else {
       node.setValue(ctx.children.getFirst().getText());
     }
-    if (ctx.getChild(ctx.getChildCount()-2).equals(ctx.args())) {
-      node.addChild(visit(ctx.getChild(ctx.getChildCount()-2)));
+    if (ctx.getChild(ctx.getChildCount() - 2).equals(ctx.args())) {
+      node.addChild(visit(ctx.getChild(ctx.getChildCount() - 2)));
     }
     return node;
   }
@@ -368,7 +368,15 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
    */
   @Override
   public ASTNode visitArray(CppParser.ArrayContext ctx) {
-    return null;
+    ASTNode node = new ASTNode(Type.ARRAY);
+    if (ctx.getChild(1).equals(ctx.args())) {
+      node.addChildren(visitArgs((CppParser.ArgsContext) ctx.getChild(1)).children);
+      return node;
+    }
+    for (int i = 1; i < ctx.getChildCount() - 1; i += 2) {
+      node.addChild(visit(ctx.getChild(i)));
+    }
+    return node;
   }
 
   /**

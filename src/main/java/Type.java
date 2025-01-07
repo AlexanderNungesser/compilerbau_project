@@ -25,4 +25,5 @@ public enum Type {
   INT,
   CHAR,
   REF,
+  ARRAY,
 }
