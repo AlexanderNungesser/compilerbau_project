@@ -29,6 +29,10 @@ public class ASTNode {
     return value;
   }
 
+  public void setValue(String value) {
+    this.value = value;
+  }
+
   public void addChild(ASTNode child) {
     this.children.add(child);
   }
