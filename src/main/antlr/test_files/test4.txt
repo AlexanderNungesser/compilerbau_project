@@ -1,0 +1,36 @@
+// Abstrakte Basisklasse
+class Fahrzeug {
+public:
+    Fahrzeug();
+
+    // Virtueller Destruktor (wichtig für polymorphes Verhalten)
+    virtual ~Fahrzeug() {}
+
+    // Reine virtuelle Methode (abstrakte Methode)
+    virtual void beschreibe() const = 0;
+
+};
+
+// Abgeleitete Klasse: Auto
+class Auto : public Fahrzeug {
+
+public:
+    Auto(const char& marke, int ps) : marke(marke), ps(ps) {}
+    };
+
+// Abgeleitete Klasse: Fahrrad
+class Fahrrad : public Fahrzeug {
+public:
+    Fahrrad(bool hatGepaecktraeger) : hatGepaecktraeger(hatGepaecktraeger) {}
+
+};
+
+int main() {
+    // Fahrzeug ist abstrakt und kann nicht direkt instanziiert werden
+    // Fahrzeug f; // Fehler
+
+    // Polymorphe Verwendung der abstrakten Klasse
+
+
+    return 0;
+}
