@@ -48,9 +48,18 @@ expr    :   fn_call
         |   array_item
         |   dec_inc
         |   ref
-        |   expr CALC_OP expr
-        |   expr COMPARE_OP expr
-        |   expr BOOL_OP expr
+        |   expr '*' expr
+        |   expr '/' expr
+        |   expr '+' expr
+        |   expr '-' expr
+        |   expr '==' expr
+        |   expr '!=' expr
+        |   expr '<=' expr
+        |   expr '>=' expr
+        |   expr '<' expr
+        |   expr '>' expr
+        |   expr '&&' expr
+        |   expr '||' expr
         |   NULL
         |   BOOL
         |   INT
@@ -87,10 +96,7 @@ INT         :   [+-]?([0-9] | [1-9][0-9]*);
 CHAR        :   ('"' | '\'') (~[\n\r"'])? ('"' | '\'') ;
 ID          :   [_a-zA-Z][_a-zA-Z0-9]* ;
 
-COMPARE_OP  :   '==' | '!=' | '<=' | '>=' | '<' | '>' ;
-BOOL_OP     :   '&&' | '||' ;
 DEC_INC_OP  :   '++' | '--' ;
-CALC_OP     :   '*' | '/' | '+' | '-' ;
 ASSIGN_OP   :   '*=' | '/=' | '+=' | '-=';
 
 MULTI_LINE_COMMENT  : '/*' .*? '*/' -> skip;

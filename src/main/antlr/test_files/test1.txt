@@ -58,4 +58,4 @@ values[0] = add(values[1], values[2]);
 
 // Komplexer Ausdruck
 int result = (x * 2) + (y - 'A') / 3;
-bool comparison = (x < 20) && (y != 'Z');
+bool comparison = (x < 20) && (y != 'Z') || false;
