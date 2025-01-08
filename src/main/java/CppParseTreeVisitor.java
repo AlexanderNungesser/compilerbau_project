@@ -55,7 +55,17 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
   @Override
   public ASTNode visitAssign(CppParser.AssignContext ctx) {
     ASTNode node = new ASTNode(Type.ASSIGN);
-
+    if (ctx.getChild(1).equals(ctx.ASSIGN_OP())) {
+      node.setValue(ctx.ASSIGN_OP().getText());
+    } else {
+      node.setValue(ctx.getChild(1).getText());
+    }
+    if (ctx.children.getFirst().equals(ctx.ID())) {
+      node.addChild(new ASTNode(Type.ID, ctx.children.getFirst().getText()));
+    } else {
+      node.addChild(visit(ctx.children.getFirst()));
+    }
+    node.addChild(visit(ctx.getChild(2)));
     return node;
   }
 
@@ -256,35 +266,30 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
   @Override
   public ASTNode visitExpr(CppParser.ExprContext ctx) {
     if (ctx.getChildCount() == 1) {
+      String text = ctx.getChild(0).getText();
       if (ctx.children.getFirst().equals(ctx.NULL())) {
-        return new ASTNode(Type.NULL, ctx.getChild(0).getText());
+        return new ASTNode(Type.NULL, text);
       } else if (ctx.children.getFirst().equals(ctx.BOOL())) {
-        return new ASTNode(Type.BOOL, ctx.getChild(0).getText());
+        return new ASTNode(Type.BOOL, text);
       } else if (ctx.children.getFirst().equals(ctx.INT())) {
-        return new ASTNode(Type.INT, ctx.getChild(0).getText());
+        return new ASTNode(Type.INT, text);
       } else if (ctx.children.getFirst().equals(ctx.CHAR())) {
-        return new ASTNode(Type.CHAR, ctx.getChild(0).getText());
+        return new ASTNode(Type.CHAR, text);
       } else if (ctx.children.getFirst().equals(ctx.ID())) {
-        return new ASTNode(Type.ID, ctx.getChild(0).getText());
-      } else if (ctx.getChildCount() == 3) {
-        ASTNode node;
-        if (ctx.getChild(1).equals(ctx.CALC_OP())) {
-          node = new ASTNode(Type.CALC_OP, ctx.getChild(1).getText());
-        } else if (ctx.getChild(1).equals(ctx.COMPARE_OP())) {
-          node = new ASTNode(Type.COMPARE_OP, ctx.getChild(1).getText());
-        } else if (ctx.getChild(1).equals(ctx.BOOL_OP())) {
-          node = new ASTNode(Type.BOOL_OP, ctx.getChild(1).getText());
-        } else {
-          return visit(ctx.getChild(1));
-        }
-        node.addChild(visit(ctx.getChild(0)));
-        node.addChild(visit(ctx.getChild(2)));
-        return node;
+        return new ASTNode(Type.ID, text);
       } else {
-        return visitChildren(ctx);
+        return visit(ctx.children.getFirst());
       }
+    } else {
+      if (ctx.children.getFirst().getText().equals("(")
+          && ctx.children.getLast().getText().equals(")")) {
+        return visit(ctx.getChild(1));
+      }
+      ASTNode node = new ASTNode(ctx.getChild(1).getText());
+      node.addChild(visit(ctx.children.getFirst()));
+      node.addChild(visit(ctx.children.getLast()));
+      return node;
     }
-    return null;
   }
 
   /**
@@ -390,7 +395,7 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
     ASTNode node = new ASTNode(Type.ARRAY_ITEM);
     if (ctx.getChild(0).equals(ctx.ID())) {
       node.addChild(new ASTNode(Type.ID, ctx.ID().getText()));
-    }else {
+    } else {
       node.addChild(visit(ctx.getChild(0)));
     }
     for (int i = 2; i < ctx.getChildCount() - 1; i += 2) {
