@@ -188,15 +188,14 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
     for (ASTNode type : node.children) {
       for (int i = current; i < ctx.getChildCount(); i++) {
         if (ctx.getChild(i).getText().equals(",")) {
-          current = i+1;
+          current = i + 1;
           break;
         }
         if (ctx.getChild(i).getText().equals("const")) {
           type.addChild(new ASTNode(ctx.getChild(i).getText()));
         } else if (ctx.ID().contains(ctx.getChild(i))) {
           type.addChild(new ASTNode(Type.ID, ctx.getChild(i).getText()));
-        } else if (ctx.ref().contains(ctx.getChild(i))
-            || ctx.expr().contains(ctx.getChild(i))) {
+        } else if (ctx.ref().contains(ctx.getChild(i)) || ctx.expr().contains(ctx.getChild(i))) {
           type.addChild(visit(ctx.getChild(i)));
         }
       }
@@ -255,14 +254,12 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
   @Override
   public ASTNode visitIf(CppParser.IfContext ctx) {
     ASTNode node = new ASTNode(Type.IF);
-    node.addChild(visit(ctx.getChild(2)));
-    node.addChild(visit(ctx.getChild(4)));
-    // TODO: beliebig viele else if
-    if (ctx.getChildCount() >= 5
-        && !ctx.getChild(ctx.getChildCount() - 2).getText().equals("else")) {
-      node.addChild(visit(ctx.getChild(6)));
-    } else {
-      node.addChild(visit(ctx.getChild(ctx.getChildCount() - 1)));
+    for (int i = 0; i < ctx.expr().size(); i++) {
+      node.addChild(visit(ctx.expr(i)));
+      node.addChild(visit(ctx.block(i)));
+    }
+    if (ctx.getChild(ctx.getChildCount() - 2).getText().equals("else")) {
+      node.addChild(visit(ctx.block().getLast()));
     }
     return node;
   }
