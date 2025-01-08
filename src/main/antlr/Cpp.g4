@@ -84,7 +84,6 @@ obj_usage   :   ('this' | ID) ('.' (array_item ';' | assign | dec_inc ';' | fn_c
 NULL        :   'NULL'  ;
 BOOL        :   'true' | 'false' ;
 INT         :   [+-]?([0-9] | [1-9][0-9]*);
-ZERO        :   '0';
 CHAR        :   ('"' | '\'') (~[\n\r"'])? ('"' | '\'') ;
 ID          :   [_a-zA-Z][_a-zA-Z0-9]* ;
 
