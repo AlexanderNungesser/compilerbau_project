@@ -387,7 +387,16 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
    */
   @Override
   public ASTNode visitArray_item(CppParser.Array_itemContext ctx) {
-    return null;
+    ASTNode node = new ASTNode(Type.ARRAY_ITEM);
+    if (ctx.getChild(0).equals(ctx.ID())) {
+      node.addChild(new ASTNode(Type.ID, ctx.ID().getText()));
+    }else {
+      node.addChild(visit(ctx.getChild(0)));
+    }
+    for (int i = 2; i < ctx.getChildCount() - 1; i += 2) {
+      node.addChild(visit(ctx.getChild(i)));
+    }
+    return node;
   }
 
   /**

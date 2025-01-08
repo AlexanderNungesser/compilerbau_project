@@ -26,4 +26,5 @@ public enum Type {
   CHAR,
   REF,
   ARRAY,
+  ARRAY_ITEM,
 }
