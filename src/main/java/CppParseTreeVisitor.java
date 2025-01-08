@@ -1,3 +1,6 @@
+import java.util.ArrayList;
+
+import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
@@ -42,6 +45,42 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
   @Override
   public ASTNode visitVar_decl(CppParser.Var_declContext ctx) {
     ASTNode node = new ASTNode(Type.VAR_DECL);
+
+    // Process const or static if available
+    if (ctx.getChild(0).getText().contains("const") || ctx.getChild(1).getText().contains("const")) {
+        node.addChild(new ASTNode("const"));
+    }
+    if (ctx.getChild(0).getText().contains("static") || ctx.getChild(1).getText().contains("static")) {
+        node.addChild(new ASTNode("static"));
+    }
+
+    // Process type information
+    if (ctx.type() != null) {
+        node.addChild(visit(ctx.type()));
+    }
+
+    // Process variable name or reference
+    if (ctx.ref() != null) {
+        node.addChild(visit(ctx.ref()));
+    } else if (ctx.ID() != null) {
+        node.addChild(new ASTNode(Type.ID, ctx.ID().getText()));
+    }
+
+    // Process initialization if present
+    if (ctx.expr() != null && !(ctx.expr() instanceof ArrayList)) {
+        ASTNode initNode = new ASTNode(Type.ASSIGN);
+        initNode.addChild(visit((ParseTree)ctx.expr()));
+        node.addChild(initNode);
+    } else if (ctx.expr() != null && ctx.expr() instanceof ArrayList) {
+        for (int i=0; i<ctx.expr().size(); i++) {
+          node.children.getLast().addChild(visit(ctx.expr(i)));
+        }
+    }
+
+    // Process array-specific constructs
+    if (ctx.array() != null) {
+        node.addChild(visit(ctx.array()));
+    }
 
     return node;
   }
