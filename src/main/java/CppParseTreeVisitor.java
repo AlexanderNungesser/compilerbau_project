@@ -129,6 +129,44 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
   public ASTNode visitFn_decl(CppParser.Fn_declContext ctx) {
     ASTNode node = new ASTNode(Type.FN_DECL);
 
+    // Process const or static modifiers
+    if (ctx.getChild(0).getText().contains("const") || ctx.getChild(1).getText().contains("const")) {
+      node.addChild(new ASTNode("const"));
+    }
+    if (ctx.getChild(0).getText().contains("static") || ctx.getChild(1).getText().contains("static")) {
+        node.addChild(new ASTNode("static"));
+    }
+
+    // Process return type
+    if (ctx.type() != null) {
+        node.addChild(visit(ctx.type()));
+    } else {
+        node.addChild(new ASTNode("void"));
+    }
+
+    // Process function name or operator
+    if (ctx.ref() != null) {
+        node.addChild(visit(ctx.ref()));
+    } else if (ctx.operator() != null) {
+        node.addChild(visit(ctx.operator()));
+    } else if (ctx.ID() != null) {
+        for (int i=0; i<ctx.ID().size(); i++) {
+          node.children.getLast().addChild(visit(ctx.ID(i)));
+        }
+    }
+
+    // Process parameters
+    if (ctx.params() != null) {
+        ASTNode paramsNode = new ASTNode(Type.PARAMS);
+        paramsNode.addChild(visit(ctx.params()));
+        node.addChild(paramsNode);
+    }
+
+    // Process block
+    if (ctx.block() != null) {
+        node.addChild(visit(ctx.block()));
+    }
+
     return node;
   }
 
@@ -374,7 +412,36 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
    */
   @Override
   public ASTNode visitClass(CppParser.ClassContext ctx) {
-    return null;
+    ASTNode node = new ASTNode(Type.CLASS);
+
+    // Process class name
+    if (ctx.ID(0) != null) {
+        node.addChild(new ASTNode(Type.ID, ctx.ID(0).getText()));
+    }
+
+    // Process base class (if present)
+    if (ctx.ID(1) != null) {
+        ASTNode baseClassNode = new ASTNode(Type.ID, ctx.ID(1).getText());
+        node.addChild(new ASTNode("extends"));
+        node.addChild(baseClassNode);
+    }
+
+    // Process members: constructors, destructors, methods, variables
+    for (int i = 0; i < ctx.getChildCount(); i++) {
+        ParseTree child = ctx.getChild(i);
+
+        if (child instanceof CppParser.ConstructorContext) {
+            node.addChild(visit(child));
+        } else if (child instanceof CppParser.DestructorContext) {
+            node.addChild(visit(child));
+        } else if (child instanceof CppParser.Fn_declContext) {
+            node.addChild(visit(child));
+        } else if (child instanceof CppParser.Var_declContext) {
+            node.addChild(visit(child));
+        }
+    }
+
+    return node;
   }
 
   /**
