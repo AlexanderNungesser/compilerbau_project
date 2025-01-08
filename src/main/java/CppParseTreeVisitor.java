@@ -43,6 +43,33 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
   public ASTNode visitVar_decl(CppParser.Var_declContext ctx) {
     ASTNode node = new ASTNode(Type.VAR_DECL);
 
+    // Process type information
+    if (ctx.type() != null) {
+        node.addChild(new ASTNode(Type.ID, ctx.type().getText()));
+    }
+
+    // Process variable name or reference
+    if (ctx.ref() != null) {
+        node.addChild(new ASTNode(Type.REF, ctx.ref().getText()));
+    } else if (ctx.ID() != null) {
+        node.addChild(new ASTNode(Type.ID, ctx.ID().getText()));
+    }
+
+    // Process initialization if present
+    if (ctx.expr() != null) {
+        ASTNode initNode = new ASTNode(Type.ASSIGN);
+        initNode.addChild(visit(ctx.expr()));
+        node.addChild(initNode);
+    }
+
+    // Process array-specific constructs
+    if (ctx.array() != null) {
+        node.addChild(visit(ctx.array()));
+    } else if (ctx.getText().contains("[")) {
+        ASTNode arrayNode = new ASTNode(Type.ARRAY);
+        node.addChild(arrayNode);
+    }
+
     return node;
   }
 
