@@ -31,7 +31,7 @@ fn_decl  :  ('const'? 'static'? | 'static'? 'const'?) ('void' | type) (ref | ope
 
 operator    :   '&' 'operator' ('=' | DEC_INC_OP) ;
 
-abstract_fn : 'virtual' ('void' | type) (ref | operator | ID) '(' params? ')' 'const' '=' '0' ';' ;
+abstract_fn : 'virtual' ('void' | type) (ref | operator | ID) '(' params? ')' 'const' '=' INT ';' ;
 
 params  :  'const'? type (ref | ID) ('=' expr)? (',' 'const'? type (ref | ID) ('=' expr)?)* ;
 
@@ -83,7 +83,8 @@ obj_usage   :   ('this' | ID) ('.' (array_item ';' | assign | dec_inc ';' | fn_c
 // Lexer-Regeln
 NULL        :   'NULL'  ;
 BOOL        :   'true' | 'false' ;
-INT         :   [+-]?[0-9]+ ;
+INT         :   [+-]?([0-9] | [1-9][0-9]*);
+ZERO        :   '0';
 CHAR        :   ('"' | '\'') (~[\n\r"'])? ('"' | '\'') ;
 ID          :   [_a-zA-Z][_a-zA-Z0-9]* ;
 
