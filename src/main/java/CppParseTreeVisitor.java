@@ -407,7 +407,7 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
    */
   @Override
   public ASTNode visitRef(CppParser.RefContext ctx) {
-    return new ASTNode(Type.REF, ctx.getChild(1).getText());
+    return new ASTNode(Type.REF, ctx.ID().getText());
   }
 
   /**
