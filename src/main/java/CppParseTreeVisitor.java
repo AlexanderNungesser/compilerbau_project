@@ -436,7 +436,22 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
    */
   @Override
   public ASTNode visitDestructor(CppParser.DestructorContext ctx) {
-    return null;
+    ASTNode node = new ASTNode(Type.DESTRUCTOR);
+
+    if (ctx.children.getFirst().getText().equals("virtual")){
+      node.setValue("virtual");
+    }
+
+    node.addChild(new ASTNode(Type.ID, ctx.ID().getText()));
+
+    if (ctx.params() != null) {
+      node.addChild(visit(ctx.params()));
+    }
+
+    if (ctx.block() != null) {
+      node.addChild(visit(ctx.block()));
+    }
+    return node;
   }
 
   /**
