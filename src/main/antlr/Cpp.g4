@@ -64,8 +64,8 @@ expr    :   fn_call
         |   BOOL
         |   INT
         |   CHAR
-        |   obj_usage
         |   ID
+        |   obj_usage
         |   '(' expr ')'
         ;
 
