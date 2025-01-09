@@ -159,9 +159,7 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
 
     // Process function name or operator
     if (ctx.ID() instanceof ArrayList<TerminalNode>) {
-      ASTNode classNode = new ASTNode(Type.CLASS);
-      classNode.addChild(new ASTNode(Type.ID, ctx.ID().getFirst().getText()));
-      node.addChild(classNode);
+      node.addChild(new ASTNode(Type.CLASS, ctx.ID().getFirst().getText()));
     }
 
     if (ctx.ref() != null) {
@@ -425,7 +423,38 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
    */
   @Override
   public ASTNode visitConstructor(CppParser.ConstructorContext ctx) {
-    return null;
+    ASTNode node = new ASTNode(Type.CONSTRUCTOR);
+    int index = 1;
+    if (ctx.getChild(1).getText().equals(":")) {
+      index++;
+      node.addChild(new ASTNode(Type.CLASS, ctx.getChild(1).getText()));
+      node.addChild(new ASTNode(Type.ID, ctx.getChild(3).getText()));
+    } else {
+      node.addChild(new ASTNode(Type.ID, ctx.children.getFirst().getText()));
+    }
+
+    if (ctx.params() != null) {
+      node.addChild(visit(ctx.params()));
+    }
+
+    if (ctx.ID() instanceof ArrayList<TerminalNode>) {
+      for (int i = index; i < ctx.ID().size(); i++) {
+        node.addChild(new ASTNode(Type.ID, ctx.ID(i).getText()));
+        if (ctx.args() != null) {
+          if (ctx.args() instanceof ArrayList) {
+            node.addChild(visit(ctx.args(i - index)));
+          } else {
+            node.addChild(visit((ParseTree) ctx.args()));
+          }
+        }
+      }
+    }
+
+    if (ctx.block() != null) {
+      node.addChild(visit(ctx.block()));
+    }
+
+    return node;
   }
 
   /**
@@ -438,7 +467,7 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
   public ASTNode visitDestructor(CppParser.DestructorContext ctx) {
     ASTNode node = new ASTNode(Type.DESTRUCTOR);
 
-    if (ctx.children.getFirst().getText().equals("virtual")){
+    if (ctx.children.getFirst().getText().equals("virtual")) {
       node.setValue("virtual");
     }
 

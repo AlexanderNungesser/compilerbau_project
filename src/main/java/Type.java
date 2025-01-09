@@ -27,4 +27,5 @@ public enum Type {
   ARRAY_ITEM,
   MAIN,
   DESTRUCTOR,
+  CONSTRUCTOR,
 }
