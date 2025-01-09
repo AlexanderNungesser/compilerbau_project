@@ -176,9 +176,7 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
 
     // Process parameters
     if (ctx.params() != null) {
-      ASTNode paramsNode = new ASTNode(Type.PARAMS);
-      paramsNode.addChild(visit(ctx.params()));
-      node.addChild(paramsNode);
+      node.addChild(visit(ctx.params()));
     }
 
     // Process block
@@ -215,7 +213,27 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
   @Override
   public ASTNode visitAbstract_fn(CppParser.Abstract_fnContext ctx) {
     ASTNode node = new ASTNode(Type.ABSTRACT_FN);
+    // Process return type
+    if (ctx.type() != null) {
+      node.addChild(visit(ctx.type()));
+    } else {
+      node.addChild(new ASTNode("void"));
+    }
 
+    if (ctx.ref() != null) {
+      node.addChild(visit(ctx.ref()));
+    } else if (ctx.operator() != null) {
+      node.addChild(visit(ctx.operator()));
+    } else {
+      node.addChild(new ASTNode(Type.ID, ctx.ID().getText()));
+    }
+
+    // Process parameters
+    if (ctx.params() != null) {
+      node.addChild(visit(ctx.params()));
+    }
+
+    node.addChild(new ASTNode(Type.INT, ctx.getChild(ctx.getChildCount() - 2).getText()));
     return node;
   }
 
