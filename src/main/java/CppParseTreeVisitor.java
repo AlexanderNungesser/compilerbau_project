@@ -154,7 +154,7 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
     if (ctx.type() != null) {
       node.addChild(visit(ctx.type()));
     } else {
-      node.addChild(new ASTNode("void"));
+      node.addChild(new ASTNode(Type.VOID));
     }
 
     // Process function name or operator
@@ -217,7 +217,7 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
     if (ctx.type() != null) {
       node.addChild(visit(ctx.type()));
     } else {
-      node.addChild(new ASTNode("void"));
+      node.addChild(new ASTNode(Type.VOID));
     }
 
     if (ctx.ref() != null) {
@@ -510,7 +510,7 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
     if (ctx.type() != null) {
       node.addChild(visit(ctx.type()));
     } else {
-      node.addChild(new ASTNode("void"));
+      node.addChild(new ASTNode(Type.VOID));
     }
 
     if (ctx.params() != null) {

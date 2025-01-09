@@ -21,6 +21,7 @@ public enum Type {
   BOOL,
   INT,
   CHAR,
+  VOID,
   REF,
   ARRAY,
   ARRAY_ITEM,
