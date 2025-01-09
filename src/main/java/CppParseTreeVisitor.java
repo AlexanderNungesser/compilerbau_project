@@ -141,7 +141,7 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
 
     // Process const or static modifiers
     if (ctx.getChild(0).getText().contains("const") || ctx.getChild(1).getText().contains("const")) {
-      node.addChild(new ASTNode("const"));
+        node.addChild(new ASTNode("const"));
     }
     if (ctx.getChild(0).getText().contains("static") || ctx.getChild(1).getText().contains("static")) {
         node.addChild(new ASTNode("static"));
@@ -532,6 +532,41 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
    */
   @Override
   public ASTNode visitObj_usage(CppParser.Obj_usageContext ctx) {
-    return null;
+    ASTNode node = new ASTNode(Type.OBJ_USAGE);
+
+    // Process "this" keyword if present
+    if (ctx.getChild(0).getText().equals("this")) {
+        node.addChild(new ASTNode("this"));
+    } 
+    // Process object identifier
+    else if (ctx.ID() != null) {
+      for (int i=0; i<ctx.ID().size(); i++) {
+        node.children.getLast().addChild(visit(ctx.ID(i)));
+      }
+    }
+
+    // Process optional member access
+    if (ctx.getChildCount() > 1) {
+        for (int i = 1; i < ctx.getChildCount(); i++) {
+            ParseTree child = ctx.getChild(i);
+
+            // Process array item access
+            if (child instanceof CppParser.Array_itemContext) {
+                node.addChild(visit(child));
+            }
+            // Process assignment, increment/decrement, or method calls
+            else if (child instanceof CppParser.AssignContext) {
+                node.addChild(visit(child));
+            } else if (child instanceof CppParser.Dec_incContext) {
+                node.addChild(visit(child));
+            } else if (child instanceof CppParser.Fn_callContext) {
+                node.addChild(visit(child));
+            } else if (child.getText().equals(".")) {
+                node.addChild(new ASTNode("."));
+            }
+        }
+    }
+
+    return node;
   }
 }
