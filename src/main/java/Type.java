@@ -24,4 +24,5 @@ public enum Type {
   REF,
   ARRAY,
   ARRAY_ITEM,
+  MAIN,
 }

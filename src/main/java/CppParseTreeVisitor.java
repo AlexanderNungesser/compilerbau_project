@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.TerminalNode;
 
 public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
 
@@ -140,41 +141,49 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
     ASTNode node = new ASTNode(Type.FN_DECL);
 
     // Process const or static modifiers
-    if (ctx.getChild(0).getText().contains("const") || ctx.getChild(1).getText().contains("const")) {
-        node.addChild(new ASTNode("const"));
+    if (ctx.getChild(0).getText().contains("const")
+        || ctx.getChild(1).getText().contains("const")) {
+      node.addChild(new ASTNode("const"));
     }
-    if (ctx.getChild(0).getText().contains("static") || ctx.getChild(1).getText().contains("static")) {
-        node.addChild(new ASTNode("static"));
+    if (ctx.getChild(0).getText().contains("static")
+        || ctx.getChild(1).getText().contains("static")) {
+      node.addChild(new ASTNode("static"));
     }
 
     // Process return type
     if (ctx.type() != null) {
-        node.addChild(visit(ctx.type()));
+      node.addChild(visit(ctx.type()));
     } else {
-        node.addChild(new ASTNode("void"));
+      node.addChild(new ASTNode("void"));
     }
 
     // Process function name or operator
+    if (ctx.ID() instanceof ArrayList<TerminalNode>) {
+      ASTNode classNode = new ASTNode(Type.CLASS);
+      classNode.addChild(new ASTNode(Type.ID, ctx.ID().getFirst().getText()));
+      node.addChild(classNode);
+    }
+
     if (ctx.ref() != null) {
-        node.addChild(visit(ctx.ref()));
+      node.addChild(visit(ctx.ref()));
     } else if (ctx.operator() != null) {
-        node.addChild(visit(ctx.operator()));
-    } else if (ctx.ID() != null) {
-        for (int i=0; i<ctx.ID().size(); i++) {
-          node.children.getLast().addChild(visit(ctx.ID(i)));
-        }
+      node.addChild(visit(ctx.operator()));
+    } else if (ctx.ID() instanceof ArrayList<TerminalNode>) {
+      node.addChild(new ASTNode(Type.ID, ctx.ID().getLast().getText()));
+    } else {
+      node.addChild(new ASTNode(Type.ID, ((ParseTree) ctx.ID()).getText()));
     }
 
     // Process parameters
     if (ctx.params() != null) {
-        ASTNode paramsNode = new ASTNode(Type.PARAMS);
-        paramsNode.addChild(visit(ctx.params()));
-        node.addChild(paramsNode);
+      ASTNode paramsNode = new ASTNode(Type.PARAMS);
+      paramsNode.addChild(visit(ctx.params()));
+      node.addChild(paramsNode);
     }
 
     // Process block
     if (ctx.block() != null) {
-        node.addChild(visit(ctx.block()));
+      node.addChild(visit(ctx.block()));
     }
 
     return node;
@@ -423,32 +432,34 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
     ASTNode node = new ASTNode(Type.CLASS);
 
     // Process class name
-    if (ctx.ID(0) != null) {
-        node.addChild(new ASTNode(Type.ID, ctx.ID(0).getText()));
-    }
+    node.addChild(new ASTNode(Type.ID, ctx.getChild(1).getText()));
+
+    int index;
 
     // Process base class (if present)
-    if (ctx.ID(1) != null) {
-        ASTNode baseClassNode = new ASTNode(Type.ID, ctx.ID(1).getText());
-        node.addChild(new ASTNode("extends"));
-        node.addChild(baseClassNode);
+    if (ctx.ID() instanceof ArrayList<TerminalNode>) {
+      ASTNode baseClassNode = new ASTNode(Type.ID, ctx.ID(1).getText());
+      node.addChild(new ASTNode("extends"));
+      node.addChild(baseClassNode);
+      index = 8;
+    } else {
+      index = 5;
     }
 
+    boolean virtual = false;
     // Process members: constructors, destructors, methods, variables
-    for (int i = 0; i < ctx.getChildCount(); i++) {
-        ParseTree child = ctx.getChild(i);
-
-        if (child instanceof CppParser.ConstructorContext) {
-            node.addChild(visit(child));
-        } else if (child instanceof CppParser.DestructorContext) {
-            node.addChild(visit(child));
-        } else if (child instanceof CppParser.Fn_declContext) {
-            node.addChild(visit(child));
-        } else if (child instanceof CppParser.Var_declContext) {
-            node.addChild(visit(child));
+    for (int i = index; i < ctx.getChildCount() - 2; i++) {
+      ParseTree child = ctx.getChild(i);
+      if (child.getText().equals("virtual")) {
+        virtual = true;
+      } else {
+        node.addChild(visit(child));
+        if (virtual) {
+          node.children.getLast().setValue("virtual");
+          virtual = false;
         }
+      }
     }
-
     return node;
   }
 
@@ -536,37 +547,29 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
 
     // Process "this" keyword if present
     if (ctx.getChild(0).getText().equals("this")) {
-        node.addChild(new ASTNode("this"));
-    } 
+      node.addChild(new ASTNode("this"));
+    }
     // Process object identifier
-    else if (ctx.ID() != null) {
-      for (int i=0; i<ctx.ID().size(); i++) {
-        node.children.getLast().addChild(visit(ctx.ID(i)));
-      }
+    else {
+      node.addChild(new ASTNode(Type.ID, ctx.children.getFirst().getText()));
     }
 
     // Process optional member access
     if (ctx.getChildCount() > 1) {
-        for (int i = 1; i < ctx.getChildCount(); i++) {
-            ParseTree child = ctx.getChild(i);
-
-            // Process array item access
-            if (child instanceof CppParser.Array_itemContext) {
-                node.addChild(visit(child));
-            }
-            // Process assignment, increment/decrement, or method calls
-            else if (child instanceof CppParser.AssignContext) {
-                node.addChild(visit(child));
-            } else if (child instanceof CppParser.Dec_incContext) {
-                node.addChild(visit(child));
-            } else if (child instanceof CppParser.Fn_callContext) {
-                node.addChild(visit(child));
-            } else if (child.getText().equals(".")) {
-                node.addChild(new ASTNode("."));
-            }
-        }
+      if (ctx.array_item() != null) {
+        node.addChild(visit(ctx.array_item()));
+      } else if (ctx.assign() != null) {
+        node.addChild(visit(ctx.assign()));
+      } else if (ctx.dec_inc() != null) {
+        node.addChild(visit(ctx.dec_inc()));
+      } else if (ctx.fn_call() != null) {
+        node.addChild(visit(ctx.fn_call()));
+      } else if (ctx.ID() instanceof ArrayList<TerminalNode>) {
+        node.addChild(new ASTNode(Type.ID, ctx.ID().getLast().getText()));
+      } else {
+        node.addChild(new ASTNode(Type.ID, ((ParseTree) ctx.ID()).getText()));
+      }
     }
-
     return node;
   }
 }
