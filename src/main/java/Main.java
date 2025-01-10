@@ -36,5 +36,8 @@ public class Main {
     CppParseTreeVisitor parseTreeVisitor = new CppParseTreeVisitor();
     ASTNode ast = parseTreeVisitor.visit(parseTree);
     ast.print();
+
+    FirstRun scopeVisitor = new FirstRun();
+    scopeVisitor.visit(ast);
   }
 }
