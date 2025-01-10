@@ -110,18 +110,6 @@ public class FirstRun extends CppParseTreeVisitor{
         return args;
     }
 
-    public ASTNode visitParam(ASTNode params){
-        for (ASTNode child : params.children) {
-            String name = child.getValue();
-            Symbol type = currentScope.resolve(child.getType());
-
-            Symbol param = new Variable(name, type.name);
-            currentScope.bind(param);
-        }
-
-        return params;
-    }
-
     public ASTNode visitBlock(ASTNode block){
         Scope newScope = new Scope(currentScope);
         currentScope.innerScopes.add(newScope);
