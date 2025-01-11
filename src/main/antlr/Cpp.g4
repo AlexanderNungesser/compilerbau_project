@@ -49,14 +49,15 @@ expr   :   fn_call
         |   dec_inc
         |   ref
         |   expr1
-        |   expr2
+        |   obj_usage
+        |   '(' expr ')'
         ;
 
 expr1    :   e1=expr1 '*' e2=expr1    # MUL
         |   e1=expr1 '/' e2=expr1     # DIV
         |   e1=expr1 '+' e2=expr1     # ADD
         |   e1=expr1 '-' e2=expr1     # SUB
-        |   e1=expr1 '==' e2=expr1    # EQUAL
+        |   e1=expr1 '==' e2=expr1     # EQUAL
         |   e1=expr1 '!=' e2=expr1    # NOT_EQUAL
         |   e1=expr1 '<=' e2=expr1    # LESS_EQUAL
         |   e1=expr1 '>=' e2=expr1    # GREATER_EQUAL
@@ -72,9 +73,6 @@ expr1    :   e1=expr1 '*' e2=expr1    # MUL
         |   CHAR                    # CHAR
         |   ID                      # ID
         ;
-
-expr2   : obj_usage
-                  |   '(' expr ')';
 
 delete : 'delete' ('[' ']')? (obj_usage | ID) ';' ;
 
@@ -94,7 +92,7 @@ array_item  :   (ref | ID) ('[' expr ']')+ ;
 
 ref :   '&' ID ;
 
-obj_usage   :   ('this' | ID) ('.' ID)* ('.' (array_item | dec_inc | fn_call))? ;
+obj_usage   :   ('this' | ID) ('.' (array_item | dec_inc | fn_call | ID ))? ;
 
 // Lexer-Regeln
 NULL        :   'NULL'  ;
