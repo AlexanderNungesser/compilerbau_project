@@ -21,7 +21,7 @@ var_decl:   ('const'? 'static'? | 'static'? 'const'?) type (ref | ID) ('=' expr)
           | ('const'? 'static'? | 'static'? 'const'?) type ('(' ref ')' | ID) ('[' expr? ']')+ ('=' array)? ';'
           ;
 
-assign  :   (array_item | obj_usage | ID) ('=' | ASSIGN_OP) expr ';' ;
+assign  :   (array_item | ID | obj_usage) ('=' | ASSIGN_OP) expr ';' ;
 
 dec_inc :   (DEC_INC_OP (array_item | ID) | (array_item | ID) DEC_INC_OP) ;
 
