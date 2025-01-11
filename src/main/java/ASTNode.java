@@ -21,8 +21,8 @@ public class ASTNode {
     this.value = value;
   }
 
-  public String getType() {
-    return type.name();
+  public Type getType() {
+    return type;
   }
 
   public String getValue() {

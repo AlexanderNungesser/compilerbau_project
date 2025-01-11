@@ -14,14 +14,14 @@ stmt    :   var_decl
         |   return
         |   class
         |   delete
-        |   obj_usage
+        |   obj_usage ';'
         ;
 
 var_decl:   ('const'? 'static'? | 'static'? 'const'?) type (ref | ID) ('=' expr)? ';'
           | ('const'? 'static'? | 'static'? 'const'?) type ('(' ref ')' | ID) ('[' expr? ']')+ ('=' array)? ';'
           ;
 
-assign  :   (array_item | ID) ('=' | ASSIGN_OP) expr ';' ;
+assign  :   (array_item | obj_usage | ID) ('=' | ASSIGN_OP) expr ';' ;
 
 dec_inc :   (DEC_INC_OP (array_item | ID) | (array_item | ID) DEC_INC_OP) ;
 
@@ -44,29 +44,34 @@ if      :   'if' '(' expr ')' block ('else' 'if' '(' expr ')' block)* ('else' bl
 fn_call  :   (ID ':' ':')? ID '(' args? ')' ;
 args    :   expr (',' expr)* ;
 
-expr    :   fn_call
+expr   :   fn_call
         |   array_item
         |   dec_inc
         |   ref
-        |   expr '*' expr
-        |   expr '/' expr
-        |   expr '+' expr
-        |   expr '-' expr
-        |   expr '==' expr
-        |   expr '!=' expr
-        |   expr '<=' expr
-        |   expr '>=' expr
-        |   expr '<' expr
-        |   expr '>' expr
-        |   expr '&&' expr
-        |   expr '||' expr
-        |   NULL
-        |   BOOL
-        |   INT
-        |   CHAR
-        |   ID
+        |   expr1
         |   obj_usage
         |   '(' expr ')'
+        ;
+
+expr1    :   e1=expr1 '*' e2=expr1    # MUL
+        |   e1=expr1 '/' e2=expr1     # DIV
+        |   e1=expr1 '+' e2=expr1     # ADD
+        |   e1=expr1 '-' e2=expr1     # SUB
+        |   e1=expr1 '==' e2=expr1     # EQUAL
+        |   e1=expr1 '!=' e2=expr1    # NOT_EQUAL
+        |   e1=expr1 '<=' e2=expr1    # LESS_EQUAL
+        |   e1=expr1 '>=' e2=expr1    # GREATER_EQUAL
+        |   e1=expr1 '<' e2=expr1     # LESS
+        |   e1=expr1 '>' e2=expr1     # GREATER
+        |   e1=expr1 '&&' e2=expr1    # AND
+        |   e1=expr1 '||' e2=expr1    # OR
+        |   e1=expr1 '%' e2=expr1     # MOD
+        |   '!' e=expr1              # NOT
+        |   NULL                    # NULL
+        |   BOOL                    # BOOL
+        |   INT                     # INT
+        |   CHAR                    # CHAR
+        |   ID                      # ID
         ;
 
 delete : 'delete' ('[' ']')? (obj_usage | ID) ';' ;
@@ -87,7 +92,7 @@ array_item  :   (ref | ID) ('[' expr ']')+ ;
 
 ref :   '&' ID ;
 
-obj_usage   :   ('this' | ID) ('.' (array_item ';' | assign | dec_inc ';' | fn_call ';' | ID ';'))? ;
+obj_usage   :   ('this' | ID) ('.' (array_item | dec_inc | fn_call | ID ))? ;
 
 // Lexer-Regeln
 NULL        :   'NULL'  ;
