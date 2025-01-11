@@ -44,34 +44,31 @@ if      :   'if' '(' expr ')' block ('else' 'if' '(' expr ')' block)* ('else' bl
 fn_call  :   (ID ':' ':')? ID '(' args? ')' ;
 args    :   expr (',' expr)* ;
 
-expr   :   fn_call
-        |   array_item
-        |   dec_inc
-        |   ref
-        |   expr1
-        |   obj_usage
-        |   '(' expr ')'
-        ;
-
-expr1    :   e1=expr1 '*' e2=expr1    # MUL
-        |   e1=expr1 '/' e2=expr1     # DIV
-        |   e1=expr1 '+' e2=expr1     # ADD
-        |   e1=expr1 '-' e2=expr1     # SUB
-        |   e1=expr1 '==' e2=expr1     # EQUAL
-        |   e1=expr1 '!=' e2=expr1    # NOT_EQUAL
-        |   e1=expr1 '<=' e2=expr1    # LESS_EQUAL
-        |   e1=expr1 '>=' e2=expr1    # GREATER_EQUAL
-        |   e1=expr1 '<' e2=expr1     # LESS
-        |   e1=expr1 '>' e2=expr1     # GREATER
-        |   e1=expr1 '&&' e2=expr1    # AND
-        |   e1=expr1 '||' e2=expr1    # OR
-        |   e1=expr1 '%' e2=expr1     # MOD
-        |   '!' e=expr1              # NOT
-        |   NULL                    # NULL
-        |   BOOL                    # BOOL
-        |   INT                     # INT
-        |   CHAR                    # CHAR
-        |   ID                      # ID
+expr    :   fn_call                     # Call
+        |   array_item                  # Arr_item
+        |   dec_inc                     # De_in
+        |   ref                         # R
+        |   e1=expr '*' e2=expr       # Mul
+        |   e1=expr '/' e2=expr       # Div
+        |   e1=expr '+' e2=expr       # Add
+        |   e1=expr '-' e2=expr       # Sub
+        |   e1=expr '==' e2=expr      # Equal
+        |   e1=expr '!=' e2=expr      # Not_Equal
+        |   e1=expr '<=' e2=expr      # Less_Equal
+        |   e1=expr '>=' e2=expr      # Greater_Equal
+        |   e1=expr '<' e2=expr       # Less
+        |   e1=expr '>' e2=expr       # Greater
+        |   e1=expr '&&' e2=expr      # And
+        |   e1=expr '||' e2=expr      # Or
+        |   e1=expr '%' e2=expr       # Mod
+        |   '!' e=expr                 # Not
+        |   NULL                        # Null
+        |   BOOL                        # Bool
+        |   INT                         # Int
+        |   CHAR                        # Char
+        |   ID                          # Id
+        |   obj_usage                   # Obj
+        |   '(' e=expr ')'                # Nested
         ;
 
 delete : 'delete' ('[' ']')? (obj_usage | ID) ';' ;

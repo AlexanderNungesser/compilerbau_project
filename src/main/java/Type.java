@@ -3,6 +3,8 @@ public enum Type {
   VAR_DECL,
   ASSIGN,
   DEC_INC,
+  DEC,
+  INC,
   ABSTRACT_FN,
   FN_DECL,
   PARAMS,

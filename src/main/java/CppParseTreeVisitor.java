@@ -34,11 +34,6 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
     }
   }
 
-  @Override
-  public ASTNode visitExpr(CppParser.ExprContext ctx){
-    return visitChildren(ctx);
-  }
-
   /**
    * Visit a parse tree produced by {@link CppParser#var_decl}.
    *
@@ -119,7 +114,10 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
     ASTNode node = new ASTNode(Type.DEC_INC);
     for (int i = 0; i < ctx.getChildCount(); i++) {
       if (ctx.getChild(i).equals(ctx.DEC_INC_OP())) {
-        node.addChild(new ASTNode(ctx.DEC_INC_OP().getText()));
+        node.addChild(
+            new ASTNode(
+                (ctx.DEC_INC_OP().getText().equals("++")) ? Type.INC : Type.DEC,
+                ctx.DEC_INC_OP().getText()));
       } else if (ctx.getChild(i).equals(ctx.ID())) {
         node.addChild(new ASTNode(Type.ID, ctx.ID().getText()));
       } else {
@@ -361,11 +359,6 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
     return node;
   }
 
-  @Override
-  public ASTNode visitNESTED(CppParser.NESTEDContext ctx) {
-    return visit(ctx.e);
-  }
-
   private ASTNode calculate(ParserRuleContext ctx, Type type) {
     ASTNode node = new ASTNode(type, ctx.getChild(1).getText());
     node.addChild(visit(ctx.children.getFirst()));
@@ -374,100 +367,105 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
   }
 
   @Override
-  public ASTNode visitMUL(CppParser.MULContext ctx) {
+  public ASTNode visitMul(CppParser.MulContext ctx) {
     return calculate(ctx, Type.MUL);
   }
 
   @Override
-  public ASTNode visitDIV(CppParser.DIVContext ctx) {
+  public ASTNode visitDiv(CppParser.DivContext ctx) {
     return calculate(ctx, Type.DIV);
   }
 
   @Override
-  public ASTNode visitADD(CppParser.ADDContext ctx) {
+  public ASTNode visitAdd(CppParser.AddContext ctx) {
     return calculate(ctx, Type.ADD);
   }
 
   @Override
-  public ASTNode visitSUB(CppParser.SUBContext ctx) {
+  public ASTNode visitSub(CppParser.SubContext ctx) {
     return calculate(ctx, Type.SUB);
   }
 
   @Override
-  public ASTNode visitEQUAL(CppParser.EQUALContext ctx) {
+  public ASTNode visitEqual(CppParser.EqualContext ctx) {
     return calculate(ctx, Type.EQUAL);
   }
 
   @Override
-  public ASTNode visitNOT_EQUAL(CppParser.NOT_EQUALContext ctx) {
+  public ASTNode visitNot_Equal(CppParser.Not_EqualContext ctx) {
     return calculate(ctx, Type.NOT_EQUAL);
   }
 
   @Override
-  public ASTNode visitLESS_EQUAL(CppParser.LESS_EQUALContext ctx) {
+  public ASTNode visitLess_Equal(CppParser.Less_EqualContext ctx) {
     return calculate(ctx, Type.LESS_EQUAL);
   }
 
   @Override
-  public ASTNode visitGREATER_EQUAL(CppParser.GREATER_EQUALContext ctx) {
+  public ASTNode visitGreater_Equal(CppParser.Greater_EqualContext ctx) {
     return calculate(ctx, Type.GREATER_EQUAL);
   }
 
   @Override
-  public ASTNode visitLESS(CppParser.LESSContext ctx) {
+  public ASTNode visitLess(CppParser.LessContext ctx) {
     return calculate(ctx, Type.LESS);
   }
 
   @Override
-  public ASTNode visitGREATER(CppParser.GREATERContext ctx) {
+  public ASTNode visitGreater(CppParser.GreaterContext ctx) {
     return calculate(ctx, Type.GREATER);
   }
 
   @Override
-  public ASTNode visitAND(CppParser.ANDContext ctx) {
+  public ASTNode visitAnd(CppParser.AndContext ctx) {
     return calculate(ctx, Type.AND);
   }
 
   @Override
-  public ASTNode visitOR(CppParser.ORContext ctx) {
+  public ASTNode visitOr(CppParser.OrContext ctx) {
     return calculate(ctx, Type.OR);
   }
 
   @Override
-  public ASTNode visitMOD(CppParser.MODContext ctx) {
+  public ASTNode visitMod(CppParser.ModContext ctx) {
     return calculate(ctx, Type.MOD);
   }
 
   @Override
-  public ASTNode visitNOT(CppParser.NOTContext ctx) {
+  public ASTNode visitNot(CppParser.NotContext ctx) {
     ASTNode node = new ASTNode(Type.NOT, ctx.getChild(0).getText());
     node.addChild(visit(ctx.e));
     return node;
   }
 
   @Override
-  public ASTNode visitNULL(CppParser.NULLContext ctx) {
+  public ASTNode visitNull(CppParser.NullContext ctx) {
     return new ASTNode(Type.NULL, ctx.getText());
   }
 
   @Override
-  public ASTNode visitBOOL(CppParser.BOOLContext ctx) {
+  public ASTNode visitBool(CppParser.BoolContext ctx) {
     return new ASTNode(Type.BOOL, ctx.getText());
   }
 
   @Override
-  public ASTNode visitINT(CppParser.INTContext ctx) {
+  public ASTNode visitInt(CppParser.IntContext ctx) {
     return new ASTNode(Type.INT, ctx.getText());
   }
 
   @Override
-  public ASTNode visitCHAR(CppParser.CHARContext ctx) {
+  public ASTNode visitChar(CppParser.CharContext ctx) {
     return new ASTNode(Type.CHAR, ctx.getText());
   }
 
   @Override
-  public ASTNode visitID(CppParser.IDContext ctx) {
+  public ASTNode visitId(CppParser.IdContext ctx) {
     return new ASTNode(Type.ID, ctx.getText());
+  }
+
+  @Override
+  public ASTNode visitNested(CppParser.NestedContext ctx) {
+    return visit(ctx.e);
   }
 
   /**
@@ -685,7 +683,6 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
   public ASTNode visitRef(CppParser.RefContext ctx) {
     return new ASTNode(Type.REF, ctx.ID().getText());
   }
-
 
   /**
    * Visit a parse tree produced by {@link CppParser#obj_usage}.
