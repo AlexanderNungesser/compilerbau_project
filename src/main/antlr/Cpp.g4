@@ -92,7 +92,7 @@ array_item  :   (ref | ID) ('[' expr ']')+ ;
 
 ref :   '&' ID ;
 
-obj_usage   :   ('this' | ID) ('.' (array_item | dec_inc | fn_call | ID ))? ;
+obj_usage   :   ('this' | ID) ('.' ID)* ('.' (array_item | dec_inc | fn_call))? ;
 
 // Lexer-Regeln
 NULL        :   'NULL'  ;
