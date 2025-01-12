@@ -85,7 +85,9 @@ public class FirstRun extends CppParseTreeVisitor {
     currentScope = newScope;
 
     ASTNode params = visitChildren(fndecl);
-
+    for(ASTNode param : params.children) {
+      function.increaseAnzParams();
+    }
 
     currentScope = currentScope.enclosingScope;
     return fndecl;
@@ -147,19 +149,19 @@ public class FirstRun extends CppParseTreeVisitor {
   }
 
   public ASTNode visitClass(ASTNode classNode) {
-    String name = classNode.getValue();
-    Symbol classSymbol = currentScope.resolve(name);
-
-    Symbol alreadyDeclared = currentScope.resolve(name);
-    if (alreadyDeclared != null) {
-      System.out.println("Error: such class " + name + " already exists");
-    } else {
+    String name = classNode.children.getFirst().getValue();
+    Symbol classType = currentScope.resolve(name);
+    Symbol classSymbol = new Class(name, name);
+    if (classType == null) {
       currentScope.bind(classSymbol);
+    }else {
+      if(!(classType instanceof Class)) {
+        currentScope.bind(classSymbol);
+      } else {
+        System.out.println("Error: such class " + name + " already exists");
+        //throw new RuntimeException("Error: such class " + name + " already exists");
+      }
     }
-    if(classSymbol instanceof Class){
-      System.out.println("Error: variable " + name + " is not a class");
-
-
 
     Scope newScope = new Scope(currentScope);
     currentScope.innerScopes.add(newScope);
@@ -169,7 +171,7 @@ public class FirstRun extends CppParseTreeVisitor {
     visitChildren(classNode);
 
     currentScope = currentScope.enclosingScope;
-    }
+
 
     return classNode;
 
