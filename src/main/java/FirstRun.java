@@ -54,7 +54,15 @@ public class FirstRun extends CppParseTreeVisitor {
 
   public ASTNode visitVardecl(ASTNode vardecl) {
     ASTNode variableNode = vardecl.children.getFirst();
-    Symbol typeSymbol = currentScope.resolve(variableNode.getType().name().toLowerCase());
+    String type = variableNode.children.getFirst().getType().name().toLowerCase();
+    Symbol typeSymbol;
+
+    if(type.equals("classtype")) {
+      typeSymbol = currentScope.resolve(vardecl.children.getFirst().getValue());
+    } else {
+      typeSymbol = currentScope.resolve(type);
+    }
+
     Symbol variable = new Variable(variableNode.getValue(), typeSymbol.name);
 
     Symbol alreadyDeclared = currentScope.resolve(variable.name);
@@ -70,8 +78,16 @@ public class FirstRun extends CppParseTreeVisitor {
   public ASTNode visitFndecl(ASTNode fndecl) {
     ASTNode functionInformation = fndecl.children.getFirst();
     String name = functionInformation.getValue();
-    Symbol type = currentScope.resolve(functionInformation.getType().name().toLowerCase());
-    Function function = new Function(name, type.name);
+    String type = functionInformation.getType().name().toLowerCase();
+    Symbol typeSymbol;
+
+    if(type.equals("classtype")) {
+      typeSymbol = currentScope.resolve(functionInformation.children.getFirst().getValue());
+    } else {
+      typeSymbol = currentScope.resolve(type);
+    }
+
+    Function function = new Function(name, typeSymbol.name);
 
     Symbol alreadyDeclared = currentScope.resolve(name);
     if (alreadyDeclared != null) {
@@ -126,7 +142,7 @@ public class FirstRun extends CppParseTreeVisitor {
       String type = child.getType().name().toLowerCase();
       Symbol typeSymbol;
 
-      if(type.equals("class")) {
+      if(type.equals("classtype")) {
         typeSymbol = currentScope.resolve(child.children.getFirst().getValue());
       } else {
         typeSymbol = currentScope.resolve(type);
