@@ -60,14 +60,10 @@ public class FirstRun extends CppParseTreeVisitor {
 
   public ASTNode visitVardecl(ASTNode vardecl) {
     ASTNode variableNode = vardecl.children.getFirst();
-    String type = variableNode.getType().name().toLowerCase();
+    String type = variableNode.children.getFirst().getType().name().toLowerCase();
     Symbol typeSymbol;
 
-    if (type.equals("classtype")) {
-      typeSymbol = currentScope.resolve(variableNode.children.getFirst().getValue());
-    } else {
-      typeSymbol = currentScope.resolve(type);
-    }
+    typeSymbol = getType(type, variableNode);
 
     Symbol variable = new Variable(variableNode.getValue(), typeSymbol.name);
 
@@ -87,11 +83,7 @@ public class FirstRun extends CppParseTreeVisitor {
     String type = functionInformation.getType().name().toLowerCase();
     Symbol typeSymbol;
 
-    if (type.equals("classtype")) {
-      typeSymbol = currentScope.resolve(functionInformation.children.getFirst().getValue());
-    } else {
-      typeSymbol = currentScope.resolve(type);
-    }
+    typeSymbol = getType(type, functionInformation);
 
     Function function = new Function(name, typeSymbol.name);
 
@@ -123,7 +115,12 @@ public class FirstRun extends CppParseTreeVisitor {
     if (function instanceof Variable)
       System.out.println("Error: " + functionName + " is not a function");
 
-    visitChildren(fncall);
+    ASTNode args = visitChildren(fncall);
+    int args_count = args.children.size();
+
+    if (args_count != ((Function) function).getAnzParams()) {
+      System.out.println("Error: arg and param count mismatch");
+    }
 
     return fncall;
   }
@@ -133,80 +130,76 @@ public class FirstRun extends CppParseTreeVisitor {
       if (child.getType() == Type.OBJ_USAGE || child.getType() == Type.ID) {
         currentScope.resolve(child.getType().name().toLowerCase());
       }
-      }
+    }
       return args;
+  }
+
+  public ASTNode visitBlock(ASTNode block) {
+    Scope newScope = new Scope(currentScope);
+    currentScope.innerScopes.add(newScope);
+    currentScope = newScope;
+
+    visitChildren(block);
+
+    currentScope = currentScope.enclosingScope;
+    return block;
+  }
+
+  public ASTNode visitParams(ASTNode node) {
+    for (ASTNode child : node.children) {
+      String name = child.getValue();
+      String type = child.getType().name().toLowerCase();
+      Symbol typeSymbol;
+
+        typeSymbol = getType(type, child);
+
+      Symbol param = new Variable(name, typeSymbol.name);
+      currentScope.bind(param);
     }
+    return node;
+  }
 
-    public ASTNode visitBlock (ASTNode block){
-      Scope newScope = new Scope(currentScope);
-      currentScope.innerScopes.add(newScope);
-      currentScope = newScope;
-
-      visitChildren(block);
-
-      currentScope = currentScope.enclosingScope;
-      return block;
-    }
-
-    public ASTNode visitParams (ASTNode node){
-      for (ASTNode child : node.children) {
-        String name = child.getValue();
-        String type = child.getType().name().toLowerCase();
-        Symbol typeSymbol;
-
-        if (type.equals("classtype")) {
-          typeSymbol = currentScope.resolve(child.children.getFirst().getValue());
-        } else {
-          typeSymbol = currentScope.resolve(type);
-        }
-
-        Symbol param = new Variable(name, typeSymbol.name);
-        currentScope.bind(param);
-      }
-      return node;
-    }
-
-    public ASTNode visitClass (ASTNode classNode){
-      String name = classNode.children.getFirst().getValue();
-      Symbol classType = currentScope.resolve(name);
-      Symbol classSymbol = new Class(name, name);
-      if (classType == null) {
+  public ASTNode visitClass(ASTNode classNode) {
+    String name = classNode.children.getFirst().getValue();
+    Symbol classType = currentScope.resolve(name);
+    Symbol classSymbol = new Class(name, name);
+    if (classType == null) {
+      currentScope.bind(classSymbol);
+    }else {
+      if(!(classType instanceof Class)) {
         currentScope.bind(classSymbol);
       } else {
-        if (!(classType instanceof Class)) {
-          currentScope.bind(classSymbol);
-        } else {
-          System.out.println("Error: such class " + name + " already exists");
-          //throw new RuntimeException("Error: such class " + name + " already exists");
-        }
+        System.out.println("Error: such class " + name + " already exists");
+        //throw new RuntimeException("Error: such class " + name + " already exists");
       }
-
-      Scope newScope = new Scope(currentScope);
-      currentScope.innerScopes.add(newScope);
-      currentScope = newScope;
-      ((Class) classSymbol).setClassScope(currentScope);
-
-      visitChildren(classNode);
-
-      currentScope = currentScope.enclosingScope;
-
-
-      return classNode;
-
     }
 
-    public ASTNode visitExpr (ASTNode node){
-      if (node.children.isEmpty() && node.getType().equals("ID")) {
-        String name = node.getValue();
-        Symbol var = currentScope.resolve(name);
-        if (var == null) {
-          System.out.println("Error: no such variable: " + name);
-        }
-      } else {
-        visitChildren(node);
+    Scope newScope = new Scope(currentScope);
+    currentScope.innerScopes.add(newScope);
+    currentScope = newScope;
+    ((Class) classSymbol).setClassScope(currentScope);
+
+    visitChildren(classNode);
+
+    currentScope = currentScope.enclosingScope;
+
+
+    return classNode;
+
+  }
+
+  public ASTNode visitExpr(ASTNode node) {
+    if (node.children.isEmpty() && node.getType().equals("ID")) {
+      String name = node.getValue();
+      Symbol var = currentScope.resolve(name);
+      if (var == null) {
+        System.out.println("Error: no such variable: " + name);
       }
-      return node;
+    } else {
+      visitChildren(node);
     }
+    return node;
+  }
 
     public ASTNode visitChildren (ASTNode node){
       for (ASTNode child : node.children) {
@@ -214,5 +207,16 @@ public class FirstRun extends CppParseTreeVisitor {
       }
       return node;
     }
-  }
 
+    public Symbol getType (String type, ASTNode node){
+      Symbol typeSymbol;
+
+      if (type.equals("classtype")) {
+        typeSymbol = currentScope.resolve(node.children.getFirst().getValue());
+      } else {
+        typeSymbol = currentScope.resolve(type);
+      }
+      return typeSymbol;
+    }
+
+  }
