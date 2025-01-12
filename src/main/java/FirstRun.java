@@ -27,6 +27,9 @@ public class FirstRun extends CppParseTreeVisitor {
       case Type.ARGS:
         visitArgs(node);
         break;
+      case Type.ASSIGN:
+        visitAssign(node);
+        break;
 //      case Type.CONSTRUCTOR:
 //        visitFndecl(node.children.getFirst());
 //        break;
@@ -207,7 +210,25 @@ public class FirstRun extends CppParseTreeVisitor {
       return node;
     }
 
-    public Symbol getType (String type, ASTNode node){
+    public ASTNode visitAssign(ASTNode node) {
+      Symbol variable = currentScope.resolve(node.children.getFirst().getValue());
+      if (variable == null) {
+        System.out.println("Error: no such variable: " + node.children.getFirst().getValue());
+      }
+
+      ASTNode value = node.children.getLast();
+      if(value.getType() == Type.ID || value.getType() == Type.OBJ_USAGE || value.getType() == Type.ARRAY_ITEM ) {
+        Symbol valueSymbol = currentScope.resolve(value.getValue());
+        if(valueSymbol == null) {
+          System.out.println("Error: no such variable: " + value.getValue());
+        }
+      }
+
+
+      return visitChildren(node);
+    }
+
+    private Symbol getType (String type, ASTNode node){
       Symbol typeSymbol;
 
       if (type.equals("classtype")) {
