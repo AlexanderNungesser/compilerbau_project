@@ -1,11 +1,12 @@
 grammar Cpp;
 
 // Parser-Regeln
-program :  stmt* main? EOF ;
+program :  stmt* EOF ;
 
 stmt    :   var_decl
         |   assign
         |   dec_inc ';'
+        |   main
         |   fn_decl
         |   fn_call ';'
         |   block
