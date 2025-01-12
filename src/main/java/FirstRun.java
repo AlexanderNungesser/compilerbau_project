@@ -44,6 +44,7 @@ public class FirstRun extends CppParseTreeVisitor {
     globalScope.bind(new BuiltIn("int"));
     globalScope.bind(new BuiltIn("bool"));
     globalScope.bind(new BuiltIn("char"));
+    globalScope.bind(new BuiltIn("void"));
 
     currentScope = globalScope;
 
@@ -67,8 +68,9 @@ public class FirstRun extends CppParseTreeVisitor {
   }
 
   public ASTNode visitFndecl(ASTNode fndecl) {
-    String name = fndecl.getValue();
-    Symbol type = currentScope.resolve(fndecl.getType().name());
+    ASTNode functionInformation = fndecl.children.getFirst();
+    String name = functionInformation.getValue();
+    Symbol type = currentScope.resolve(functionInformation.getType().name().toLowerCase());
     Function function = new Function(name, type.name);
 
     Symbol alreadyDeclared = currentScope.resolve(name);
@@ -82,7 +84,8 @@ public class FirstRun extends CppParseTreeVisitor {
     currentScope.innerScopes.add(newScope);
     currentScope = newScope;
 
-    visitChildren(fndecl);
+    ASTNode params = visitChildren(fndecl);
+
 
     currentScope = currentScope.enclosingScope;
     return fndecl;
@@ -118,8 +121,16 @@ public class FirstRun extends CppParseTreeVisitor {
   public ASTNode visitParams(ASTNode node) {
     for (ASTNode child : node.children) {
       String name = child.getValue();
-      Symbol type = currentScope.resolve(child.getType().name());
-      Symbol param = new Variable(name, type.name);
+      String type = child.getType().name().toLowerCase();
+      Symbol typeSymbol;
+
+      if(type.equals("class")) {
+        typeSymbol = currentScope.resolve(child.children.getFirst().getValue());
+      } else {
+        typeSymbol = currentScope.resolve(type);
+      }
+
+      Symbol param = new Variable(name, typeSymbol.name);
       currentScope.bind(param);
     }
     return node;
@@ -135,15 +146,23 @@ public class FirstRun extends CppParseTreeVisitor {
     } else {
       currentScope.bind(classSymbol);
     }
+    if(classSymbol instanceof Class){
+      System.out.println("Error: variable " + name + " is not a class");
+
+
 
     Scope newScope = new Scope(currentScope);
     currentScope.innerScopes.add(newScope);
     currentScope = newScope;
+    ((Class) classSymbol).setClassScope(currentScope);
 
     visitChildren(classNode);
 
     currentScope = currentScope.enclosingScope;
+    }
+
     return classNode;
+
   }
 
   public ASTNode visitExpr(ASTNode node) {
