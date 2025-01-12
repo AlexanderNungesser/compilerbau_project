@@ -9,6 +9,11 @@ public class Class extends Symbol {
     super(name, type);
   }
 
-  public Scope getClassScope() {return this.classScope;}
-  public void setClassScope(Scope classScope) {this.classScope = classScope;}
+  public Scope getClassScope() {
+    return this.classScope;
+  }
+
+  public void setClassScope(Scope classScope) {
+    this.classScope = classScope;
+  }
 }

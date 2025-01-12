@@ -5,6 +5,11 @@ public class Function extends Symbol {
     super(name, type);
   }
 
-  public int getAnzParams() {return this.anzParams;}
-  public void setAnzParams(int anzParams) {this.anzParams = anzParams;}
+  public int getAnzParams() {
+    return this.anzParams;
+  }
+
+  public void setAnzParams(int anzParams) {
+    this.anzParams = anzParams;
+  }
 }

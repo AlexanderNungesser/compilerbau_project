@@ -64,7 +64,7 @@ expr    :   fn_call                     # Call
         |   '!' e=expr                 # Not
         |   NULL                        # Null
         |   BOOL                        # Bool
-        |   INT                         # Int
+        |   NEG? INT                    # Int
         |   CHAR                        # Char
         |   ID                          # Id
         |   obj_usage                   # Obj
@@ -94,7 +94,8 @@ obj_usage   :   ('this' | ID) ('.' ID)* ('.' (array_item | dec_inc | fn_call))? 
 // Lexer-Regeln
 NULL        :   'NULL'  ;
 BOOL        :   'true' | 'false' ;
-INT         :   [+-]?([0-9] | [1-9][0-9]*);
+NEG         :   '-' ;
+INT         :   ([0-9] | [1-9][0-9]*);
 CHAR        :   ('"' | '\'') (~[\n\r"'])? ('"' | '\'') ;
 ID          :   [_a-zA-Z][_a-zA-Z0-9]* ;
 
