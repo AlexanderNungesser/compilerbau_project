@@ -46,4 +46,5 @@ public enum Type {
   NOT,
   // TODO: NEW,
   PRINT,
+  CLASSTYPE,
 }
