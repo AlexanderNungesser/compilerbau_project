@@ -31,8 +31,8 @@ printMessage();
 int sum = add(5, 10);
 
 // Kontrollstrukturen
-if (this.x.w.a > 10) {
-    this.x = 0;
+if (this->x.w.a > 10) {
+    this->x = 0;
 } else if (x == 10) {
     x = 1;
 } else {

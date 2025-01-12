@@ -18,23 +18,23 @@ stmt    :   var_decl
         |   obj_usage ';'
         ;
 
-var_decl:   ('const'? 'static'? | 'static'? 'const'?) type (ref | ID) ('=' expr)? ';'
-          | ('const'? 'static'? | 'static'? 'const'?) type ('(' ref ')' | ID) ('[' expr? ']')+ ('=' array)? ';'
+var_decl:   ('const'? 'static'? | 'static'? 'const'?) type REF? ID ('=' expr)? ';'
+          | ('const'? 'static'? | 'static'? 'const'?) type ('(' REF ')')? ID ('[' expr? ']')+ ('=' array)? ';'
           ;
 
 assign  :   (array_item | ID | obj_usage) ('=' | ASSIGN_OP) expr ';' ;
 
 dec_inc :   (DEC_INC_OP (array_item | ID) | (array_item | ID) DEC_INC_OP) ;
 
-fn_decl  :  ('const'? 'static'? | 'static'? 'const'?) ('void' | type) (ref | operator | ID) '(' params? ')' ';'
-         |  ('const'? 'static'? | 'static'? 'const'?) ('void' | type) (ID ':' ':')? (ref | operator | ID) '(' params? ')' block
+fn_decl  :  ('const'? 'static'? | 'static'? 'const'?) ('void' | type) REF? (operator | ID) '(' params? ')' ';'
+         |  ('const'? 'static'? | 'static'? 'const'?) ('void' | type) (ID ':' ':')? REF? (operator | ID) '(' params? ')' block
          ;
 
-operator    :   '&' 'operator' ('=' | DEC_INC_OP) ;
+operator    :   'operator' ('=' | DEC_INC_OP) ;
 
-abstract_fn : 'virtual' ('void' | type) (ref | operator | ID) '(' params? ')' 'const' '=' INT ';' ;
+abstract_fn : 'virtual' ('void' | type) REF? (operator | ID) '(' params? ')' 'const' '=' INT ';' ;
 
-params  :  'const'? type (ref | ID) ('=' expr)? (',' 'const'? type (ref | ID) ('=' expr)?)* ;
+params  :  'const'? type REF? ID ('=' expr)? (',' 'const'? type REF? ID ('=' expr)?)* ;
 
 return  :  'return' expr? ';' ;
 
@@ -42,13 +42,12 @@ block   :   '{' stmt* '}' ;
 while   :   'while' '(' expr ')' block ;
 if      :   'if' '(' expr ')' block ('else' 'if' '(' expr ')' block)* ('else' block)? ;
 
-fn_call  :   (ID ':' ':')? ID '(' args? ')' ;
+fn_call  :   ID? (ID ':' ':')? ID '(' args? ')' ;
 args    :   expr (',' expr)* ;
 
 expr    :   fn_call                     # Call
         |   array_item                  # Arr_item
         |   dec_inc                     # De_in
-        |   ref                         # R
         |   e1=expr '*' e2=expr       # Mul
         |   e1=expr '/' e2=expr       # Div
         |   e1=expr '+' e2=expr       # Add
@@ -67,6 +66,7 @@ expr    :   fn_call                     # Call
         |   BOOL                        # Bool
         |   NEG? INT                    # Int
         |   CHAR                        # Char
+        |   REF                         # R
         |   ID                          # Id
         |   obj_usage                   # Obj
         |   '(' e=expr ')'                # Nested
@@ -79,18 +79,18 @@ constructor :   ID '(' params? ')' (':' ID '(' args? ')')? ';'
 
 destructor  :   'virtual'? '~' ID '(' params? ')' (';' | block) ;
 
-class   :   'class' ID (':' 'public' ID)? '{' 'public' ':' var_decl* constructor+ destructor? ('virtual'? fn_decl | abstract_fn)* '}' ';' ;
+class   :   'class' ID (':' 'public' ID)? '{' ('public' ':')? (var_decl | constructor | destructor | 'virtual'? fn_decl | abstract_fn)* '}' ';' ;
 
 main    :   ('void' | type) 'main' '(' params? ')' (';' | block) ;
 
-type    :   'int' | 'char' | 'bool' ;
+type    :   'int' | 'char' | 'bool' | ID ;
 
 array   :   '{' (args | array (',' array)*) '}' ;
-array_item  :   (ref | ID) ('[' expr ']')+ ;
+array_item  :   REF?  ID ('[' expr ']')+ ;
 
-ref :   '&' ID ;
-
-obj_usage   :   ('this' | ID) ('.' ID)* ('.' (array_item | dec_inc | fn_call))? ;
+obj_usage   :   ( 'this' '->' )? ID ( '.' ID)* ('.' (array_item | dec_inc | fn_call))?
+            |   '*'? 'this'
+            ;
 
 // Lexer-Regeln
 NULL        :   'NULL'  ;
@@ -98,6 +98,7 @@ BOOL        :   'true' | 'false' ;
 NEG         :   '-' ;
 INT         :   ([0-9] | [1-9][0-9]*);
 CHAR        :   ('"' | '\'') (~[\n\r"'])? ('"' | '\'') ;
+REF         :   '&' ;
 ID          :   [_a-zA-Z][_a-zA-Z0-9]* ;
 
 DEC_INC_OP  :   '++' | '--' ;
