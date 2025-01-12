@@ -149,7 +149,7 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
     // Process const or static if available
     for (int i = 0; i < 2; i++) {
       if (ctx.getChild(i).getText().contains("const")
-              || ctx.getChild(i).getText().contains("static")) {
+          || ctx.getChild(i).getText().contains("static")) {
         function.addChild(new ASTNode(ctx.getChild(i).getText()));
       }
     }
@@ -251,7 +251,9 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
   public ASTNode visitParams(CppParser.ParamsContext ctx) {
     ASTNode node = new ASTNode(Type.PARAMS);
     for (int i = 0; i < ctx.type().size(); i++) {
-      node.addChild(new ASTNode(Type.valueOf(visit(ctx.type(i)).getType().name())));
+      ASTNode typeNode = visit(ctx.type(i));
+      typeNode.setValue(ctx.ID(i).getText());
+      node.addChild(typeNode);
     }
     int current = 0;
     for (ASTNode type : node.children) {
@@ -262,9 +264,9 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
         }
         if (ctx.getChild(i).getText().equals("const")) {
           type.addChild(new ASTNode(ctx.getChild(i).getText()));
-        } else if (ctx.ID().contains(ctx.getChild(i))) {
-          type.addChild(new ASTNode(Type.ID, ctx.getChild(i).getText()));
-        } else if (ctx.REF().contains(ctx.getChild(i)) || ctx.expr().contains(ctx.getChild(i))) {
+        } else if (ctx.REF().contains(ctx.getChild(i))) {
+          type.addChild(new ASTNode(Type.REF));
+        } else if (ctx.expr().contains(ctx.getChild(i))) {
           type.addChild(visit(ctx.getChild(i)));
         }
       }
@@ -648,6 +650,9 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
    */
   @Override
   public ASTNode visitType(CppParser.TypeContext ctx) {
+    if (ctx.ID() != null) {
+      return new ASTNode(Type.CLASS, ctx.ID().getText());
+    }
     return new ASTNode(Type.valueOf(ctx.children.getFirst().getText().toUpperCase()));
   }
 
@@ -702,27 +707,33 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
 
     // Process "this" keyword if present
     if (ctx.getChild(0).getText().equals("this")) {
-      node.addChild(new ASTNode("this"));
+      if (ctx.children.size() == 1) {
+        node.setValue("this");
+        node.addChild(new ASTNode(Type.ID, ctx.ID(0).getText()));
+      }
+    } else if (ctx.getChild(0).getText().equals("*")) {
+      node.setValue("*this");
     }
     // Process object identifier
     else {
-      node.addChild(new ASTNode(Type.ID, ctx.children.getFirst().getText()));
+      node.setValue(ctx.ID(0).getText());
     }
 
     // Process optional member access
-    if (ctx.getChildCount() > 1) {
-      if (ctx.array_item() != null) {
-        node.addChild(visit(ctx.array_item()));
-      } else if (ctx.dec_inc() != null) {
-        node.addChild(visit(ctx.dec_inc()));
-      } else if (ctx.fn_call() != null) {
-        node.addChild(visit(ctx.fn_call()));
-      } else if (ctx.ID().size() > 1) {
-        node.addChild(new ASTNode(Type.ID, ctx.ID().getLast().getText()));
-      } else {
-        node.addChild(new ASTNode(Type.ID, ctx.ID(0).getText()));
+    if (ctx.ID().size() > 1) {
+      for (int i = 1; i < ctx.ID().size() - 1; i++) {
+        node.addChild(new ASTNode(Type.ID, ctx.ID(i).getText()));
       }
     }
+
+    if (ctx.array_item() != null) {
+      node.addChild(visit(ctx.array_item()));
+    } else if (ctx.dec_inc() != null) {
+      node.addChild(visit(ctx.dec_inc()));
+    } else if (ctx.fn_call() != null) {
+      node.addChild(visit(ctx.fn_call()));
+    }
+
     return node;
   }
 }
