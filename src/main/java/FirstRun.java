@@ -24,6 +24,12 @@ public class FirstRun extends CppParseTreeVisitor {
       case Type.CLASS:
         visitClass(node);
         break;
+      case Type.ARGS:
+        visitArgs(node);
+        break;
+//      case Type.CONSTRUCTOR:
+//        visitFndecl(node.children.getFirst());
+//        break;
       case null:
         System.out.println("Type: " + node.getType().name() + "Value: " + node.getValue());
         break;
@@ -58,7 +64,7 @@ public class FirstRun extends CppParseTreeVisitor {
     Symbol typeSymbol;
 
     if (type.equals("classtype")) {
-      typeSymbol = currentScope.resolve(vardecl.children.getFirst().getValue());
+      typeSymbol = currentScope.resolve(variableNode.children.getFirst().getValue());
     } else {
       typeSymbol = currentScope.resolve(type);
     }

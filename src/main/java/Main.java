@@ -39,6 +39,6 @@ public class Main {
 
     FirstRun scopeVisitor = new FirstRun();
     ASTNode scopes = scopeVisitor.visit(ast);
-    scopes.print();
+    scopeVisitor.currentScope.print();
   }
 }
