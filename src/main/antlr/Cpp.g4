@@ -32,7 +32,7 @@ fn_decl  :  ('const'? 'static'? | 'static'? 'const'?) ('void' | type) REF? (oper
 
 operator    :   'operator' ('=' | DEC_INC_OP) ;
 
-abstract_fn : 'virtual' ('void' | type) REF? (operator | ID) '(' params? ')' 'const' '=' INT ';' ;
+abstract_fn : 'virtual' ('void' | type) REF? (operator | ID) '(' params? ')' 'const'? '=' INT ';' ;
 
 params  :  'const'? type REF? ID ('=' expr)? (',' 'const'? type REF? ID ('=' expr)?)* ;
 
