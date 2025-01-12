@@ -7,7 +7,7 @@ public class FirstRun extends CppParseTreeVisitor {
         visitProgram(node);
         break;
       case Type.VAR_DECL:
-        visitVardecl(node);
+        visitVardecl(node.children.getFirst());
         break;
       case Type.FN_DECL:
         visitFndecl(node.children.getFirst());
@@ -24,6 +24,12 @@ public class FirstRun extends CppParseTreeVisitor {
       case Type.CLASS:
         visitClass(node);
         break;
+      case Type.ARGS:
+        visitArgs(node);
+        break;
+//      case Type.CONSTRUCTOR:
+//        visitFndecl(node.children.getFirst());
+//        break;
       case null:
         System.out.println("Type: " + node.getType().name() + "Value: " + node.getValue());
         break;
@@ -52,9 +58,8 @@ public class FirstRun extends CppParseTreeVisitor {
     return program;
   }
 
-  public ASTNode visitVardecl(ASTNode vardecl) {
-    ASTNode variableNode = vardecl.children.getFirst();
-    String type = variableNode.children.getFirst().getType().name().toLowerCase();
+  public ASTNode visitVardecl(ASTNode variableNode) {
+    String type = variableNode.getType().name().toLowerCase();
     Symbol typeSymbol;
 
     typeSymbol = getType(type, variableNode);
@@ -68,7 +73,7 @@ public class FirstRun extends CppParseTreeVisitor {
       currentScope.bind(variable);
     }
 
-    return vardecl;
+    return variableNode;
   }
 
   public ASTNode visitFndecl(ASTNode fndecl) {
@@ -134,72 +139,72 @@ public class FirstRun extends CppParseTreeVisitor {
       return args;
   }
 
-    public ASTNode visitBlock (ASTNode block){
-      Scope newScope = new Scope(currentScope);
-      currentScope.innerScopes.add(newScope);
-      currentScope = newScope;
+  public ASTNode visitBlock(ASTNode block) {
+    Scope newScope = new Scope(currentScope);
+    currentScope.innerScopes.add(newScope);
+    currentScope = newScope;
 
-      visitChildren(block);
+    visitChildren(block);
 
-      currentScope = currentScope.enclosingScope;
-      return block;
-    }
+    currentScope = currentScope.enclosingScope;
+    return block;
+  }
 
-    public ASTNode visitParams (ASTNode node){
-      for (ASTNode child : node.children) {
-        String name = child.getValue();
-        String type = child.getType().name().toLowerCase();
-        Symbol typeSymbol;
+  public ASTNode visitParams(ASTNode node) {
+    for (ASTNode child : node.children) {
+      String name = child.getValue();
+      String type = child.getType().name().toLowerCase();
+      Symbol typeSymbol;
 
         typeSymbol = getType(type, child);
 
-        Symbol param = new Variable(name, typeSymbol.name);
-        currentScope.bind(param);
-      }
-      return node;
+      Symbol param = new Variable(name, typeSymbol.name);
+      currentScope.bind(param);
     }
+    return node;
+  }
 
-    public ASTNode visitClass (ASTNode classNode){
-      String name = classNode.children.getFirst().getValue();
-      Symbol classType = currentScope.resolve(name);
-      Symbol classSymbol = new Class(name, name);
-      if (classType == null) {
+  public ASTNode visitClass(ASTNode classNode) {
+    String name = classNode.children.getFirst().getValue();
+    Symbol classType = currentScope.resolve(name);
+    Symbol classSymbol = new Class(name, name);
+    if (classType == null) {
+      currentScope.bind(classSymbol);
+    }else {
+      if(!(classType instanceof Class)) {
         currentScope.bind(classSymbol);
       } else {
-        if (!(classType instanceof Class)) {
-          currentScope.bind(classSymbol);
-        } else {
-          System.out.println("Error: such class " + name + " already exists");
-          //throw new RuntimeException("Error: such class " + name + " already exists");
-        }
+        System.out.println("Error: such class " + name + " already exists");
+        //throw new RuntimeException("Error: such class " + name + " already exists");
       }
-
-      Scope newScope = new Scope(currentScope);
-      currentScope.innerScopes.add(newScope);
-      currentScope = newScope;
-      ((Class) classSymbol).setClassScope(currentScope);
-
-      visitChildren(classNode);
-
-      currentScope = currentScope.enclosingScope;
-
-
-      return classNode;
-
     }
 
-    public ASTNode visitExpr (ASTNode node){
-      if (node.children.isEmpty() && node.getType().equals("ID")) {
-        String name = node.getValue();
-        Symbol var = currentScope.resolve(name);
-        if (var == null) {
-          System.out.println("Error: no such variable: " + name);
-        }
-      } else {
-        visitChildren(node);
+    Scope newScope = new Scope(currentScope);
+    currentScope.innerScopes.add(newScope);
+    currentScope = newScope;
+    ((Class) classSymbol).setClassScope(currentScope);
+
+    visitChildren(classNode);
+
+    currentScope = currentScope.enclosingScope;
+
+
+    return classNode;
+
+  }
+
+  public ASTNode visitExpr(ASTNode node) {
+    if (node.children.isEmpty() && node.getType().equals("ID")) {
+      String name = node.getValue();
+      Symbol var = currentScope.resolve(name);
+      if (var == null) {
+        System.out.println("Error: no such variable: " + name);
       }
-      return node;
+    } else {
+      visitChildren(node);
     }
+    return node;
+  }
 
     public ASTNode visitChildren (ASTNode node){
       for (ASTNode child : node.children) {
