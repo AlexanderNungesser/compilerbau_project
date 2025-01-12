@@ -211,28 +211,33 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
   @Override
   public ASTNode visitAbstract_fn(CppParser.Abstract_fnContext ctx) {
     ASTNode node = new ASTNode(Type.ABSTRACT_FN);
+
+    ASTNode function;
+
     // Process return type
     if (ctx.type() != null) {
-      node.addChild(visit(ctx.type()));
+      function = visit(ctx.type());
     } else {
-      node.addChild(new ASTNode(Type.VOID));
+      function = new ASTNode(Type.VOID);
     }
 
     if (ctx.REF() != null) {
-      node.addChild(new ASTNode(Type.REF));
+      function.addChild(new ASTNode(Type.REF));
     }
     if (ctx.operator() != null) {
-      node.addChild(visit(ctx.operator()));
+      function.addChild(visit(ctx.operator()));
     } else {
-      node.addChild(new ASTNode(Type.ID, ctx.ID().getText()));
+      function.addChild(new ASTNode(Type.ID, ctx.ID().getText()));
     }
+
+    node.addChild(function);
 
     // Process parameters
     if (ctx.params() != null) {
       node.addChild(visit(ctx.params()));
     }
 
-    node.addChild(new ASTNode(Type.INT, ctx.getChild(ctx.getChildCount() - 2).getText()));
+    node.addChild(new ASTNode(Type.INT, ctx.INT().getText()));
     return node;
   }
 
