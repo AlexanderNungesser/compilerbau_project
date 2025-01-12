@@ -62,7 +62,7 @@ public class FirstRun extends CppParseTreeVisitor {
     String type = variableNode.getType().name().toLowerCase();
     Symbol typeSymbol;
 
-    typeSymbol = getType(type, variableNode);
+    typeSymbol = getType(type, variableNode.children.getFirst());
 
     Symbol variable = new Variable(variableNode.getValue(), typeSymbol.name);
 
@@ -82,7 +82,7 @@ public class FirstRun extends CppParseTreeVisitor {
     String type = functionInformation.getType().name().toLowerCase();
     Symbol typeSymbol;
 
-    typeSymbol = getType(type, functionInformation);
+    typeSymbol = getType(type, functionInformation.children.getFirst());
 
     Function function = new Function(name, typeSymbol.name);
 
@@ -156,7 +156,7 @@ public class FirstRun extends CppParseTreeVisitor {
       String type = child.getType().name().toLowerCase();
       Symbol typeSymbol;
 
-        typeSymbol = getType(type, child);
+        typeSymbol = getType(type, child.children.getFirst());
 
       Symbol param = new Variable(name, typeSymbol.name);
       currentScope.bind(param);
@@ -217,10 +217,11 @@ public class FirstRun extends CppParseTreeVisitor {
       Symbol typeSymbol;
 
       if (type.equals("classtype")) {
-        typeSymbol = currentScope.resolve(node.children.getFirst().getValue());
+        typeSymbol = currentScope.resolve(node.getValue());
       } else {
         typeSymbol = currentScope.resolve(type);
       }
+
       return typeSymbol;
     }
 
