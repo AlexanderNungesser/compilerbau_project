@@ -117,11 +117,21 @@ public class FirstRun extends CppParseTreeVisitor {
     if (function instanceof Variable)
       System.out.println("Error: " + functionName + " is not a function");
 
-    visitChildren(fncall);
+    int args_count = visitChildren(fncall);
+    int param_count = visitParams(fncall);
+
+    if(args_count != param_count) {
+      System.out.println("Error: child and param count mismatch");
+    }
+
     return fncall;
   }
 
   public ASTNode visitArgs(ASTNode args) {
+    for (ASTNode child : args.children) {
+      if (child.getType() == Type.OBJ_USAGE || child.getType() == Type.ID) {
+        currentScope.resolve(child.getType().name().toLowerCase());
+      }
     return args;
   }
 
