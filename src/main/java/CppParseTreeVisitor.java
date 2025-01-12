@@ -651,7 +651,7 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
   @Override
   public ASTNode visitType(CppParser.TypeContext ctx) {
     if (ctx.ID() != null) {
-      ASTNode toReturn = new ASTNode(Type.CLASS, ctx.ID().getText());
+      ASTNode toReturn = new ASTNode(Type.CLASSTYPE, ctx.ID().getText());
       toReturn.addChild(new ASTNode(Type.ID, ctx.children.getFirst().getText()));
       return toReturn;
     }
