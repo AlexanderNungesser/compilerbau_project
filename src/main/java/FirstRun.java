@@ -105,9 +105,15 @@ public class FirstRun extends CppParseTreeVisitor {
     String functionName = fncall.getValue();
     Symbol function = currentScope.resolve(functionName);
 
-    if (function == null) System.out.println("Error: no such function: " + functionName);
-    if (function instanceof Variable)
+    if (function == null) {
+      System.out.println("Error: no such function: " + functionName);
+      return null;
+    }
+
+    if (function instanceof Variable) {
       System.out.println("Error: " + functionName + " is not a function");
+      return null;
+    }
 
     ASTNode args = visitChildren(fncall);
     int args_count = args.children.size();
