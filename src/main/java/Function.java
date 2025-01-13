@@ -1,17 +1,19 @@
 public class Function extends Symbol {
-  private int anzParams = 0;
+  private int paramCount = 0;
 
   public Function(String name, String type) {
     super(name, type);
   }
 
-  public int getAnzParams() {
-    return this.anzParams;
+  public int getParamCount() {
+    return this.paramCount;
   }
 
-  public void setAnzParams(int anzParams) {
-    this.anzParams = anzParams;
+  public void setParamCount(int paramCount) {
+    this.paramCount = paramCount;
   }
 
-  public void increaseAnzParams() {this.anzParams++;}
+  public void increaseParamCount() {
+    this.paramCount++;
+  }
 }

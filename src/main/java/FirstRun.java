@@ -13,7 +13,7 @@ public class FirstRun extends CppParseTreeVisitor {
         visitFndecl(node.children.getFirst());
         break;
       case Type.FN_CALL:
-        visitFncall(node.children.getFirst());
+        visitFncall(node);
         break;
       case Type.BLOCK:
         visitBlock(node);
@@ -51,6 +51,10 @@ public class FirstRun extends CppParseTreeVisitor {
     globalScope.bind(new BuiltIn("bool"));
     globalScope.bind(new BuiltIn("char"));
     globalScope.bind(new BuiltIn("void"));
+    globalScope.bind(new BuiltIn("print_int"));
+    globalScope.bind(new BuiltIn("print_bool"));
+    globalScope.bind(new BuiltIn("print_char"));
+
 
     currentScope = globalScope;
 
@@ -62,7 +66,7 @@ public class FirstRun extends CppParseTreeVisitor {
     String type = variableNode.getType().name().toLowerCase();
     Symbol typeSymbol;
 
-    typeSymbol = getType(type, variableNode.children.getFirst());
+    typeSymbol = getTypeEqual(type, variableNode);
 
     Symbol variable = new Variable(variableNode.getValue(), typeSymbol.name);
 
@@ -82,7 +86,7 @@ public class FirstRun extends CppParseTreeVisitor {
     String type = functionInformation.getType().name().toLowerCase();
     Symbol typeSymbol;
 
-    typeSymbol = getType(type, functionInformation.children.getFirst());
+    typeSymbol = getTypeEqual(type, functionInformation);
 
     Function function = new Function(name, typeSymbol.name);
 
@@ -99,7 +103,7 @@ public class FirstRun extends CppParseTreeVisitor {
 
     ASTNode params = visitChildren(fndecl);
     for (ASTNode param : params.children) {
-      function.increaseAnzParams();
+      function.increaseParamCount();
     }
 
     currentScope = currentScope.enclosingScope;
@@ -112,19 +116,29 @@ public class FirstRun extends CppParseTreeVisitor {
 
     if (function == null) {
       System.out.println("Error: no such function: " + functionName);
-      return null;
+      return fncall;
     }
 
     if (function instanceof Variable) {
       System.out.println("Error: " + functionName + " is not a function");
-      return null;
+      return fncall;
     }
 
-    ASTNode args = visitChildren(fncall);
-    int args_count = args.children.size();
+    ASTNode args = (!fncall.children.isEmpty() && fncall.children.getLast().getType() == Type.ARGS) ? fncall.children.getLast() : null;
+    int args_count = 0;
+    int params_count = 0;
 
-    if (args_count != ((Function) function).getAnzParams()) {
-      System.out.println("Error: arg and param count mismatch");
+    if(args != null) {
+        args_count = args.children.size();
+        if (function instanceof BuiltIn) {
+          params_count = 1;
+        } else {
+          params_count = ((Function) function).getParamCount();
+        }
+
+        if (args_count != params_count) {
+          System.out.println("Error: arg and param count mismatch");
+        }
     }
 
     return fncall;
@@ -136,7 +150,8 @@ public class FirstRun extends CppParseTreeVisitor {
         currentScope.resolve(child.getType().name().toLowerCase());
       }
     }
-      return args;
+
+    return args;
   }
 
   public ASTNode visitBlock(ASTNode block) {
@@ -156,7 +171,7 @@ public class FirstRun extends CppParseTreeVisitor {
       String type = child.getType().name().toLowerCase();
       Symbol typeSymbol;
 
-        typeSymbol = getType(type, child.children.getFirst());
+      typeSymbol = getTypeEqual(type, child);
 
       Symbol param = new Variable(name, typeSymbol.name);
       currentScope.bind(param);
@@ -164,6 +179,7 @@ public class FirstRun extends CppParseTreeVisitor {
     return node;
   }
 
+  //TODO: Big 3 erstellen destructo copyconstructor constructor!
   public ASTNode visitClass(ASTNode classNode) {
     String name = classNode.children.getFirst().getValue();
     Symbol classType = currentScope.resolve(name);
@@ -213,11 +229,11 @@ public class FirstRun extends CppParseTreeVisitor {
       return node;
     }
 
-    public Symbol getType (String type, ASTNode node){
+    public Symbol getTypeEqual (String type, ASTNode node){
       Symbol typeSymbol;
 
       if (type.equals("classtype")) {
-        typeSymbol = currentScope.resolve(node.getValue());
+        typeSymbol = currentScope.resolve(node.children.getFirst().getValue());
       } else {
         typeSymbol = currentScope.resolve(type);
       }
