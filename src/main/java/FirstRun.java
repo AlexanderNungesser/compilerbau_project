@@ -105,10 +105,15 @@ public class FirstRun extends CppParseTreeVisitor {
     currentScope.innerScopes.add(newScope);
     currentScope = newScope;
 
-    ASTNode params = visitChildren(fndecl);
-    for (ASTNode param : params.children) {
-      function.increaseParamCount();
+    for (ASTNode child : fndecl.children) {
+      if(child.getType() == Type.PARAMS) {
+        for (ASTNode param : child.children) {
+          function.increaseParamCount();
+        }
+      }
     }
+
+    visitChildren(fndecl);
 
     currentScope = currentScope.enclosingScope;
     return fndecl;
