@@ -69,7 +69,8 @@ public class SecondRun extends CppParseTreeVisitor {
 
     public ASTNode visitFncall(ASTNode fncall) {
         String functionName = fncall.getValue();
-        if (!fncall.children.isEmpty() && fncall.children.getFirst().getType() == Type.CLASS) {
+
+        if (!fncall.children.isEmpty() && fncall.children.getFirst().getType() == Type.CONSTRUCTOR) {
             String className = fncall.children.getFirst().getValue();
             Symbol classSymbol = currentScope.resolve(className);
             if (classSymbol == null) {
@@ -87,6 +88,47 @@ public class SecondRun extends CppParseTreeVisitor {
                     } else {
                         currentScope.bind(new Variable(functionName, classSymbol.name));
                     }
+                    visitArgs(args);
+                }
+            }
+        } else if (!fncall.children.isEmpty() && fncall.children.getFirst().getType() == Type.CLASS) {
+            String className = fncall.children.getFirst().getValue();
+            Symbol classSymbol = currentScope.resolve(className);
+            if (classSymbol == null) {
+                System.out.println("Error: no such class: " + className);
+            } else {
+                Symbol function = currentScope.resolve(functionName);
+
+                if (function == null) {
+                    System.out.println("Error: no such function: " + functionName);
+                    return fncall;
+                }
+
+                if (function instanceof Variable) {
+                    System.out.println("Error: " + functionName + " is not a function");
+                    return fncall;
+                }
+
+                ASTNode args =
+                        (!fncall.children.isEmpty() && fncall.children.getLast().getType() == Type.ARGS)
+                                ? fncall.children.getLast()
+                                : null;
+                int args_count = 0;
+                int params_count = 0;
+
+                if (args != null) {
+                    args_count = args.children.size();
+                    if (function instanceof BuiltIn) {
+                        params_count = 1;
+                    } else {
+                        params_count = ((Function) function).getParamCount();
+                    }
+
+                    if (args_count != params_count) {
+                        System.out.println("Error: arg and param count mismatch at function " + functionName);
+                        return fncall;
+                    }
+
                     visitArgs(args);
                 }
             }
