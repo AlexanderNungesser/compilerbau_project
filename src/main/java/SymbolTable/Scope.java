@@ -36,13 +36,13 @@ public class Scope {
 
   private void print(int indentLevel) {
     String indent = "  ".repeat(indentLevel);
-    System.out.println(indent + "SymbolTable.Scope {");
+    System.out.println(indent + "Scope {");
 
     for (Map.Entry<String, Symbol> entry : symbols.entrySet()) {
       System.out.println(
           indent
               + "  "
-              + entry.getValue().getClass().getName()
+              + entry.getValue().getClass().getSimpleName()
               + " "
               + entry.getKey()
               + ": "
@@ -51,7 +51,7 @@ public class Scope {
 
     // Gib alle inneren Scopes aus
     for (Scope scope : innerScopes) {
-      System.out.println(indent + "  Inner SymbolTable.Scope:");
+      System.out.println(indent + "  Inner Scope:");
       scope.print(indentLevel + 1);
     }
 
