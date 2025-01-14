@@ -17,6 +17,9 @@ public class FirstRun extends CppParseTreeVisitor {
       case Type.FN_CALL:
         visitFncall(node);
         break;
+      case Type.ABSTRACT_FN:
+        visitAbstractFn(node);
+        break;
       case Type.BLOCK:
         visitBlock(node);
         break;
@@ -86,9 +89,7 @@ public class FirstRun extends CppParseTreeVisitor {
     ASTNode functionInformation = fndecl.children.getFirst();
     String name = functionInformation.children.getFirst().getValue();
     String type = functionInformation.getType().name().toLowerCase();
-    Symbol typeSymbol;
-
-    typeSymbol = getTypeEqual(type, functionInformation);
+    Symbol typeSymbol = getTypeEqual(type, functionInformation);
 
     Function function = new Function(name, typeSymbol.name);
 
@@ -104,7 +105,7 @@ public class FirstRun extends CppParseTreeVisitor {
     currentScope = newScope;
 
     for (ASTNode child : fndecl.children) {
-      if(child.getType() == Type.PARAMS) {
+      if (child.getType() == Type.PARAMS) {
         for (ASTNode param : child.children) {
           function.increaseParamCount();
         }
@@ -134,7 +135,7 @@ public class FirstRun extends CppParseTreeVisitor {
           if (args_count != 1) {
             System.out.println("Error: arg and param count mismatch at function " + functionName);
             return fncall;
-          }else {
+          } else {
             currentScope.bind(new Variable(functionName, classSymbol.name));
           }
           visitArgs(args);
@@ -191,6 +192,31 @@ public class FirstRun extends CppParseTreeVisitor {
     return args;
   }
 
+  public ASTNode visitAbstractFn(ASTNode node) {
+    if (!node.children.getLast().getValue().equals("0")) {
+      System.out.println(
+          "Error: function "
+              + node.getValue()
+              + " is not abstract, "
+              + node.children.getLast().getValue()
+              + " must be 0");
+    }
+    ASTNode funcInfo = node.children.getFirst();
+    String name = funcInfo.children.getFirst().getValue();
+    String type = funcInfo.getType().name().toLowerCase();
+    Symbol typeSymbol = getTypeEqual(type, funcInfo);
+
+    Function function = new Function(name, typeSymbol.name);
+
+    Symbol alreadyDeclared = currentScope.resolve(name);
+    if (alreadyDeclared != null) {
+      System.out.println("Error: such abstract function " + name + " already exists");
+    } else {
+      currentScope.bind(function);
+    }
+    return node;
+  }
+
   public ASTNode visitBlock(ASTNode block) {
     Scope newScope = new Scope(currentScope);
     currentScope.innerScopes.add(newScope);
@@ -225,7 +251,7 @@ public class FirstRun extends CppParseTreeVisitor {
         currentScope.bind(classSymbol);
       } else {
         System.out.println("Error: such class " + name + " already exists");
-        //throw new RuntimeException("Error: such class " + name + " already exists");
+        // throw new RuntimeException("Error: such class " + name + " already exists");
       }
     }
 
@@ -242,7 +268,7 @@ public class FirstRun extends CppParseTreeVisitor {
   }
 
   public ASTNode visitExpr(ASTNode node) {
-    if (node.children.isEmpty() && node.getType().equals("ID")) {
+    if (node.children.isEmpty() && node.getType() == Type.ID) {
       String name = node.getValue();
       Symbol var = currentScope.resolve(name);
       if (var == null) {
@@ -279,27 +305,28 @@ public class FirstRun extends CppParseTreeVisitor {
         System.out.println("Error: no such variable: " + node.children.getFirst().getValue());
       }
 
-      ASTNode value = node.children.getLast();
-      if(value.getType() == Type.ID || value.getType() == Type.OBJ_USAGE || value.getType() == Type.ARRAY_ITEM ) {
-        Symbol valueSymbol = currentScope.resolve(value.getValue());
-        if(valueSymbol == null) {
-          System.out.println("Error: no such variable: " + value.getValue());
-        }
+    ASTNode value = node.children.getLast();
+    if (value.getType() == Type.ID
+        || value.getType() == Type.OBJ_USAGE
+        || value.getType() == Type.ARRAY_ITEM) {
+      Symbol valueSymbol = currentScope.resolve(value.getValue());
+      if (valueSymbol == null) {
+        System.out.println("Error: no such variable: " + value.getValue());
       }
-
-
-      return visitChildren(node);
     }
 
-    public Symbol getTypeEqual(String type, ASTNode node) {
-        Symbol typeSymbol;
+    return visitChildren(node);
+  }
 
-        if (type.equals("classtype")) {
-            typeSymbol = currentScope.resolve(node.children.getFirst().getValue());
-        } else {
-            typeSymbol = currentScope.resolve(type);
-        }
+  public Symbol getTypeEqual(String type, ASTNode node) {
+    Symbol typeSymbol;
 
-        return typeSymbol;
+    if (type.equals("classtype")) {
+      typeSymbol = currentScope.resolve(node.children.getFirst().getValue());
+    } else {
+      typeSymbol = currentScope.resolve(type);
     }
+
+    return typeSymbol;
+  }
 }

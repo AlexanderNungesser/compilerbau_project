@@ -48,11 +48,11 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
     ASTNode variable = visit(ctx.type());
 
     // Process variable name or reference
-    if (ctx.REF() != null) {
-      variable.addChild(new ASTNode(Type.REF));
-    }
     if (ctx.ID() != null) {
       variable.setValue(ctx.ID().getText());
+    }
+    if (ctx.REF() != null) {
+      variable.addChild(new ASTNode(Type.REF));
     }
 
     // Process const or static if available
@@ -146,6 +146,20 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
       function = new ASTNode(Type.VOID);
     }
 
+    if (ctx.operator() == null) {
+      if (ctx.ID().size() > 1) {
+        function.addChild(new ASTNode(Type.ID, ctx.ID().getLast().getText()));
+      } else {
+        function.addChild(new ASTNode(Type.ID, ctx.ID(0).getText()));
+      }
+    } else {
+      function.addChild(visit(ctx.operator()));
+    }
+
+    if (ctx.REF() != null) {
+      function.addChild(new ASTNode(Type.REF));
+    }
+
     // Process const or static if available
     for (int i = 0; i < 2; i++) {
       if (ctx.getChild(i).getText().contains("const")
@@ -157,17 +171,6 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
     // Process function name or operator
     if (ctx.ID().size() > 1) {
       function.addChild(new ASTNode(Type.CLASS, ctx.ID().getFirst().getText()));
-    }
-
-    if (ctx.REF() != null) {
-      function.addChild(new ASTNode(Type.REF));
-    }
-    if (ctx.operator() != null) {
-      function.addChild(visit(ctx.operator()));
-    } else if (ctx.ID().size() > 1) {
-      function.addChild(new ASTNode(Type.ID, ctx.ID().getLast().getText()));
-    } else {
-      function.addChild(new ASTNode(Type.ID, ctx.ID(0).getText()));
     }
 
     node.addChild(function);
@@ -221,13 +224,13 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
       function = new ASTNode(Type.VOID);
     }
 
+    if (ctx.ID() != null) {
+      function.addChild(new ASTNode(Type.ID, ctx.ID().getText()));
+    } else {
+      function.addChild(visit(ctx.operator()));
+    }
     if (ctx.REF() != null) {
       function.addChild(new ASTNode(Type.REF));
-    }
-    if (ctx.operator() != null) {
-      function.addChild(visit(ctx.operator()));
-    } else {
-      function.addChild(new ASTNode(Type.ID, ctx.ID().getText()));
     }
 
     node.addChild(function);
@@ -708,7 +711,7 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
     if (ctx.children.size() == 1) {
       node.setValue("this");
       return node;
-    }else if (ctx.getChild(0).getText().equals("*") && ctx.children.size() == 2) {
+    } else if (ctx.getChild(0).getText().equals("*") && ctx.children.size() == 2) {
       node.setValue("*this");
       return node;
     }
