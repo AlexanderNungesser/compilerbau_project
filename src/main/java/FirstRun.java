@@ -306,11 +306,23 @@ public class FirstRun extends CppParseTreeVisitor {
     return node;
   }
 
-  public ASTNode visitAssign(ASTNode node) {
-    Symbol variable = currentScope.resolve(node.children.getFirst().getValue());
-    if (variable == null) {
-      System.out.println("Error: no such variable: " + node.children.getFirst().getValue());
-    }
+    public ASTNode visitAssign(ASTNode node) {
+      Symbol variable;
+      ASTNode firstChild = node.children.getFirst();
+
+      if (firstChild.getType() == Type.OBJ_USAGE) {
+        Symbol usage = currentScope.resolve(firstChild.getValue());
+        if(!(usage instanceof SymbolTable.Class)) {
+          usage = currentScope.resolve(usage.type);
+        }
+        variable = ((SymbolTable.Class) usage).getClassScope().resolve(firstChild.children.getFirst().getValue());
+      } else {
+        variable = currentScope.resolve(firstChild.getValue());
+      }
+
+      if (variable == null) {
+        System.out.println("Error: no such variable: " + node.children.getFirst().getValue());
+      }
 
     ASTNode value = node.children.getLast();
     if (value.getType() == Type.ID
