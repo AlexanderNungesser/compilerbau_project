@@ -14,7 +14,7 @@ public class FirstRun extends CppParseTreeVisitor {
         visitVardecl(node.children.getFirst());
         break;
       case Type.FN_DECL:
-        visitFndecl(node.children.getFirst());
+        visitFndecl(node);
         break;
       case Type.FN_CALL:
         visitFncall(node);
@@ -86,7 +86,7 @@ public class FirstRun extends CppParseTreeVisitor {
 
   public ASTNode visitFndecl(ASTNode fndecl) {
     ASTNode functionInformation = fndecl.children.getFirst();
-    String name = functionInformation.getValue();
+    String name = functionInformation.children.getFirst().getValue();
     String type = functionInformation.getType().name().toLowerCase();
     Symbol typeSymbol;
 
@@ -116,7 +116,7 @@ public class FirstRun extends CppParseTreeVisitor {
 
   public ASTNode visitFncall(ASTNode fncall) {
     String functionName = fncall.getValue();
-    if (fncall.children.getFirst().getType() == Type.CLASS) {
+    if (!fncall.children.isEmpty() && fncall.children.getFirst().getType() == Type.CLASS) {
       String className = fncall.children.getFirst().getValue();
       Symbol classSymbol = currentScope.resolve(className);
       if (classSymbol == null) {
@@ -129,7 +129,7 @@ public class FirstRun extends CppParseTreeVisitor {
         if (args != null) {
           int args_count = args.children.size();
           if (args_count != 1) {
-            System.out.println("Error: arg and param count mismatch");
+            System.out.println("Error: arg and param count mismatch at function " + functionName);
             return fncall;
           }else {
             currentScope.bind(new Variable(functionName, classSymbol.name));
@@ -167,7 +167,7 @@ public class FirstRun extends CppParseTreeVisitor {
         }
 
         if (args_count != params_count) {
-          System.out.println("Error: arg and param count mismatch");
+          System.out.println("Error: arg and param count mismatch at function " + functionName);
           return fncall;
         }
 
