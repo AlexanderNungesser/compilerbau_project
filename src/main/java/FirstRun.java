@@ -220,7 +220,7 @@ public class FirstRun extends CppParseTreeVisitor {
   }
 
   public ASTNode visitConstructor(ASTNode constructorNode, Symbol classSymbol) {
-    String constructorName = constructorNode.getValue();
+    String constructorName = constructorNode.children.getFirst().getValue();
 
     if (!(classSymbol instanceof SymbolTable.Class)) {
       System.out.println("Error: The symbol must be an instance of class");
@@ -235,11 +235,8 @@ public class FirstRun extends CppParseTreeVisitor {
     Function constructor = new Function(constructorName, classSymbol.name);
     Symbol alreadyDeclared = currentScope.resolve(constructorName);
 
-    if (alreadyDeclared != null) {
-      System.out.println("Error: Constructor " + constructorName + " already exists");
-    } else {
-      currentScope.bind(constructor);
-    }
+
+    currentScope.bind(constructor);
 
     Scope constructorScope = new Scope(currentScope);
     currentScope.innerScopes.add(constructorScope);
