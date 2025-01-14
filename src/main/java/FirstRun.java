@@ -67,9 +67,7 @@ public class FirstRun extends CppParseTreeVisitor {
 
   public ASTNode visitVardecl(ASTNode variableNode) {
     String type = variableNode.getType().name().toLowerCase();
-    Symbol typeSymbol;
-
-    typeSymbol = getTypeEqual(type, variableNode);
+    Symbol typeSymbol = getTypeEqual(type, variableNode);
 
     Symbol variable = new Variable(variableNode.getValue(), typeSymbol.name);
 
@@ -175,10 +173,7 @@ public class FirstRun extends CppParseTreeVisitor {
     for (ASTNode child : node.children) {
       String name = child.getValue();
       String type = child.getType().name().toLowerCase();
-      Symbol typeSymbol;
-
-      typeSymbol = getTypeEqual(type, child);
-
+      Symbol typeSymbol = getTypeEqual(type, child);
       Symbol param = new Variable(name, typeSymbol.name);
       currentScope.bind(param);
     }
@@ -187,9 +182,9 @@ public class FirstRun extends CppParseTreeVisitor {
 
   //TODO: Big 3 erstellen destructo copyconstructor constructor!
   public ASTNode visitClass(ASTNode classNode) {
-    String name = classNode.children.getFirst().getValue();
+    String name = classNode.getValue();
     Symbol classType = currentScope.resolve(name);
-    Symbol classSymbol = new Class(name, name);
+    Symbol classSymbol = new Class(name);
     if (classType == null) {
       currentScope.bind(classSymbol);
     }else {
@@ -197,7 +192,6 @@ public class FirstRun extends CppParseTreeVisitor {
         currentScope.bind(classSymbol);
       } else {
         System.out.println("Error: such class " + name + " already exists");
-        //throw new RuntimeException("Error: such class " + name + " already exists");
       }
     }
 
