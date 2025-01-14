@@ -703,7 +703,7 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
   @Override
   public ASTNode visitObj_usage(CppParser.Obj_usageContext ctx) {
     ASTNode node = new ASTNode(Type.OBJ_USAGE);
-    // TODO: search for error, addChild stuff is missing
+
     // Process "this" keyword if present
     if (ctx.getChild(0).getText().equals("this")) {
       if (ctx.children.size() == 1) {
@@ -720,7 +720,7 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
 
     // Process optional member access
     if (ctx.ID().size() > 1) {
-      for (int i = 1; i < ctx.ID().size() - 1; i++) {
+      for (int i = 1; i < ctx.ID().size(); i++) {
         node.addChild(new ASTNode(Type.ID, ctx.ID(i).getText()));
       }
     }
