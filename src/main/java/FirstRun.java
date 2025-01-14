@@ -106,6 +106,16 @@ public class FirstRun extends CppParseTreeVisitor {
     return fndecl;
   }
 
+  public ASTNode visitArgs(ASTNode args) {
+    for (ASTNode child : args.children) {
+      if (child.getType() == Type.OBJ_USAGE || child.getType() == Type.ID) {
+        currentScope.resolve(child.getType().name().toLowerCase());
+      }
+    }
+
+    return args;
+  }
+
   public ASTNode visitAbstractFn(ASTNode node) {
     if (!node.children.getLast().getValue().equals("0")) {
       System.out.println(
