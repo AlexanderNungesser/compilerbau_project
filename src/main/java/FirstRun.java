@@ -268,7 +268,7 @@ public class FirstRun extends CppParseTreeVisitor {
   }
 
   public ASTNode visitExpr(ASTNode node) {
-    if (node.children.isEmpty() && node.getType().equals("ID")) {
+    if (node.children.isEmpty() && node.getType() == Type.ID) {
       String name = node.getValue();
       Symbol var = currentScope.resolve(name);
       if (var == null) {
