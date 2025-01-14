@@ -705,16 +705,17 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
     ASTNode node = new ASTNode(Type.OBJ_USAGE);
 
     // Process "this" keyword if present
-    if (ctx.getChild(0).getText().equals("this")) {
-      if (ctx.children.size() == 1) {
-        node.setValue("this");
-        node.addChild(new ASTNode(Type.ID, ctx.ID(0).getText()));
-      }
-    } else if (ctx.getChild(0).getText().equals("*")) {
+    if (ctx.children.size() == 1) {
+      node.setValue("this");
+      return node;
+    }else if (ctx.getChild(0).getText().equals("*") && ctx.children.size() == 2) {
       node.setValue("*this");
+      return node;
     }
-    // Process object identifier
-    else {
+    if (ctx.getChild(0).getText().equals("this")) {
+      node.setValue("this");
+      node.addChild(new ASTNode(Type.ID, ctx.ID(0).getText()));
+    } else {
       node.setValue(ctx.ID(0).getText());
     }
 
