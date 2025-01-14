@@ -42,7 +42,7 @@ block   :   '{' stmt* '}' ;
 while   :   'while' '(' expr ')' block ;
 if      :   'if' '(' expr ')' block ('else' 'if' '(' expr ')' block)* ('else' block)? ;
 
-fn_call  :   ID? (ID ':' ':')? ID '(' args? ')' ;
+fn_call  :   (ID | (ID ':' ':'))? ID '(' args? ')' ;
 args    :   expr (',' expr)* ;
 
 expr    :   fn_call                     # Call
