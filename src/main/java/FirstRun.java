@@ -9,7 +9,7 @@ public class FirstRun extends CppParseTreeVisitor {
         visitProgram(node);
         break;
       case Type.VAR_DECL:
-        visitVardecl(node.children.getFirst());
+        visitVardecl(node);
         break;
       case Type.FN_DECL:
         visitFndecl(node);
@@ -59,7 +59,7 @@ public class FirstRun extends CppParseTreeVisitor {
 
   public ASTNode visitVardecl(ASTNode variableNode) {
     String type = variableNode.children.getFirst().getType().name().toLowerCase();
-    Symbol typeSymbol = getTypeEqual(type, variableNode);
+    Symbol typeSymbol = getTypeEqual(type, variableNode.children.getFirst());
 
     Symbol variable = new Variable(variableNode.children.getFirst().getValue(), typeSymbol.name);
 
