@@ -40,5 +40,9 @@ public class Main {
     FirstRun scopeVisitor = new FirstRun();
     ASTNode scopes = scopeVisitor.visit(ast);
     scopeVisitor.currentScope.print();
+
+    SecondRun scopeVisitor2 = new SecondRun();
+    scopeVisitor2.currentScope = scopeVisitor.currentScope;
+    ASTNode scopes2 = scopeVisitor2.visit(ast);
   }
 }
