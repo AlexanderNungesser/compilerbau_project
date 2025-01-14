@@ -350,6 +350,7 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
         node.setValue(ctx.children.getFirst().getText());
         break;
       case 2, 3:
+        node.setValue(ctx.ID().getLast().getText());
         node.addChild(new ASTNode(Type.CLASS, ctx.ID(0).getText()));
         break;
     }
