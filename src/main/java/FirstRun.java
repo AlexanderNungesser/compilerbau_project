@@ -1,5 +1,7 @@
 import SymbolTable.*;
 
+import java.lang.Class;
+
 public class FirstRun extends CppParseTreeVisitor {
   Scope currentScope;
 
@@ -243,7 +245,8 @@ public class FirstRun extends CppParseTreeVisitor {
   public ASTNode visitClass(ASTNode classNode) {
     String name = classNode.getValue();
     Symbol classType = currentScope.resolve(name);
-    Symbol classSymbol = new SymbolTable.Class(name);
+    SymbolTable.Class classSymbol = new SymbolTable.Class(name);
+
     if (classType == null) {
       currentScope.bind(classSymbol);
     } else {
@@ -251,7 +254,7 @@ public class FirstRun extends CppParseTreeVisitor {
         currentScope.bind(classSymbol);
       } else {
         System.out.println("Error: such class " + name + " already exists");
-        // throw new RuntimeException("Error: such class " + name + " already exists");
+        //throw new RuntimeException("Error: such class " + name + " already exists");
       }
     }
 
@@ -260,7 +263,23 @@ public class FirstRun extends CppParseTreeVisitor {
     currentScope = newScope;
     ((SymbolTable.Class) classSymbol).setClassScope(currentScope);
 
-    visitChildren(classNode);
+    classSymbol.setClassScope(currentScope);
+
+    for (ASTNode child : classNode.children) {
+      switch (child.getType()) {
+        case VAR_DECL: // Attribute
+          visitVardecl(child);
+          break;
+        case FN_DECL: // Methoden
+          visitFndecl(child);
+          break;
+        case CONSTRUCTOR: // Konstruktor
+          visitConstructor(child, classSymbol);
+          break;
+        default:
+          System.out.println("Warning: Unrecognized node type in class: " + child.getType());
+      }
+    }
 
     currentScope = currentScope.enclosingScope;
 
@@ -303,7 +322,47 @@ public class FirstRun extends CppParseTreeVisitor {
       }
     }
 
+
     return visitChildren(node);
+  }
+
+  public ASTNode visitConstructor(ASTNode constructorNode, Symbol classSymbol) {
+    String constructorName = constructorNode.getValue();
+
+    if (!(classSymbol instanceof SymbolTable.Class)) {
+      System.out.println("Error: The symbol must be an instance of class");
+      return constructorNode;
+    }
+
+    if (!constructorName.equals(classSymbol.name)) {
+      System.out.println("Error: Constructor name must match class name: " + classSymbol.name);
+      return constructorNode;
+    }
+
+    Function constructor = new Function(constructorName, classSymbol.name);
+    Symbol alreadyDeclared = currentScope.resolve(constructorName);
+
+    if (alreadyDeclared != null) {
+      System.out.println("Error: Constructor " + constructorName + " already exists");
+    } else {
+      currentScope.bind(constructor);
+    }
+
+    Scope constructorScope = new Scope(currentScope);
+    currentScope.innerScopes.add(constructorScope);
+    currentScope = constructorScope;
+
+    for (ASTNode child : constructorNode.children) {
+      if (child.getType() == Type.PARAMS) {
+        visitParams(child);
+      }
+    }
+
+    visitChildren(constructorNode);
+
+    currentScope = currentScope.enclosingScope;
+
+    return constructorNode;
   }
 
   public Symbol getTypeEqual(String type, ASTNode node) {
