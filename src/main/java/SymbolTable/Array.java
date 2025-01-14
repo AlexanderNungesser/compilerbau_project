@@ -1,3 +1,5 @@
+package SymbolTable;
+
 public class Array extends Symbol {
   private Object[] array;
 

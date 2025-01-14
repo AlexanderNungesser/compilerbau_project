@@ -1,3 +1,5 @@
+package SymbolTable;
+
 public class Class extends Symbol {
   Scope classScope;
 
