@@ -141,7 +141,10 @@ public class FirstRun extends CppParseTreeVisitor {
 
         if (args_count != params_count) {
           System.out.println("Error: arg and param count mismatch");
+          return fncall;
         }
+
+        visitArgs(args);
     }
 
     return fncall;

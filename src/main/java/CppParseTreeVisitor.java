@@ -580,17 +580,13 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
    */
   @Override
   public ASTNode visitClass(CppParser.ClassContext ctx) {
-    ASTNode node = new ASTNode(Type.CLASS);
-
-    // Process class name
-    node.addChild(new ASTNode(Type.ID, ctx.getChild(1).getText()));
-
+    ASTNode node = new ASTNode(Type.CLASS, ctx.getChild(1).getText());
     int index;
 
     // Process base class (if present)
     if (ctx.ID().size() > 1) {
-      ASTNode baseClassNode = new ASTNode(Type.ID, ctx.ID(1).getText());
-      node.addChild(new ASTNode("extends"));
+      ASTNode baseClassNode = new ASTNode(Type.CLASSTYPE, "extends");
+      baseClassNode.addChild(new ASTNode(Type.ID, ctx.ID(1).getText()));
       node.addChild(baseClassNode);
       index = 8;
     } else {
@@ -706,7 +702,7 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
   @Override
   public ASTNode visitObj_usage(CppParser.Obj_usageContext ctx) {
     ASTNode node = new ASTNode(Type.OBJ_USAGE);
-
+    // TODO: search for error, addChild stuff is missing
     // Process "this" keyword if present
     if (ctx.getChild(0).getText().equals("this")) {
       if (ctx.children.size() == 1) {
