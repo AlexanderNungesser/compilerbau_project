@@ -1,7 +1,5 @@
 import SymbolTable.*;
 
-import java.lang.Class;
-
 public class FirstRun extends CppParseTreeVisitor {
   Scope currentScope;
 
@@ -261,7 +259,6 @@ public class FirstRun extends CppParseTreeVisitor {
     Scope newScope = new Scope(currentScope);
     currentScope.innerScopes.add(newScope);
     currentScope = newScope;
-    ((SymbolTable.Class) classSymbol).setClassScope(currentScope);
 
     classSymbol.setClassScope(currentScope);
 
@@ -276,8 +273,11 @@ public class FirstRun extends CppParseTreeVisitor {
         case CONSTRUCTOR: // Konstruktor
           visitConstructor(child, classSymbol);
           break;
-        default:
-          System.out.println("Warning: Unrecognized node type in class: " + child.getType());
+        case DESTRUCTOR:
+          break;
+        case ABSTRACT_FN:
+          visitAbstractFn(child);
+          break;
       }
     }
 
