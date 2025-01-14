@@ -1,3 +1,5 @@
+package SymbolTable;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -34,7 +36,7 @@ public class Scope {
 
   private void print(int indentLevel) {
     String indent = "  ".repeat(indentLevel);
-    System.out.println(indent + "Scope {");
+    System.out.println(indent + "SymbolTable.Scope {");
 
     for (Map.Entry<String, Symbol> entry : symbols.entrySet()) {
       System.out.println(
@@ -49,7 +51,7 @@ public class Scope {
 
     // Gib alle inneren Scopes aus
     for (Scope scope : innerScopes) {
-      System.out.println(indent + "  Inner Scope:");
+      System.out.println(indent + "  Inner SymbolTable.Scope:");
       scope.print(indentLevel + 1);
     }
 

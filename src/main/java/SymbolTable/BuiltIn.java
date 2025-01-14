@@ -1,3 +1,5 @@
+package SymbolTable;
+
 public class BuiltIn extends Symbol {
 
   public BuiltIn(String name) {

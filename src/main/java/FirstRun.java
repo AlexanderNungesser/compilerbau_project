@@ -1,3 +1,6 @@
+import SymbolTable.*;
+import SymbolTable.Class;
+
 public class FirstRun extends CppParseTreeVisitor {
   Scope currentScope;
 
@@ -187,7 +190,7 @@ public class FirstRun extends CppParseTreeVisitor {
     if (classType == null) {
       currentScope.bind(classSymbol);
     }else {
-      if(!(classType instanceof Class)) {
+      if(!(classType instanceof SymbolTable.Class)) {
         currentScope.bind(classSymbol);
       } else {
         System.out.println("Error: such class " + name + " already exists");
@@ -198,7 +201,7 @@ public class FirstRun extends CppParseTreeVisitor {
     Scope newScope = new Scope(currentScope);
     currentScope.innerScopes.add(newScope);
     currentScope = newScope;
-    ((Class) classSymbol).setClassScope(currentScope);
+    ((SymbolTable.Class) classSymbol).setClassScope(currentScope);
 
     visitChildren(classNode);
 

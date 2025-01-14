@@ -1,3 +1,5 @@
+package SymbolTable;
+
 public class Function extends Symbol {
   private int paramCount = 0;
 
