@@ -19,7 +19,8 @@ stmt    :   var_decl
         ;
 
 var_decl:   ('const'? 'static'? | 'static'? 'const'?) type REF? ID ('=' expr)? ';'
-          | ('const'? 'static'? | 'static'? 'const'?) type ('(' REF ')')? ID ('[' expr? ']')+ ('=' array)? ';'
+          | ('const'? 'static'? | 'static'? 'const'?) type ID ('[' expr? ']')+ ('=' array)? ';'
+          | ('const'? 'static'? | 'static'? 'const'?) type '(' REF ID ')' ('[' expr ']')+ '=' ID ';'
           ;
 
 assign  :   (array_item | ID | obj_usage) ('=' | ASSIGN_OP) expr ';' ;
@@ -66,7 +67,6 @@ expr    :   fn_call                     # Call
         |   BOOL                        # Bool
         |   NEG? INT                    # Int
         |   CHAR                        # Char
-        |   REF                         # R
         |   ID                          # Id
         |   obj_usage                   # Obj
         |   '(' e=expr ')'                # Nested
@@ -86,7 +86,7 @@ main    :   ('void' | type) 'main' '(' params? ')' (';' | block) ;
 type    :   'int' | 'char' | 'bool' | ID ;
 
 array   :   '{' (args | array (',' array)*) '}' ;
-array_item  :   REF?  ID ('[' expr ']')+ ;
+array_item  :  ID ('[' expr ']')+ ;
 
 obj_usage   :   ( 'this' '->' )? ID ( '.' ID)* ('.' (array_item | dec_inc | fn_call))?
             |   '*'? 'this'

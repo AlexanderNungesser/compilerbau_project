@@ -48,8 +48,8 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
     ASTNode variable = visit(ctx.type());
 
     // Process variable name or reference
-    if (ctx.ID() != null) {
-      variable.setValue(ctx.ID().getText());
+    if (!ctx.ID().isEmpty()) {
+      variable.setValue(ctx.ID(0).getText());
     }
     if (ctx.REF() != null) {
       variable.addChild(new ASTNode(Type.REF));
@@ -75,6 +75,10 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
     // Process array-specific constructs
     if (ctx.array() != null) {
       node.addChild(visit(ctx.array()));
+    }
+
+    if (ctx.ID().size() == 2) {
+      node.addChild(new ASTNode(Type.ID, ctx.ID().getLast().getText()));
     }
 
     return node;
@@ -671,12 +675,13 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
   @Override
   public ASTNode visitArray(CppParser.ArrayContext ctx) {
     ASTNode node = new ASTNode(Type.ARRAY);
-    if (ctx.getChild(1).equals(ctx.args())) {
-      node.addChildren(visitArgs((CppParser.ArgsContext) ctx.getChild(1)).children);
+    if (ctx.args() != null) {
+      node.addChildren(visit(ctx.args()).children);
       return node;
-    }
-    for (int i = 1; i < ctx.getChildCount() - 1; i += 2) {
-      node.addChild(visit(ctx.getChild(i)));
+    } else {
+      for (int i = 1; i < ctx.getChildCount() - 1; i += 2) {
+        node.addChild(visit(ctx.getChild(i)));
+      }
     }
     return node;
   }
@@ -689,14 +694,9 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
    */
   @Override
   public ASTNode visitArray_item(CppParser.Array_itemContext ctx) {
-    ASTNode node = new ASTNode(Type.ARRAY_ITEM);
-    if (ctx.getChild(0).equals(ctx.ID())) {
-      node.setValue(ctx.ID().getText());
-    } else {
-      node.addChild(visit(ctx.getChild(0)));
-    }
-    for (int i = 2; i < ctx.getChildCount() - 1; i += 2) {
-      node.addChild(visit(ctx.getChild(i)));
+    ASTNode node = new ASTNode(Type.ARRAY_ITEM, ctx.ID().getText());
+    for (int i = 0; i < ctx.expr().size(); i++) {
+      node.addChild(visit(ctx.expr(i)));
     }
     return node;
   }

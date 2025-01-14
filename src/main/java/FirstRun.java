@@ -11,6 +11,9 @@ public class FirstRun extends CppParseTreeVisitor {
       case Type.VAR_DECL:
         visitVardecl(node.children.getFirst());
         break;
+      case Type.ARRAY:
+        visitArray(node);
+        break;
       case Type.FN_DECL:
         visitFndecl(node);
         break;
@@ -60,7 +63,7 @@ public class FirstRun extends CppParseTreeVisitor {
   public ASTNode visitVardecl(ASTNode variableNode) {
     String type = variableNode.children.getFirst().getType().name().toLowerCase();
     Symbol typeSymbol = getTypeEqual(type, variableNode);
-
+    // TODO: Arrays?
     Symbol variable = new Variable(variableNode.children.getFirst().getValue(), typeSymbol.name);
 
     Symbol alreadyDeclared = currentScope.resolve(variable.name);
@@ -71,6 +74,29 @@ public class FirstRun extends CppParseTreeVisitor {
     }
 
     return variableNode;
+  }
+
+  public ASTNode visitArray(ASTNode node) {
+    for (ASTNode child : node.children) {
+      switch (child.getType()) {
+        case Type.ARRAY:
+          visitArray(child);
+          break;
+        default:
+          visitExpr(child);
+          break;
+      }
+    }
+    return node;
+  }
+
+  public ASTNode visitArrayItem(ASTNode node) {
+    String arrayName = node.getValue();
+    Symbol symbol = currentScope.resolve(arrayName);
+    if (symbol == null) {
+      System.out.println("Error: array " + arrayName + " not found");
+    }
+    return node;
   }
 
   public ASTNode visitFndecl(ASTNode fndecl) {
@@ -244,7 +270,6 @@ public class FirstRun extends CppParseTreeVisitor {
 
     Function constructor = new Function(constructorName, classSymbol.name);
     Symbol alreadyDeclared = currentScope.resolve(constructorName);
-
 
     currentScope.bind(constructor);
 
