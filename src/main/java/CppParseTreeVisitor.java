@@ -221,13 +221,13 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
       function = new ASTNode(Type.VOID);
     }
 
+    if (ctx.ID() != null) {
+      function.addChild(new ASTNode(Type.ID, ctx.ID().getText()));
+    } else {
+      function.addChild(visit(ctx.operator()));
+    }
     if (ctx.REF() != null) {
       function.addChild(new ASTNode(Type.REF));
-    }
-    if (ctx.operator() != null) {
-      function.addChild(visit(ctx.operator()));
-    } else {
-      function.addChild(new ASTNode(Type.ID, ctx.ID().getText()));
     }
 
     node.addChild(function);
