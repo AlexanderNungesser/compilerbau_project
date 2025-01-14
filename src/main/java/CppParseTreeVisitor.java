@@ -720,7 +720,7 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
 
     // Process optional member access
     if (ctx.ID().size() > 1) {
-      for (int i = 1; i < ctx.ID().size() - 1; i++) {
+      for (int i = 1; i < ctx.ID().size(); i++) {
         node.addChild(new ASTNode(Type.ID, ctx.ID(i).getText()));
       }
     }
