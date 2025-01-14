@@ -1,5 +1,6 @@
 import SymbolTable.*;
-import SymbolTable.Class;
+
+import java.lang.Class;
 
 public class FirstRun extends CppParseTreeVisitor {
   Scope currentScope;
@@ -29,6 +30,9 @@ public class FirstRun extends CppParseTreeVisitor {
         break;
       case Type.ARGS:
         visitArgs(node);
+        break;
+      case Type.ASSIGN:
+        visitAssign(node);
         break;
         //      case Type.CONSTRUCTOR:
         //        visitFndecl(node.children.getFirst());
@@ -210,7 +214,7 @@ public class FirstRun extends CppParseTreeVisitor {
   public ASTNode visitClass(ASTNode classNode) {
     String name = classNode.getValue();
     Symbol classType = currentScope.resolve(name);
-    Symbol classSymbol = new Class(name);
+    Symbol classSymbol = new SymbolTable.Class(name);
     if (classType == null) {
       currentScope.bind(classSymbol);
     } else {
@@ -218,6 +222,7 @@ public class FirstRun extends CppParseTreeVisitor {
         currentScope.bind(classSymbol);
       } else {
         System.out.println("Error: such class " + name + " already exists");
+        //throw new RuntimeException("Error: such class " + name + " already exists");
       }
     }
 
@@ -253,15 +258,33 @@ public class FirstRun extends CppParseTreeVisitor {
     return node;
   }
 
-  public Symbol getTypeEqual(String type, ASTNode node) {
-    Symbol typeSymbol;
+    public ASTNode visitAssign(ASTNode node) {
+      Symbol variable = currentScope.resolve(node.children.getFirst().getValue());
+      if (variable == null) {
+        System.out.println("Error: no such variable: " + node.children.getFirst().getValue());
+      }
 
-    if (type.equals("classtype")) {
-      typeSymbol = currentScope.resolve(node.children.getFirst().getValue());
-    } else {
-      typeSymbol = currentScope.resolve(type);
+      ASTNode value = node.children.getLast();
+      if(value.getType() == Type.ID || value.getType() == Type.OBJ_USAGE || value.getType() == Type.ARRAY_ITEM ) {
+        Symbol valueSymbol = currentScope.resolve(value.getValue());
+        if(valueSymbol == null) {
+          System.out.println("Error: no such variable: " + value.getValue());
+        }
+      }
+
+
+      return visitChildren(node);
     }
 
-    return typeSymbol;
-  }
+    public Symbol getTypeEqual(String type, ASTNode node) {
+        Symbol typeSymbol;
+
+        if (type.equals("classtype")) {
+            typeSymbol = currentScope.resolve(node.children.getFirst().getValue());
+        } else {
+            typeSymbol = currentScope.resolve(type);
+        }
+
+        return typeSymbol;
+    }
 }
