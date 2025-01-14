@@ -30,9 +30,9 @@ public class FirstRun extends CppParseTreeVisitor {
       case Type.ARGS:
         visitArgs(node);
         break;
-//      case Type.CONSTRUCTOR:
-//        visitFndecl(node.children.getFirst());
-//        break;
+        //      case Type.CONSTRUCTOR:
+        //        visitFndecl(node.children.getFirst());
+        //        break;
       case null:
         System.out.println("Type: " + node.getType().name() + "Value: " + node.getValue());
         break;
@@ -57,7 +57,6 @@ public class FirstRun extends CppParseTreeVisitor {
     globalScope.bind(new BuiltIn("print_int"));
     globalScope.bind(new BuiltIn("print_bool"));
     globalScope.bind(new BuiltIn("print_char"));
-
 
     currentScope = globalScope;
 
@@ -113,23 +112,49 @@ public class FirstRun extends CppParseTreeVisitor {
 
   public ASTNode visitFncall(ASTNode fncall) {
     String functionName = fncall.getValue();
-    Symbol function = currentScope.resolve(functionName);
+    if (fncall.children.getFirst().getType() == Type.CLASS) {
+      String className = fncall.children.getFirst().getValue();
+      Symbol classSymbol = currentScope.resolve(className);
+      if (classSymbol == null) {
+        System.out.println("Error: no such class: " + className);
+      } else {
+        ASTNode args =
+            (!fncall.children.isEmpty() && fncall.children.getLast().getType() == Type.ARGS)
+                ? fncall.children.getLast()
+                : null;
+        if (args != null) {
+          int args_count = args.children.size();
+          if (args_count != 1) {
+            System.out.println("Error: arg and param count mismatch");
+            return fncall;
+          }else {
+            currentScope.bind(new Variable(functionName, classSymbol.name));
+          }
+          visitArgs(args);
+        }
+      }
+    } else {
 
-    if (function == null) {
-      System.out.println("Error: no such function: " + functionName);
-      return fncall;
-    }
+      Symbol function = currentScope.resolve(functionName);
 
-    if (function instanceof Variable) {
-      System.out.println("Error: " + functionName + " is not a function");
-      return fncall;
-    }
+      if (function == null) {
+        System.out.println("Error: no such function: " + functionName);
+        return fncall;
+      }
 
-    ASTNode args = (!fncall.children.isEmpty() && fncall.children.getLast().getType() == Type.ARGS) ? fncall.children.getLast() : null;
-    int args_count = 0;
-    int params_count = 0;
+      if (function instanceof Variable) {
+        System.out.println("Error: " + functionName + " is not a function");
+        return fncall;
+      }
 
-    if(args != null) {
+      ASTNode args =
+          (!fncall.children.isEmpty() && fncall.children.getLast().getType() == Type.ARGS)
+              ? fncall.children.getLast()
+              : null;
+      int args_count = 0;
+      int params_count = 0;
+
+      if (args != null) {
         args_count = args.children.size();
         if (function instanceof BuiltIn) {
           params_count = 1;
@@ -143,6 +168,7 @@ public class FirstRun extends CppParseTreeVisitor {
         }
 
         visitArgs(args);
+      }
     }
 
     return fncall;
@@ -180,15 +206,15 @@ public class FirstRun extends CppParseTreeVisitor {
     return node;
   }
 
-  //TODO: Big 3 erstellen destructo copyconstructor constructor!
+  // TODO: Big 3 erstellen destructo copyconstructor constructor!
   public ASTNode visitClass(ASTNode classNode) {
     String name = classNode.getValue();
     Symbol classType = currentScope.resolve(name);
     Symbol classSymbol = new Class(name);
     if (classType == null) {
       currentScope.bind(classSymbol);
-    }else {
-      if(!(classType instanceof SymbolTable.Class)) {
+    } else {
+      if (!(classType instanceof SymbolTable.Class)) {
         currentScope.bind(classSymbol);
       } else {
         System.out.println("Error: such class " + name + " already exists");
@@ -204,9 +230,7 @@ public class FirstRun extends CppParseTreeVisitor {
 
     currentScope = currentScope.enclosingScope;
 
-
     return classNode;
-
   }
 
   public ASTNode visitExpr(ASTNode node) {
@@ -222,23 +246,22 @@ public class FirstRun extends CppParseTreeVisitor {
     return node;
   }
 
-    public ASTNode visitChildren (ASTNode node){
-      for (ASTNode child : node.children) {
-        visit(child);
-      }
-      return node;
+  public ASTNode visitChildren(ASTNode node) {
+    for (ASTNode child : node.children) {
+      visit(child);
     }
-
-    public Symbol getTypeEqual (String type, ASTNode node){
-      Symbol typeSymbol;
-
-      if (type.equals("classtype")) {
-        typeSymbol = currentScope.resolve(node.children.getFirst().getValue());
-      } else {
-        typeSymbol = currentScope.resolve(type);
-      }
-
-      return typeSymbol;
-    }
-
+    return node;
   }
+
+  public Symbol getTypeEqual(String type, ASTNode node) {
+    Symbol typeSymbol;
+
+    if (type.equals("classtype")) {
+      typeSymbol = currentScope.resolve(node.children.getFirst().getValue());
+    } else {
+      typeSymbol = currentScope.resolve(type);
+    }
+
+    return typeSymbol;
+  }
+}
