@@ -500,24 +500,6 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
   }
 
   /**
-   * Visit a parse tree produced by {@link CppParser#delete}.
-   *
-   * @param ctx the parse tree
-   * @return the visitor result
-   */
-  @Override
-  public ASTNode visitDelete(CppParser.DeleteContext ctx) {
-    ASTNode node = new ASTNode(Type.DELETE);
-    int index = (ctx.getChildCount() == 5) ? 3 : 1;
-    if (ctx.getChild(index).equals(ctx.ID())) {
-      node.addChild(new ASTNode(Type.ID, ctx.ID().getText()));
-    } else {
-      node.addChild(visit(ctx.getChild(index)));
-    }
-    return node;
-  }
-
-  /**
    * Visit a parse tree produced by {@link CppParser#constructor}.
    *
    * @param ctx the parse tree
@@ -715,7 +697,7 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
     if (ctx.children.size() == 1) {
       node.setValue("this");
       return node;
-    } else if (ctx.getChild(0).getText().equals("*") && ctx.children.size() == 2) {
+    } else if (ctx.getChild(0).getText().equals("*") && ctx.children.size() == 2 || ctx.getChild(0).getText().equals("(")) {
       node.setValue("*this");
       return node;
     }

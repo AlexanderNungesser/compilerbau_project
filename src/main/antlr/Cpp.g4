@@ -14,7 +14,6 @@ stmt    :   var_decl
         |   if
         |   return
         |   class
-        |   delete
         |   obj_usage ';'
         ;
 
@@ -72,8 +71,6 @@ expr    :   fn_call                     # Call
         |   '(' e=expr ')'                # Nested
         ;
 
-delete : 'delete' ('[' ']')? (obj_usage | ID) ';' ;
-
 constructor :   ID '(' params? ')' (':' ID '(' args? ')')? ';'
              |  (ID ':' ':')? ID '(' params? ')' (':' ID '(' args? ')')? (',' ID '(' args? ')')* block ;
 
@@ -88,7 +85,7 @@ type    :   'int' | 'char' | 'bool' | ID ;
 array   :   '{' (args | array (',' array)*) '}' ;
 array_item  :  ID ('[' expr ']')+ ;
 
-obj_usage   :   ( 'this' '->' )? ID ( '.' ID)* ('.' (array_item | dec_inc | fn_call))?
+obj_usage   :   ( 'this' '->' | '(' '*' 'this' ')' '.' )? ID ( '.' ID)* ('.' (array_item | dec_inc | fn_call))?
             |   '*'? 'this'
             ;
 

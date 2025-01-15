@@ -15,7 +15,6 @@ public enum Type {
   IF,
   RETURN,
   CLASS,
-  DELETE,
   OBJ_USAGE,
   OPERATOR,
   ID,
