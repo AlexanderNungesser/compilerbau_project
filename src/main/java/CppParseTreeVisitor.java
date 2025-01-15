@@ -142,9 +142,9 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
       function = new ASTNode(Type.VOID);
     }
 
-      if (ctx.ID() != null) {
-        function.addChild(new ASTNode(Type.ID, ctx.ID().getText()));
-      }
+    if (ctx.ID() != null) {
+      function.addChild(new ASTNode(Type.ID, ctx.ID().getText()));
+    }
 
     if (ctx.REF() != null) {
       function.addChild(new ASTNode(Type.REF));
@@ -243,7 +243,7 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
   @Override
   public ASTNode visitReturn(CppParser.ReturnContext ctx) {
     ASTNode node = new ASTNode(Type.RETURN);
-    if (ctx.expr() != null){
+    if (ctx.expr() != null) {
       node.addChild(visit(ctx.expr()));
     }
     return node;
@@ -258,8 +258,8 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
   @Override
   public ASTNode visitBlock(CppParser.BlockContext ctx) {
     ASTNode node = new ASTNode(Type.BLOCK);
-    if (!ctx.stmt().isEmpty()){
-      for (CppParser.StmtContext child : ctx.stmt()){
+    if (!ctx.stmt().isEmpty()) {
+      for (CppParser.StmtContext child : ctx.stmt()) {
         node.addChild(visit(child));
       }
     }
@@ -467,10 +467,10 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
     }
 
     if (ctx.ID().size() > 1) {
-        node.addChild(new ASTNode(Type.ID, ctx.ID().getLast().getText()));
-        if (ctx.args() != null) {
-          node.addChild(visit(ctx.args()));
-        }
+      node.addChild(new ASTNode(Type.ID, ctx.ID().getLast().getText()));
+      if (ctx.args() != null) {
+        node.addChild(visit(ctx.args()));
+      }
     }
 
     if (ctx.block() != null) {
@@ -660,7 +660,8 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
     if (ctx.children.size() == 1) {
       node.setValue("this");
       return node;
-    } else if (ctx.getChild(0).getText().equals("*") && ctx.children.size() == 2 || ctx.getChild(0).getText().equals("(")) {
+    } else if (ctx.getChild(0).getText().equals("*") && ctx.children.size() == 2
+        || ctx.getChild(0).getText().equals("(")) {
       node.setValue("*this");
       return node;
     }
