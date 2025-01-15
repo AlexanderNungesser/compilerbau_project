@@ -34,45 +34,67 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
     }
   }
 
-  /**
-   * Visit a parse tree produced by {@link CppParser#var_decl}.
-   *
-   * @param ctx the parse tree
-   * @return the visitor result
-   */
   @Override
-  public ASTNode visitVar_decl(CppParser.Var_declContext ctx) {
+  public ASTNode visitVar_declaration(CppParser.Var_declarationContext ctx) {
     ASTNode node = new ASTNode(Type.VAR_DECL);
-
-    // Process type information
-    ASTNode variable = visit(ctx.type());
-
-    // Process variable name or reference
-    if (!ctx.ID().isEmpty()) {
-      variable.setValue(ctx.ID(0).getText());
+    ASTNode type = visit(ctx.type());
+    type.setValue(ctx.ID().getText());
+    node.addChild(type);
+    if (ctx.expr() != null){
+      node.addChild(visit(ctx.expr()));
     }
-    if (ctx.REF() != null) {
-      variable.addChild(new ASTNode(Type.REF));
+    return node;
+  }
+
+  @Override
+  public ASTNode visitVar_ref(CppParser.Var_refContext ctx) {
+    ASTNode node = new ASTNode(Type.VAR_DECL);
+    ASTNode type = visit(ctx.type());
+    type.setValue(ctx.ID().getText());
+    type.addChild(new ASTNode(Type.REF));
+    node.addChild(type);
+    node.addChild(visit(ctx.expr()));
+    return node;
+  }
+
+  @Override
+  public ASTNode visitArray_decl(CppParser.Array_declContext ctx) {
+    ASTNode node = new ASTNode(Type.VAR_DECL);
+    ASTNode type = visit(ctx.type());
+    type.setValue(ctx.ID().getText());
+    for (int i = 0; i < ctx.expr().size(); i++) {
+      type.addChild(visit(ctx.expr(i)));
     }
+    node.addChild(type);
+    return node;
+  }
 
-    node.addChild(variable);
-
-    // Process initialization if present
-    if (ctx.expr() != null) {
+  @Override
+  public ASTNode visitArray_init(CppParser.Array_initContext ctx) {
+    ASTNode node = new ASTNode(Type.VAR_DECL);
+    ASTNode type = visit(ctx.type());
+    type.setValue(ctx.ID().getText());
+    if (ctx.expr() != null){
       for (int i = 0; i < ctx.expr().size(); i++) {
-        node.addChild(visit(ctx.expr(i)));
+        type.addChild(visit(ctx.expr(i)));
       }
     }
+    node.addChild(type);
+    node.addChild(visitArray(ctx.array()));
+    return node;
+  }
 
-    // Process array-specific constructs
-    if (ctx.array() != null) {
-      node.addChild(visit(ctx.array()));
+  @Override
+  public ASTNode visitArray_ref(CppParser.Array_refContext ctx) {
+    ASTNode node = new ASTNode(Type.VAR_DECL);
+    ASTNode type = visit(ctx.type());
+    type.setValue(ctx.ID(0).getText());
+    type.addChild(new ASTNode(Type.REF));
+    for (int i = 0; i < ctx.expr().size(); i++) {
+      type.addChild(visit(ctx.expr(i)));
     }
-
-    if (ctx.ID().size() == 2) {
-      node.addChild(new ASTNode(Type.ID, ctx.ID().getLast().getText()));
-    }
-
+    node.addChild(type);
+    node.addChild(new ASTNode(Type.ID, ctx.ID(1).getText()));
     return node;
   }
 
