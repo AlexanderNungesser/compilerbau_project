@@ -491,8 +491,8 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
   public ASTNode visitCopy_constructor(CppParser.Copy_constructorContext ctx) {
     ASTNode node = new ASTNode(Type.COPY_CONSTRUCTOR, ctx.ID().getFirst().getText());
 
-    ASTNode child = new ASTNode(Type.CLASSTYPE, ctx.ID(1).getText());
-    child.addChild(new ASTNode(Type.ID, ctx.ID(2).getText()));
+    ASTNode child = new ASTNode(Type.CLASSTYPE, ctx.ID(2).getText());
+    child.addChild(new ASTNode(Type.ID, ctx.ID(1).getText()));
     child.addChild(new ASTNode(Type.REF));
     node.addChild(child);
 
