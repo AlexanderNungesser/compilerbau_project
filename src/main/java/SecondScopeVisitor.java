@@ -33,9 +33,6 @@ public class SecondScopeVisitor extends CppParseTreeVisitor {
       case Type.CLASS:
         visitClass(node);
         break;
-      case Type.CONSTRUCTOR:
-        visitClass(node);
-        break;
       case null:
         System.out.println("Type: " + node.getType().name() + "Value: " + node.getValue());
         break;
