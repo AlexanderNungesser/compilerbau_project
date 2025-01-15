@@ -1,5 +1,7 @@
 
 void foo() {
+    int b = 3;
+    b = b + 5;
     print_char('f');    // 'f'
 }
 
@@ -28,7 +30,7 @@ int foobar(int x, int y, int z, int &r) {
     print_int(z);       // ...
     print_int(r);       // ...
     r = 99;
-    return x + y + z;
+    return x + 'y' + z;
 }
 
 void f1(int x) {
@@ -97,6 +99,6 @@ int main() {
 }
 
 
-void bar() {
-    print_char('b');    // 'b'
-}
+//void bar() {
+//    print_char('b');    // 'b'
+//}

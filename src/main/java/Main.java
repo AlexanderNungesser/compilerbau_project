@@ -20,7 +20,7 @@ public class Main {
 
   public static void main(String... args) throws IOException {
 
-    String relativePath = "src/main/antlr/test_files/class.cpp";
+    String relativePath = "src/main/antlr/test_files/func.cpp";
 
     String input = readFileWithPaths(relativePath);
     if (input != null) {
@@ -47,5 +47,11 @@ public class Main {
     scopeVisitor2.visit(ast);
     System.out.println("\nSecond Scope Run:");
     scopeVisitor2.currentScope.print();
+    ast.print();
+
+    TypeCheckVisitor typeCheckVisitor = new TypeCheckVisitor(scopeVisitor.currentScope);
+    typeCheckVisitor.visit(ast);
+    System.out.println("\nType Check Run:");
+    typeCheckVisitor.currentScope.print();
   }
 }
