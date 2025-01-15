@@ -26,9 +26,7 @@ assign  :   (array_item | ID | obj_usage) ('=' | ASSIGN_OP) expr ';' ;
 
 dec_inc :   (DEC_INC_OP (array_item | ID) | (array_item | ID) DEC_INC_OP) ;
 
-fn_decl  :  ('void' | type) REF? ID '(' params? ')' ';'
-         |  ('void' | type) REF? ID '(' params? ')' block
-         ;
+fn_decl  :  ('void' | type) REF? ID '(' params? ')' (';' | block) ;
 
 abstract_fn : 'virtual' ('void' | type) REF? ID '(' params? ')' '=' INT ';' ;
 
@@ -69,16 +67,15 @@ expr    :   fn_call                     # Call
         |   '(' e=expr ')'                # Nested
         ;
 
-constructor :   ID '(' params? ')' (':' ID '(' args? ')')? ';'
-             |  ID '(' params? ')' (':' ID '(' args? ')')? (',' ID '(' args? ')')* block ;
+constructor :   ID '(' params? ')' (':' ID '(' args? ')')? block ;
 
-destructor  :   'virtual'? '~' ID '(' params? ')' (';' | block) ;
+destructor  :   'virtual'? '~' ID '(' params? ')' block ;
 
-operator    :   ID REF 'operator' '=' '(' params ')' (';' | block);
+operator    :   ID REF 'operator' '=' '(' params ')' block;
 
 class   :   'class' ID (':' 'public' ID)? '{' ('public' ':')? (var_decl | constructor | destructor | operator | 'virtual'? fn_decl | abstract_fn)* '}' ';' ;
 
-main    :   ('void' | type) 'main' '(' params? ')' (';' | block) ;
+main    :   ('void' | type) 'main' '(' params? ')' block ;
 
 type    :   'int' | 'char' | 'bool' | ID ;
 

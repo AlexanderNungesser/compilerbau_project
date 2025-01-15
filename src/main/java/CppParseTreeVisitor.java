@@ -460,30 +460,17 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
    */
   @Override
   public ASTNode visitConstructor(CppParser.ConstructorContext ctx) {
-    ASTNode node = new ASTNode(Type.CONSTRUCTOR);
-    int index = 1;
-    if (ctx.getChild(1).getText().equals(":")) {
-      index++;
-      node.addChild(new ASTNode(Type.CLASS, ctx.getChild(1).getText()));
-      node.addChild(new ASTNode(Type.ID, ctx.getChild(3).getText()));
-    } else {
-      node.addChild(new ASTNode(Type.ID, ctx.children.getFirst().getText()));
-    }
+    ASTNode node = new ASTNode(Type.CONSTRUCTOR, ctx.ID().getFirst().getText());
 
     if (ctx.params() != null) {
       node.addChild(visit(ctx.params()));
     }
 
     if (ctx.ID().size() > 1) {
-      for (int i = index; i < ctx.ID().size(); i++) {
-        node.addChild(new ASTNode(Type.ID, ctx.ID(i).getText()));
-        if (ctx.args() != null && ctx.args().size() > 1) {
-
-          node.addChild(visit(ctx.args(i - index)));
-        } else {
-          node.addChild(visit(ctx.args(0)));
+        node.addChild(new ASTNode(Type.ID, ctx.ID().getLast().getText()));
+        if (ctx.args() != null) {
+          node.addChild(visit(ctx.args()));
         }
-      }
     }
 
     if (ctx.block() != null) {
