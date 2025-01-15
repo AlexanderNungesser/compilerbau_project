@@ -212,6 +212,9 @@ public class SecondScopeVisitor {
             case Type.DESTRUCTOR:
               visitDestructor(child, currentScope.resolve(classNode.getValue()));
               break;
+            case Type.COPY_CONSTRUCTOR:
+              visitCopyConstructor(child, currentScope.resolve(classNode.getValue()));
+              break;
             case Type.OPERATOR:
               visitOperator(child, currentScope.resolve(classNode.getValue()));
               break;
@@ -222,6 +225,46 @@ public class SecondScopeVisitor {
       }
     }
     return classNode;
+  }
+
+  private ASTNode visitCopyConstructor(ASTNode copyconstNode, Symbol classSymbol) {
+    String copyconstName = copyconstNode.getValue();
+
+    if (!(classSymbol instanceof SymbolTable.Class)) {
+      System.out.println("Error: The symbol must be an instance of class");
+    }
+
+    ASTNode paramID = copyconstNode.children.getFirst();
+
+    if (!copyconstName.equals(classSymbol.name)) {
+      System.out.println("Error: Operator return type must match class name: " + classSymbol.name);
+    } else if (!paramID.getValue().equals(classSymbol.name)) {
+      System.out.println("Error: Param type must match class name: " + classSymbol.name);
+    }
+
+    if (!(copyconstName.equals(paramID.getValue()))) {
+      System.out.println("Error: Return type ID must match parameter ID");
+    }
+
+    Function operator = new Function(copyconstName, classSymbol.name);
+
+    currentScope.bind(operator);
+
+    Scope constructorScope = new Scope(currentScope);
+    currentScope.innerScopes.add(constructorScope);
+    currentScope = constructorScope;
+
+    for (ASTNode child : copyconstNode.children) {
+      if (child.getType() == Type.PARAMS) {
+        visitParams(child);
+      }
+    }
+
+    visitChildren(copyconstNode);
+
+    currentScope = currentScope.enclosingScope;
+
+    return copyconstNode;
   }
 
   public ASTNode visitConstructor(ASTNode constructorNode, Symbol classSymbol) {
