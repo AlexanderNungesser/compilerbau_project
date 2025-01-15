@@ -274,10 +274,10 @@ public class FirstScopeVisitor extends CppParseTreeVisitor {
     }
     if (!mustHave.get(Type.COPY_CONSTRUCTOR).booleanValue()) {
       ASTNode copyConstructorNode = new ASTNode(Type.COPY_CONSTRUCTOR, classNode.getValue());
-      ASTNode child = new ASTNode(Type.CLASSTYPE, classNode.getValue());
-      child.addChild(new ASTNode(Type.ID, "ref"));
-      child.addChild(new ASTNode(Type.REF));
-      copyConstructorNode.addChild(child);
+      ASTNode ref = new ASTNode(Type.CLASSTYPE, "ref");
+      ref.addChild(new ASTNode(Type.ID, classNode.getValue()));
+      ref.addChild(new ASTNode(Type.REF));
+      copyConstructorNode.addChild(ref);
       String superclassName =
           classNode.children.stream()
               .filter(c -> c.getType() == Type.CLASSTYPE)
@@ -287,7 +287,7 @@ public class FirstScopeVisitor extends CppParseTreeVisitor {
       if (!superclassName.equals("Unknown")) {
         copyConstructorNode.addChild(new ASTNode(Type.ID, superclassName));
         ASTNode arg = new ASTNode(Type.ARGS);
-        arg.addChild(new ASTNode(Type.ID, child.children.getFirst().getValue()));
+        arg.addChild(new ASTNode(Type.ID, ref.children.getFirst().getValue()));
         copyConstructorNode.addChild(arg);
       }
       copyConstructorNode.addChild(new ASTNode(Type.BLOCK));
