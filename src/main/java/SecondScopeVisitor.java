@@ -254,13 +254,9 @@ public class SecondScopeVisitor {
     currentScope.innerScopes.add(constructorScope);
     currentScope = constructorScope;
 
-    for (ASTNode child : copyconstNode.children) {
-      if (child.getType() == Type.PARAMS) {
-        visitParams(child);
-      }
-    }
+    visitParams(copyconstNode);
 
-    visitChildren(copyconstNode);
+    visit(copyconstNode.children.getLast());
 
     currentScope = currentScope.enclosingScope;
 
