@@ -29,6 +29,9 @@ public class FirstRun extends CppParseTreeVisitor {
       case Type.CLASS:
         visitClass(node);
         break;
+      case Type.MAIN:
+        visitMain(node);
+        break;
       case null:
         System.out.println("Type: " + node.getType().name() + "Value: " + node.getValue());
         break;
@@ -288,6 +291,26 @@ public class FirstRun extends CppParseTreeVisitor {
     currentScope = currentScope.enclosingScope;
 
     return constructorNode;
+  }
+
+  public ASTNode visitMain(ASTNode node) {
+    String name = node.getType().name().toLowerCase();
+    String type = node.children.getFirst().getType().name().toLowerCase();
+    Symbol typeSymbol = currentScope.resolve(type);
+    if (typeSymbol == null) {
+      System.out.println("Error: no such return type " + type);
+    } else {
+      Function function = new Function(name, typeSymbol.name);
+      Symbol alreadyImplemented = currentScope.resolve(name);
+      if (alreadyImplemented != null) {
+        System.out.println("Error: such function " + name + " already exists");
+      } else {
+        currentScope.bind(function);
+      }
+
+      visitBlock(node.children.getLast());
+    }
+    return node;
   }
 
   public Symbol getTypeEqual(String type, ASTNode node) {
