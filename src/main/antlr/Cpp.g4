@@ -73,7 +73,7 @@ destructor  :   'virtual'? '~' ID '(' params? ')' block ;
 
 operator    :   ID REF 'operator' '=' '(' params ')' block;
 
-class   :   'class' ID (':' 'public' ID)? '{' ('public' ':')? (var_decl | constructor | destructor | operator | 'virtual'? fn_decl | abstract_fn)* '}' ';' ;
+class   :   'class' ID (':' 'public' ID)? '{' 'public' ':' (var_decl | constructor | destructor | operator | 'virtual'? fn_decl | abstract_fn)* '}' ';' ;
 
 main    :   ('void' | type) 'main' '(' params? ')' block ;
 
