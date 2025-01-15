@@ -41,7 +41,7 @@ int f95(int n) {
     int b = a - 1;
     int c = b - 1;
     int d = c - 1;
-    int e = d - 1;
+    int e = d--;
     if (n <= 0) {
         return 1;
     } else {
