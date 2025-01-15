@@ -264,11 +264,6 @@ public class SecondScopeVisitor extends CppParseTreeVisitor {
       return destructorNode;
     }
 
-    if (!destructorName.equals("~" + classSymbol.name)) {
-      System.out.println("Error: Destructor name must match class name with '~': ~" + classSymbol.name);
-      return destructorNode;
-    }
-
     Symbol alreadyDeclared = currentScope.resolve(destructorName);
     if (alreadyDeclared != null) {
       System.out.println("Error: Destructor " + destructorName + " already exists.");
