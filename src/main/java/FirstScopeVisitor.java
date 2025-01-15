@@ -207,7 +207,6 @@ public class FirstScopeVisitor {
     return node;
   }
 
-  // TODO: Big 3 erstellen destructo copyconstructor constructor!
   public ASTNode visitClass(ASTNode classNode) {
     String name = classNode.getValue();
     Symbol classType = currentScope.resolve(name);
