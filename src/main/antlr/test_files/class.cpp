@@ -112,6 +112,5 @@ int main() {
         print_int(z.value);     // 99
     }
 
-
     return 0;
 }
