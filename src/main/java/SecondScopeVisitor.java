@@ -60,10 +60,6 @@ public class SecondScopeVisitor extends CppParseTreeVisitor {
   }
 
   public ASTNode visitProgram(ASTNode program) {
-    Scope globalScope = new Scope(null);
-
-    currentScope = globalScope;
-
     visitChildren(program);
     return program;
   }
@@ -205,6 +201,7 @@ public class SecondScopeVisitor extends CppParseTreeVisitor {
     for (Scope scope : this.currentScope.innerScopes) {
       if (!visitedScopes.contains(scope)) {
         this.currentScope = scope;
+        System.out.println("changing da scope (in class)");
         for (ASTNode child : classNode.children) {
           switch (child.getType()) {
             case Type.FN_DECL: // Methoden
@@ -238,7 +235,6 @@ public class SecondScopeVisitor extends CppParseTreeVisitor {
     }
 
     Function constructor = new Function(constructorName, classSymbol.name);
-    Symbol alreadyDeclared = currentScope.resolve(constructorName);
 
     currentScope.bind(constructor);
 

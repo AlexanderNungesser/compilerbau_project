@@ -32,6 +32,8 @@ public class FirstScopeVisitor extends CppParseTreeVisitor {
       case Type.MAIN:
         visitMain(node);
         break;
+      case Type.ARRAY_ITEM:
+        visitArrayItem(node);
       case null:
         System.out.println("Type: " + node.getType().name() + "Value: " + node.getValue());
         break;
@@ -66,8 +68,18 @@ public class FirstScopeVisitor extends CppParseTreeVisitor {
   public ASTNode visitVardecl(ASTNode variableNode) {
     String type = variableNode.children.getFirst().getType().name().toLowerCase();
     Symbol typeSymbol = getTypeEqual(type, variableNode.children.getFirst());
-    // TODO: Arrays?
-    Symbol variable = new Variable(variableNode.children.getFirst().getValue(), typeSymbol.name);
+    boolean isArray = false;
+    for (ASTNode child : variableNode.children) {
+      if(child.getType() == Type.ARRAY) {
+        isArray = true;
+      }
+    }
+    Symbol variable;
+    if(isArray) {
+      variable = new Array(variableNode.children.getFirst().getValue(), typeSymbol.name);
+    } else {
+      variable = new Variable(variableNode.children.getFirst().getValue(), typeSymbol.name);
+    }
 
     Symbol alreadyDeclared = currentScope.resolve(variable.name);
     if (alreadyDeclared != null) {
@@ -129,20 +141,17 @@ public class FirstScopeVisitor extends CppParseTreeVisitor {
       }
     }
 
-    visitChildren(fndecl);
-
-    currentScope = currentScope.enclosingScope;
-    return fndecl;
-  }
-
-  public ASTNode visitArgs(ASTNode args) {
-    for (ASTNode child : args.children) {
-      if (child.getType() == Type.OBJ_USAGE || child.getType() == Type.ID) {
-        currentScope.resolve(child.getType().name().toLowerCase());
+    for(ASTNode child : fndecl.children) {
+      if(child.getType() == Type.PARAMS) {
+        visitParams(child);
+      }
+      if(child.getType() == Type.BLOCK) {
+        visitBlock(child);
       }
     }
 
-    return args;
+    currentScope = currentScope.enclosingScope;
+    return fndecl;
   }
 
   public ASTNode visitAbstractFn(ASTNode node) {
@@ -243,8 +252,6 @@ public class FirstScopeVisitor extends CppParseTreeVisitor {
       if (var == null) {
         System.out.println("Error: no such variable: " + name);
       }
-    } else {
-      visitChildren(node);
     }
     return node;
   }
