@@ -123,5 +123,24 @@ public class TypeCheckVisitor {
 
     public ASTNode visitDecInc(ASTNode node) {return node;}
 
-    public ASTNode visitCalculate(ASTNode node) {return node;}
+    public ASTNode visitCalculate(ASTNode node) {
+        ASTNode firstChild = node.children.getFirst();
+        String type = getEndType(node.children.getFirst()).name().toLowerCase();
+        if (type.equals("id")) {
+            type = this.currentScope.resolve(firstChild.getValue()).type;
+        }
+
+        if (!(type.equals("int"))) {
+            System.out.println("ERROR: Expected int, got " + type);
+        }
+
+        return node;
+    }
+
+    private Type getEndType(ASTNode node) {
+        if (!node.children.isEmpty()) {
+            getEndType(node.children.getFirst());
+        }
+        return node.getType();
+    }
 }
