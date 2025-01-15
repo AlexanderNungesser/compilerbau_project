@@ -2,9 +2,14 @@ import SymbolTable.*;
 import java.util.HashSet;
 import java.util.Set;
 
-public class SecondRun extends CppParseTreeVisitor {
+public class SecondScopeVisitor extends CppParseTreeVisitor {
   Scope currentScope;
   Set<Scope> visitedScopes = new HashSet<>();
+
+  public SecondScopeVisitor(Scope scope) {
+    this.currentScope = scope;
+  }
+
 
   public ASTNode visit(ASTNode node) {
     switch (node.getType()) {
@@ -28,6 +33,7 @@ public class SecondRun extends CppParseTreeVisitor {
         break;
       case Type.CLASS:
         visitScopes(node);
+        break;
         //      case Type.CONSTRUCTOR:
         //        visitFndecl(node.children.getFirst());
         //        break;

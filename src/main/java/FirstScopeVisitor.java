@@ -1,6 +1,6 @@
 import SymbolTable.*;
 
-public class FirstRun extends CppParseTreeVisitor {
+public class FirstScopeVisitor extends CppParseTreeVisitor {
   Scope currentScope;
 
   public ASTNode visit(ASTNode node) {
