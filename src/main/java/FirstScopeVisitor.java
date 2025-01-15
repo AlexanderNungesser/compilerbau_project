@@ -37,11 +37,11 @@ public class FirstScopeVisitor extends CppParseTreeVisitor {
       case Type.ARRAY_ITEM:
         visitArrayItem(node);
       case null:
-        System.out.println("Type: " + node.getType().name() + "Value: " + node.getValue());
+        System.out.println("Type: " + node.getType().name() + " Value: " + node.getValue());
         break;
       default:
         if (node.children.isEmpty()) {
-          visitExpr(node);
+          break;
         } else {
           visitChildren(node);
         }
@@ -72,12 +72,12 @@ public class FirstScopeVisitor extends CppParseTreeVisitor {
     Symbol typeSymbol = getTypeEqual(type, variableNode.children.getFirst());
     boolean isArray = false;
     for (ASTNode child : variableNode.children) {
-      if(child.getType() == Type.ARRAY) {
+      if (child.getType() == Type.ARRAY) {
         isArray = true;
       }
     }
     Symbol variable;
-    if(isArray) {
+    if (isArray) {
       variable = new Array(variableNode.children.getFirst().getValue(), typeSymbol.name);
     } else {
       variable = new Variable(variableNode.children.getFirst().getValue(), typeSymbol.name);
@@ -143,11 +143,11 @@ public class FirstScopeVisitor extends CppParseTreeVisitor {
       }
     }
 
-    for(ASTNode child : fndecl.children) {
-      if(child.getType() == Type.PARAMS) {
+    for (ASTNode child : fndecl.children) {
+      if (child.getType() == Type.PARAMS) {
         visitParams(child);
       }
-      if(child.getType() == Type.BLOCK) {
+      if (child.getType() == Type.BLOCK) {
         visitBlock(child);
       }
     }
@@ -324,7 +324,7 @@ public class FirstScopeVisitor extends CppParseTreeVisitor {
       String name = node.getValue();
       Symbol var = currentScope.resolve(name);
       if (var == null) {
-        System.out.println("Error: no such variable: " + name);
+        System.out.println("Error: in Expr no such variable: " + name);
       }
     }
     return node;

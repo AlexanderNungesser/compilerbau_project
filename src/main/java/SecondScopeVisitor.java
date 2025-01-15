@@ -201,7 +201,6 @@ public class SecondScopeVisitor extends CppParseTreeVisitor {
     for (Scope scope : this.currentScope.innerScopes) {
       if (!visitedScopes.contains(scope)) {
         this.currentScope = scope;
-        System.out.println("changing da scope (in class)");
         for (ASTNode child : classNode.children) {
           switch (child.getType()) {
             case Type.FN_DECL: // Methoden
