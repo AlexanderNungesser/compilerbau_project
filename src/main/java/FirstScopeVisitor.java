@@ -225,11 +225,6 @@ public class FirstScopeVisitor extends CppParseTreeVisitor {
         case FN_DECL: // Methoden
           visitFndecl(child);
           break;
-        case CONSTRUCTOR: // Konstruktor
-          visitConstructor(child, classSymbol);
-          break;
-        case DESTRUCTOR:
-          break;
         case ABSTRACT_FN:
           visitAbstractFn(child);
           break;
@@ -259,41 +254,6 @@ public class FirstScopeVisitor extends CppParseTreeVisitor {
       visit(child);
     }
     return node;
-  }
-
-  public ASTNode visitConstructor(ASTNode constructorNode, Symbol classSymbol) {
-    String constructorName = constructorNode.getValue();
-
-    if (!(classSymbol instanceof SymbolTable.Class)) {
-      System.out.println("Error: The symbol must be an instance of class");
-      return constructorNode;
-    }
-
-    if (!constructorName.equals(classSymbol.name)) {
-      System.out.println("Error: Constructor name must match class name: " + classSymbol.name);
-      return constructorNode;
-    }
-
-    Function constructor = new Function(constructorName, classSymbol.name);
-    Symbol alreadyDeclared = currentScope.resolve(constructorName);
-
-    currentScope.bind(constructor);
-
-    Scope constructorScope = new Scope(currentScope);
-    currentScope.innerScopes.add(constructorScope);
-    currentScope = constructorScope;
-
-    for (ASTNode child : constructorNode.children) {
-      if (child.getType() == Type.PARAMS) {
-        visitParams(child);
-      }
-    }
-
-    visitChildren(constructorNode);
-
-    currentScope = currentScope.enclosingScope;
-
-    return constructorNode;
   }
 
   public ASTNode visitMain(ASTNode node) {

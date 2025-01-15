@@ -10,7 +10,6 @@ public class SecondScopeVisitor extends CppParseTreeVisitor {
     this.currentScope = scope;
   }
 
-
   public ASTNode visit(ASTNode node) {
     switch (node.getType()) {
       case Type.PROGRAM:
@@ -32,11 +31,11 @@ public class SecondScopeVisitor extends CppParseTreeVisitor {
         visitScopes(node);
         break;
       case Type.CLASS:
-        visitScopes(node);
+        visitClass(node);
         break;
-        //      case Type.CONSTRUCTOR:
-        //        visitFndecl(node.children.getFirst());
-        //        break;
+      case Type.CONSTRUCTOR:
+        visitClass(node);
+        break;
       case null:
         System.out.println("Type: " + node.getType().name() + "Value: " + node.getValue());
         break;
@@ -205,6 +204,29 @@ public class SecondScopeVisitor extends CppParseTreeVisitor {
     return visitChildren(node);
   }
 
+  public ASTNode visitClass(ASTNode classNode) {
+    for (Scope scope : this.currentScope.innerScopes) {
+      if (!visitedScopes.contains(scope)) {
+        this.currentScope = scope;
+        for (ASTNode child : classNode.children) {
+          switch (child.getType()) {
+            case Type.FN_DECL: // Methoden
+              visitScopes(child);
+              break;
+            case Type.CONSTRUCTOR:
+              visitConstructor(child, currentScope.resolve(classNode.getValue()));
+              break;
+            case Type.DESTRUCTOR:
+              break;
+          }
+        }
+        this.currentScope = this.currentScope.enclosingScope;
+        visitedScopes.add(scope);
+      }
+    }
+    return classNode;
+  }
+
   public ASTNode visitConstructor(ASTNode constructorNode, Symbol classSymbol) {
     String constructorName = constructorNode.getValue();
 
@@ -221,11 +243,7 @@ public class SecondScopeVisitor extends CppParseTreeVisitor {
     Function constructor = new Function(constructorName, classSymbol.name);
     Symbol alreadyDeclared = currentScope.resolve(constructorName);
 
-    if (alreadyDeclared != null) {
-      System.out.println("Error: Constructor " + constructorName + " already exists");
-    } else {
-      currentScope.bind(constructor);
-    }
+    currentScope.bind(constructor);
 
     Scope constructorScope = new Scope(currentScope);
     currentScope.innerScopes.add(constructorScope);
