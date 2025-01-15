@@ -39,10 +39,12 @@ public class Main {
 
     FirstScopeVisitor scopeVisitor = new FirstScopeVisitor();
     scopeVisitor.visit(ast);
+    System.out.println("First Scope Run:");
     scopeVisitor.currentScope.print();
 
     SecondScopeVisitor scopeVisitor2 = new SecondScopeVisitor(scopeVisitor.currentScope);
     scopeVisitor2.visit(ast);
+    System.out.println("Second Scope Run:");
     scopeVisitor2.currentScope.print();
   }
 }
