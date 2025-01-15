@@ -188,6 +188,9 @@ public class FirstRun extends CppParseTreeVisitor {
       Symbol typeSymbol = getTypeEqual(type, child);
       Symbol param = new Variable(name, typeSymbol.name);
       currentScope.bind(param);
+      if(child.children.getLast().getType() != Type.REF){
+        visitExpr(child.children.getLast());
+      }
     }
     return node;
   }

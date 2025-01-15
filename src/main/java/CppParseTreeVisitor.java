@@ -226,7 +226,8 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
         }
         if (ctx.REF().contains(ctx.getChild(i))) {
           type.addChild(new ASTNode(Type.REF));
-        } else if (ctx.expr().contains(ctx.getChild(i))) {
+        }
+        if (ctx.expr().contains(ctx.getChild(i))) {
           type.addChild(visit(ctx.getChild(i)));
         }
       }
