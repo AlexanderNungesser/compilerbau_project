@@ -2,7 +2,7 @@ import SymbolTable.*;
 import java.util.HashSet;
 import java.util.Set;
 
-public class SecondScopeVisitor extends CppParseTreeVisitor {
+public class SecondScopeVisitor {
   Scope currentScope;
   Set<Scope> visitedScopes = new HashSet<>();
 
@@ -260,7 +260,7 @@ public class SecondScopeVisitor extends CppParseTreeVisitor {
     String destructorName = destructorNode.getValue();
 
     if (!(classSymbol instanceof SymbolTable.Class)) {
-      System.out.println("Error: The symbol must be an instance of a class");
+      System.out.println("Error: The symbol must be an instance of a class" + classSymbol.getClass().getName());
     }
 
     Symbol alreadyDeclared = currentScope.resolve(destructorName);
