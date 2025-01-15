@@ -44,4 +44,5 @@ public enum Type {
   OR,
   NOT,
   CLASSTYPE,
+  COPY_CONSTRUCTOR,
 }

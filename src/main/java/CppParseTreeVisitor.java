@@ -482,6 +482,32 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
   }
 
   /**
+   * Visit a parse tree produced by {@link CppParser#copy_constructor}.
+   *
+   * @param ctx the parse tree
+   * @return the visitor result
+   */
+  @Override
+  public ASTNode visitCopy_constructor(CppParser.Copy_constructorContext ctx) {
+    ASTNode node = new ASTNode(Type.COPY_CONSTRUCTOR, ctx.ID().getFirst().getText());
+
+    ASTNode child = new ASTNode(Type.CLASSTYPE, ctx.ID(2).getText());
+    child.addChild(new ASTNode(Type.REF));
+    node.addChild(child);
+
+    if (ctx.args() != null) {
+      node.addChild(new ASTNode(Type.ID, ctx.ID().getLast().getText()));
+      node.addChild(visit(ctx.args()));
+    }
+
+    if (ctx.block() != null) {
+      node.addChild(visit(ctx.block()));
+    }
+
+    return node;
+  }
+
+  /**
    * Visit a parse tree produced by {@link CppParser#destructor}.
    *
    * @param ctx the parse tree
@@ -496,10 +522,6 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
     }
 
     node.addChild(new ASTNode(Type.ID, ctx.ID().getText()));
-
-    if (ctx.params() != null) {
-      node.addChild(visit(ctx.params()));
-    }
 
     if (ctx.block() != null) {
       node.addChild(visit(ctx.block()));

@@ -41,6 +41,7 @@ public class Main {
     scopeVisitor.visit(ast);
     System.out.println("First Scope Run:");
     scopeVisitor.currentScope.print();
+    ast.print();
 
     SecondScopeVisitor scopeVisitor2 = new SecondScopeVisitor(scopeVisitor.currentScope);
     scopeVisitor2.visit(ast);

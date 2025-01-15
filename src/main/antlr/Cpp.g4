@@ -69,11 +69,13 @@ expr    :   fn_call                     # Call
 
 constructor :   ID '(' params? ')' (':' ID '(' args? ')')? block ;
 
-destructor  :   'virtual'? '~' ID '(' params? ')' block ;
+copy_constructor : ID '(' ID REF ID ')' (':' ID '(' args? ')')? block ;
 
-operator    :   ID REF 'operator' '=' '(' params ')' block;
+destructor  :   'virtual'? '~' ID '(' ')' block ;
 
-class   :   'class' ID (':' 'public' ID)? '{' 'public' ':' (var_decl | constructor | destructor | operator | 'virtual'? fn_decl | abstract_fn)* '}' ';' ;
+operator    :   ID REF 'operator' '=' '(' params ')' block ;
+
+class   :   'class' ID (':' 'public' ID)? '{' 'public' ':' (var_decl | copy_constructor | constructor | destructor | operator | 'virtual'? fn_decl | abstract_fn)* '}' ';' ;
 
 main    :   ('void' | type) 'main' '(' ')' block ;
 

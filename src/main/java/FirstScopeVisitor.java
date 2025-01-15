@@ -1,4 +1,6 @@
 import SymbolTable.*;
+import SymbolTable.Class;
+import java.util.HashMap;
 
 public class FirstScopeVisitor extends CppParseTreeVisitor {
   Scope currentScope;
@@ -199,12 +201,12 @@ public class FirstScopeVisitor extends CppParseTreeVisitor {
   public ASTNode visitClass(ASTNode classNode) {
     String name = classNode.getValue();
     Symbol classType = currentScope.resolve(name);
-    SymbolTable.Class classSymbol = new SymbolTable.Class(name);
+    Class classSymbol = new Class(name);
 
     if (classType == null) {
       currentScope.bind(classSymbol);
     } else {
-      if (!(classType instanceof SymbolTable.Class)) {
+      if (!(classType instanceof Class)) {
         currentScope.bind(classSymbol);
       } else {
         System.out.println("Error: such class " + name + " already exists");
@@ -216,19 +218,91 @@ public class FirstScopeVisitor extends CppParseTreeVisitor {
     currentScope = newScope;
 
     classSymbol.setClassScope(currentScope);
-
+    HashMap<Type, Boolean> mustHave = new HashMap<>();
+    mustHave.put(Type.CONSTRUCTOR, false);
+    mustHave.put(Type.COPY_CONSTRUCTOR, false);
+    mustHave.put(Type.DESTRUCTOR, false);
+    mustHave.put(Type.OPERATOR, false);
     for (ASTNode child : classNode.children) {
       switch (child.getType()) {
-        case VAR_DECL: // Attribute
+        case Type.VAR_DECL: // Attribute
           visitVardecl(child);
           break;
-        case FN_DECL: // Methoden
+        case Type.CONSTRUCTOR:
+          mustHave.put(Type.CONSTRUCTOR, true);
+          break;
+        case Type.COPY_CONSTRUCTOR:
+          mustHave.put(Type.COPY_CONSTRUCTOR, true);
+          break;
+        case Type.DESTRUCTOR:
+          mustHave.put(Type.DESTRUCTOR, true);
+          break;
+        case Type.OPERATOR:
+          mustHave.put(Type.OPERATOR, true);
+          break;
+        case Type.FN_DECL: // Methoden
           visitFndecl(child);
           break;
-        case ABSTRACT_FN:
+        case Type.ABSTRACT_FN:
           visitAbstractFn(child);
           break;
       }
+    }
+    if (!mustHave.get(Type.CONSTRUCTOR).booleanValue()) {
+      ASTNode constructorNode = new ASTNode(Type.CONSTRUCTOR, classNode.getValue());
+      String superclassName =
+          classNode.children.stream()
+              .filter(c -> c.getType() == Type.CLASSTYPE)
+              .map(n -> n.children.getFirst().getValue())
+              .findFirst()
+              .orElse("Unknown");
+      if (!superclassName.equals("Unknown")) {
+        constructorNode.addChild(new ASTNode(Type.ID, superclassName));
+        // TODO: args of superclass constructor????
+      }
+      constructorNode.addChild(new ASTNode(Type.BLOCK));
+      classNode.addChild(constructorNode);
+    }
+    if (!mustHave.get(Type.COPY_CONSTRUCTOR).booleanValue()) {
+      ASTNode copyConstructorNode = new ASTNode(Type.COPY_CONSTRUCTOR, classNode.getValue());
+      ASTNode child = new ASTNode(Type.CLASSTYPE, "ref");
+      child.addChild(new ASTNode(Type.REF));
+      copyConstructorNode.addChild(child);
+      String superclassName =
+          classNode.children.stream()
+              .filter(c -> c.getType() == Type.CLASSTYPE)
+              .map(n -> n.children.getFirst().getValue())
+              .findFirst()
+              .orElse("Unknown");
+      if (!superclassName.equals("Unknown")) {
+        copyConstructorNode.addChild(new ASTNode(Type.ID, superclassName));
+        ASTNode arg = new ASTNode(Type.ARGS);
+        arg.addChild(new ASTNode(Type.ID, child.getValue()));
+        copyConstructorNode.addChild(arg);
+      }
+      copyConstructorNode.addChild(new ASTNode(Type.BLOCK));
+      classNode.addChild(copyConstructorNode);
+    }
+    if (!mustHave.get(Type.DESTRUCTOR).booleanValue()) {
+      ASTNode destructorNode = new ASTNode(Type.DESTRUCTOR);
+      // TODO: how to handle "virtual" -> should be value of destructorNode
+      destructorNode.addChild(new ASTNode(Type.ID, classNode.getValue()));
+      destructorNode.addChild(new ASTNode(Type.BLOCK));
+      classNode.addChild(destructorNode);
+    }
+    if (!mustHave.get(Type.OPERATOR).booleanValue()) {
+      ASTNode operatorNode = new ASTNode(Type.OPERATOR, "operator=");
+      ASTNode child = new ASTNode(Type.ID, classNode.getValue());
+      child.addChild(new ASTNode(Type.REF));
+      operatorNode.addChild(child);
+      ASTNode param = new ASTNode(Type.PARAMS);
+      ASTNode ref = new ASTNode(Type.CLASSTYPE, "ref");
+      ref.addChild(new ASTNode(Type.ID, classNode.getValue()));
+      ref.addChild(new ASTNode(Type.REF));
+      param.addChild(ref);
+      operatorNode.addChild(param);
+      operatorNode.addChild(new ASTNode(Type.BLOCK));
+      classNode.addChild(operatorNode);
     }
 
     currentScope = currentScope.enclosingScope;
