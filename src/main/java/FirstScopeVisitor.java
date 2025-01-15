@@ -258,7 +258,7 @@ public class FirstScopeVisitor {
           break;
       }
     }
-    if (!mustHave.get(Type.CONSTRUCTOR).booleanValue()) {
+    if (!mustHave.get(Type.CONSTRUCTOR)) {
       ASTNode constructorNode = new ASTNode(Type.CONSTRUCTOR, classNode.getValue());
       String superclassName =
           classNode.children.stream()
@@ -273,7 +273,7 @@ public class FirstScopeVisitor {
       constructorNode.addChild(new ASTNode(Type.BLOCK));
       classNode.addChild(constructorNode);
     }
-    if (!mustHave.get(Type.COPY_CONSTRUCTOR).booleanValue()) {
+    if (!mustHave.get(Type.COPY_CONSTRUCTOR)) {
       ASTNode copyConstructorNode = new ASTNode(Type.COPY_CONSTRUCTOR, classNode.getValue());
       ASTNode ref = new ASTNode(Type.CLASSTYPE, "ref");
       ref.addChild(new ASTNode(Type.ID, classNode.getValue()));
@@ -294,14 +294,14 @@ public class FirstScopeVisitor {
       copyConstructorNode.addChild(new ASTNode(Type.BLOCK));
       classNode.addChild(copyConstructorNode);
     }
-    if (!mustHave.get(Type.DESTRUCTOR).booleanValue()) {
+    if (!mustHave.get(Type.DESTRUCTOR)) {
       ASTNode destructorNode = new ASTNode(Type.DESTRUCTOR);
       // TODO: how to handle "virtual" -> should be value of destructorNode
       destructorNode.addChild(new ASTNode(Type.ID, classNode.getValue()));
       destructorNode.addChild(new ASTNode(Type.BLOCK));
       classNode.addChild(destructorNode);
     }
-    if (!mustHave.get(Type.OPERATOR).booleanValue()) {
+    if (!mustHave.get(Type.OPERATOR)) {
       ASTNode operatorNode = new ASTNode(Type.OPERATOR, "operator=");
       ASTNode child = new ASTNode(Type.ID, classNode.getValue());
       child.addChild(new ASTNode(Type.REF));
