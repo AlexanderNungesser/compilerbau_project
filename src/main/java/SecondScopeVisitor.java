@@ -211,6 +211,7 @@ public class SecondScopeVisitor extends CppParseTreeVisitor {
               visitConstructor(child, currentScope.resolve(classNode.getValue()));
               break;
             case Type.DESTRUCTOR:
+              visitDestructor(child, currentScope.resolve(classNode.getValue()));
               break;
           }
         }
@@ -253,6 +254,39 @@ public class SecondScopeVisitor extends CppParseTreeVisitor {
     currentScope = currentScope.enclosingScope;
 
     return constructorNode;
+  }
+
+  public ASTNode visitDestructor(ASTNode destructorNode, Symbol classSymbol) {
+    String destructorName = destructorNode.getValue();
+
+    if (!(classSymbol instanceof SymbolTable.Class)) {
+      System.out.println("Error: The symbol must be an instance of a class");
+      return destructorNode;
+    }
+
+    if (!destructorName.equals("~" + classSymbol.name)) {
+      System.out.println("Error: Destructor name must match class name with '~': ~" + classSymbol.name);
+      return destructorNode;
+    }
+
+    Symbol alreadyDeclared = currentScope.resolve(destructorName);
+    if (alreadyDeclared != null) {
+      System.out.println("Error: Destructor " + destructorName + " already exists.");
+      return destructorNode;
+    }
+
+    Function destructor = new Function(destructorName, classSymbol.name);
+    currentScope.bind(destructor);
+
+    Scope destructorScope = new Scope(currentScope);
+    currentScope.innerScopes.add(destructorScope);
+    currentScope = destructorScope;
+
+    visitChildren(destructorNode);
+
+    currentScope = currentScope.enclosingScope;
+
+    return destructorNode;
   }
 
   public Symbol getTypeEqual(String type, ASTNode node) {
