@@ -43,7 +43,5 @@ public enum Type {
   AND,
   OR,
   NOT,
-  // TODO: NEW,
-  PRINT,
   CLASSTYPE,
 }
