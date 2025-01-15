@@ -1,7 +1,13 @@
-int arr[] = {1, 2, 3, 4, 5};
-arr[0]++;
-x = arr[0];
+int x;
+int arr[][] = {{1, 2, 3, 4, 5},{1, 2, 3, 4, 5},{1, 2, 3, 4, 5}};
+arr[0][0]++;
+x = arr[0][0];
 
-if (arr[0] == 2) {
+if (x == 2) {
     return 0;
+}
+
+int main(int a, int b){
+
+return 1;
 }
