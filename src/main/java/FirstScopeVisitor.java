@@ -71,14 +71,15 @@ public class FirstScopeVisitor {
     String type = variableNode.children.getFirst().getType().name().toLowerCase();
     Symbol typeSymbol = getTypeEqual(type, variableNode.children.getFirst());
     boolean isArray = false;
-    for (ASTNode child : variableNode.children) {
-      if (child.getType() == Type.ARRAY) {
-        isArray = true;
-      }
+
+    if (variableNode.children.getLast().getType() == Type.ARRAY) {
+      isArray = true;
     }
+
     Symbol variable;
     if (isArray) {
       variable = new Array(variableNode.children.getFirst().getValue(), typeSymbol.name);
+      visit(variableNode.children.getLast());
     } else {
       variable = new Variable(variableNode.children.getFirst().getValue(), typeSymbol.name);
     }
