@@ -4,7 +4,7 @@ int main(){
 int a;
 
 // Destfall 2: Initialisierte Deklaration
-int b = 42;
+int b = 3 + 1 + '2' + 5;
 
 // Destfall 3: Referenzdeklaration
 int &ref = a;

@@ -1,5 +1,6 @@
 import SymbolTable.*;
 import SymbolTable.Class;
+
 import java.util.HashMap;
 
 public class FirstScopeVisitor {
@@ -77,6 +78,10 @@ public class FirstScopeVisitor {
     if (isArray) {
       variable = new Array(variableNode.children.getFirst().getValue(), typeSymbol.name);
       visit(variableNode.children.getLast());
+    } else if(!variableNode.children.getFirst().children.isEmpty() && variableNode.children.getFirst().children.getFirst().getType() == Type.REF) {
+      variable = new Reference(variableNode.children.getFirst().getValue(), typeSymbol.name);
+      Symbol origin = currentScope.resolve(variableNode.children.get(1).getValue());
+      ((Reference) variable).setOrigin(origin);
     } else {
       variable = new Variable(variableNode.children.getFirst().getValue(), typeSymbol.name);
     }
@@ -224,6 +229,7 @@ public class FirstScopeVisitor {
     currentScope = newScope;
 
     classSymbol.setClassScope(currentScope);
+
     HashMap<Type, Boolean> mustHave = new HashMap<>();
     mustHave.put(Type.CONSTRUCTOR, false);
     mustHave.put(Type.COPY_CONSTRUCTOR, false);

@@ -15,6 +15,9 @@ public class TypeCheckVisitor {
       case Type.PROGRAM:
         visitProgram(node);
         break;
+      case Type.OBJ_USAGE:
+        visitObj_usage(node);
+        break;
       case Type.BLOCK, Type.FN_DECL:
         visitScopes(node);
         break;
@@ -70,7 +73,28 @@ public class TypeCheckVisitor {
   }
 
   public ASTNode visitExpr(ASTNode node) {
+    Symbol variable;
+    if (node.children.isEmpty() && node.getType() == Type.ID) {
+      if (node.getType() == Type.OBJ_USAGE) {
+        variable = visitObj_usage(node);
+      } else {
+        variable = currentScope.resolve(node.getValue());
+      }
+      if (variable == null) {
+        System.out.println("Error: no such variable: " + node.getValue());
+      }
+    } else {
+      visitChildren(node);
+    }
     return node;
+  }
+
+  public Symbol visitObj_usage(ASTNode node) {
+    Symbol usage = currentScope.resolve(node.getValue());
+    if (!(usage instanceof SymbolTable.Class)) {
+      usage = currentScope.resolve(usage.type);
+    }
+    return ((SymbolTable.Class) usage).getClassScope().resolve(node.children.getFirst().getValue());
   }
 
   private ASTNode visitFncall(ASTNode node) {
@@ -116,6 +140,7 @@ public class TypeCheckVisitor {
   }
 
   public ASTNode visitAssign(ASTNode node) {
+    visitChildren(node);
     return node;
   }
 
@@ -129,21 +154,33 @@ public class TypeCheckVisitor {
 
   public ASTNode visitCalculate(ASTNode node) {
     ASTNode firstChild = node.children.getFirst();
-    String type = getEndType(node.children.getFirst()).name().toLowerCase();
-    if (type.equals("id")) {
-      type = this.currentScope.resolve(firstChild.getValue()).type;
+    String firstType = getEndType(node.children.getFirst()).name().toLowerCase();
+    if (firstType.equals("id")) {
+      firstType = this.currentScope.resolve(firstChild.getValue()).type;
     }
 
-    if (!(type.equals("int"))) {
-      System.out.println("ERROR: Expected int, got " + type);
+    if (!(firstType.equals("int"))) {
+      System.out.println("ERROR: Expected int, got " + firstType);
     }
+
+    ASTNode secondChild = node.children.get(1);
+    String secondType = getEndType(secondChild).name().toLowerCase();
+    if (secondType.equals("id")) {
+      secondType = this.currentScope.resolve(secondChild.getValue()).type;
+    }
+
+    if (!(secondType.equals("int"))) {
+      System.out.println("ERROR: Expected int, got " + secondType);
+    }
+
+    visitChildren(node);
 
     return node;
   }
 
   private Type getEndType(ASTNode node) {
     if (!node.children.isEmpty()) {
-      getEndType(node.children.getFirst());
+      return getEndType(node.children.getFirst());
     }
     return node.getType();
   }
