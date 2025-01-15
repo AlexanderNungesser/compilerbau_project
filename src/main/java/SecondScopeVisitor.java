@@ -212,6 +212,9 @@ public class SecondScopeVisitor extends CppParseTreeVisitor {
             case Type.DESTRUCTOR:
               visitDestructor(child, currentScope.resolve(classNode.getValue()));
               break;
+            case Type.OPERATOR:
+              visitOperator(child, currentScope.resolve(classNode.getValue()));
+              break;
           }
         }
         this.currentScope = this.currentScope.enclosingScope;
@@ -226,12 +229,10 @@ public class SecondScopeVisitor extends CppParseTreeVisitor {
 
     if (!(classSymbol instanceof SymbolTable.Class)) {
       System.out.println("Error: The symbol must be an instance of class");
-      return constructorNode;
     }
 
     if (!constructorName.equals(classSymbol.name)) {
       System.out.println("Error: Constructor name must match class name: " + classSymbol.name);
-      return constructorNode;
     }
 
     Function constructor = new Function(constructorName, classSymbol.name);
@@ -260,13 +261,11 @@ public class SecondScopeVisitor extends CppParseTreeVisitor {
 
     if (!(classSymbol instanceof SymbolTable.Class)) {
       System.out.println("Error: The symbol must be an instance of a class");
-      return destructorNode;
     }
 
     Symbol alreadyDeclared = currentScope.resolve(destructorName);
     if (alreadyDeclared != null) {
       System.out.println("Error: Destructor " + destructorName + " already exists.");
-      return destructorNode;
     }
 
     Function destructor = new Function(destructorName, classSymbol.name);
@@ -302,4 +301,46 @@ public class SecondScopeVisitor extends CppParseTreeVisitor {
     }
     return ((SymbolTable.Class) usage).getClassScope().resolve(node.children.getFirst().getValue());
   }
+
+  public ASTNode visitOperator(ASTNode operatorNode, Symbol classSymbol) {
+    String operatorName = operatorNode.getValue();
+
+    if (!(classSymbol instanceof SymbolTable.Class)) {
+      System.out.println("Error: The symbol must be an instance of class");
+    }
+
+    ASTNode returnTypeID = operatorNode.children.getFirst();
+    ASTNode paramID = operatorNode.children.get(1).children.getFirst().children.getFirst();
+
+    if (!returnTypeID.getValue().equals(classSymbol.name)) {
+      System.out.println("Error: Operator return type must match class name: " + classSymbol.name);
+    } else if (!paramID.getValue().equals(classSymbol.name)) {
+      System.out.println("Error: Param type must match class name: " + classSymbol.name);
+    }
+
+    if (!(returnTypeID.getValue().equals(paramID.getValue()))) {
+      System.out.println("Error: Return type ID must match parameter ID");
+    }
+
+    Function operator = new Function(operatorName, classSymbol.name);
+
+    currentScope.bind(operator);
+
+    Scope constructorScope = new Scope(currentScope);
+    currentScope.innerScopes.add(constructorScope);
+    currentScope = constructorScope;
+
+    for (ASTNode child : operatorNode.children) {
+      if (child.getType() == Type.PARAMS) {
+        visitParams(child);
+      }
+    }
+
+    visitChildren(operatorNode);
+
+    currentScope = currentScope.enclosingScope;
+
+    return operatorNode;
+  }
+
 }
