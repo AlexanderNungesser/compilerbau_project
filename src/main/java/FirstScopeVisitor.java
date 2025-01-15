@@ -2,7 +2,7 @@ import SymbolTable.*;
 import SymbolTable.Class;
 import java.util.HashMap;
 
-public class FirstScopeVisitor extends CppParseTreeVisitor {
+public class FirstScopeVisitor {
   Scope currentScope;
 
   public ASTNode visit(ASTNode node) {
