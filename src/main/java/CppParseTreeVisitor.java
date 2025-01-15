@@ -55,14 +55,6 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
       variable.addChild(new ASTNode(Type.REF));
     }
 
-    // Process const or static if available
-    for (int i = 0; i < 2; i++) {
-      if (ctx.getChild(i).getText().contains("const")
-          || ctx.getChild(i).getText().contains("static")) {
-        variable.addChild(new ASTNode(ctx.getChild(i).getText()));
-      }
-    }
-
     node.addChild(variable);
 
     // Process initialization if present
@@ -150,31 +142,12 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
       function = new ASTNode(Type.VOID);
     }
 
-    if (ctx.operator() == null) {
-      if (ctx.ID().size() > 1) {
-        function.addChild(new ASTNode(Type.ID, ctx.ID().getLast().getText()));
-      } else {
-        function.addChild(new ASTNode(Type.ID, ctx.ID(0).getText()));
+      if (ctx.ID() != null) {
+        function.addChild(new ASTNode(Type.ID, ctx.ID().getText()));
       }
-    } else {
-      function.addChild(visit(ctx.operator()));
-    }
 
     if (ctx.REF() != null) {
       function.addChild(new ASTNode(Type.REF));
-    }
-
-    // Process const or static if available
-    for (int i = 0; i < 2; i++) {
-      if (ctx.getChild(i).getText().contains("const")
-          || ctx.getChild(i).getText().contains("static")) {
-        function.addChild(new ASTNode(ctx.getChild(i).getText()));
-      }
-    }
-
-    // Process function name or operator
-    if (ctx.ID().size() > 1) {
-      function.addChild(new ASTNode(Type.CLASS, ctx.ID().getFirst().getText()));
     }
 
     node.addChild(function);
@@ -189,23 +162,6 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
       node.addChild(visit(ctx.block()));
     }
 
-    return node;
-  }
-
-  /**
-   * Visit a parse tree produced by {@link CppParser#operator}.
-   *
-   * @param ctx the parse tree
-   * @return the visitor result
-   */
-  @Override
-  public ASTNode visitOperator(CppParser.OperatorContext ctx) {
-    ASTNode node = new ASTNode(Type.OPERATOR);
-    if (ctx.children.getLast().equals(ctx.DEC_INC_OP())) {
-      node.setValue(ctx.DEC_INC_OP().getChild(0).getText());
-    } else {
-      node.setValue(ctx.children.getLast().getText());
-    }
     return node;
   }
 
@@ -269,9 +225,7 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
           current = i + 1;
           break;
         }
-        if (ctx.getChild(i).getText().equals("const")) {
-          type.addChild(new ASTNode(ctx.getChild(i).getText()));
-        } else if (ctx.REF().contains(ctx.getChild(i))) {
+        if (ctx.REF().contains(ctx.getChild(i))) {
           type.addChild(new ASTNode(Type.REF));
         } else if (ctx.expr().contains(ctx.getChild(i))) {
           type.addChild(visit(ctx.getChild(i)));
@@ -290,7 +244,9 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
   @Override
   public ASTNode visitReturn(CppParser.ReturnContext ctx) {
     ASTNode node = new ASTNode(Type.RETURN);
-    node.addChild(visit(ctx.getChild(1)));
+    if (ctx.expr() != null){
+      node.addChild(visit(ctx.expr()));
+    }
     return node;
   }
 
@@ -303,8 +259,10 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
   @Override
   public ASTNode visitBlock(CppParser.BlockContext ctx) {
     ASTNode node = new ASTNode(Type.BLOCK);
-    for (int i = 1; i < ctx.getChildCount() - 1; i++) {
-      node.addChild(visit(ctx.getChild(i)));
+    if (!ctx.stmt().isEmpty()){
+      for (CppParser.StmtContext child : ctx.stmt()){
+        node.addChild(visit(child));
+      }
     }
     return node;
   }
@@ -318,8 +276,8 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
   @Override
   public ASTNode visitWhile(CppParser.WhileContext ctx) {
     ASTNode node = new ASTNode(Type.WHILE);
-    node.addChild(visit(ctx.getChild(2)));
-    node.addChild(visit(ctx.getChild(4)));
+    node.addChild(visit(ctx.expr()));
+    node.addChild(visit(ctx.block()));
     return node;
   }
 
@@ -358,11 +316,7 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
         break;
       case 2:
         node.setValue(ctx.ID().getLast().getText());
-        if (ctx.getChild(1).getText().equals(":")) {
-          node.addChild(new ASTNode(Type.CLASS, ctx.ID(0).getText()));
-        } else {
-          node.addChild(new ASTNode(Type.CONSTRUCTOR, ctx.ID(1).getText()));
-        }
+        node.addChild(new ASTNode(Type.CLASS, ctx.ID().getFirst().getText()));
         break;
     }
 
@@ -567,6 +521,29 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
   }
 
   /**
+   * Visit a parse tree produced by {@link CppParser#operator}.
+   *
+   * @param ctx the parse tree
+   * @return the visitor result
+   */
+  @Override
+  public ASTNode visitOperator(CppParser.OperatorContext ctx) {
+    ASTNode node = new ASTNode(Type.OPERATOR);
+    if (ctx.ID() != null) {
+      node.setValue(ctx.children.getLast().getText());
+    }
+
+    if (ctx.params() != null) {
+      node.addChild(visit(ctx.params()));
+    }
+
+    if (ctx.block() != null) {
+      node.addChild(visit(ctx.block()));
+    }
+    return node;
+  }
+
+  /**
    * Visit a parse tree produced by {@link CppParser#class}.
    *
    * @param ctx the parse tree
@@ -578,7 +555,7 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
     int index;
 
     // Process base class (if present)
-    if (ctx.ID().size() > 1) {
+    if (ctx.ID().size() == 2) {
       ASTNode baseClassNode = new ASTNode(Type.CLASSTYPE, "extends");
       baseClassNode.addChild(new ASTNode(Type.ID, ctx.ID(1).getText()));
       node.addChild(baseClassNode);

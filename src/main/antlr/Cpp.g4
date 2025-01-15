@@ -17,24 +17,22 @@ stmt    :   var_decl
         |   obj_usage ';'
         ;
 
-var_decl:   ('const'? 'static'? | 'static'? 'const'?) type REF? ID ('=' expr)? ';'
-          | ('const'? 'static'? | 'static'? 'const'?) type ID ('[' expr? ']')+ ('=' array)? ';'
-          | ('const'? 'static'? | 'static'? 'const'?) type '(' REF ID ')' ('[' expr ']')+ '=' ID ';'
+var_decl:   type REF? ID ('=' expr)? ';'
+          | type ID ('[' expr? ']')+ ('=' array)? ';'
+          | type '(' REF ID ')' ('[' expr ']')+ '=' ID ';'
           ;
 
 assign  :   (array_item | ID | obj_usage) ('=' | ASSIGN_OP) expr ';' ;
 
 dec_inc :   (DEC_INC_OP (array_item | ID) | (array_item | ID) DEC_INC_OP) ;
 
-fn_decl  :  ('const'? 'static'? | 'static'? 'const'?) ('void' | type) REF? (operator | ID) '(' params? ')' ';'
-         |  ('const'? 'static'? | 'static'? 'const'?) ('void' | type) (ID ':' ':')? REF? (operator | ID) '(' params? ')' block
+fn_decl  :  ('void' | type) REF? ID '(' params? ')' ';'
+         |  ('void' | type) REF? ID '(' params? ')' block
          ;
 
-operator    :   'operator' ('=' | DEC_INC_OP) ;
+abstract_fn : 'virtual' ('void' | type) REF? ID '(' params? ')' '=' INT ';' ;
 
-abstract_fn : 'virtual' ('void' | type) REF? (operator | ID) '(' params? ')' 'const'? '=' INT ';' ;
-
-params  :  'const'? type REF? ID ('=' expr)? (',' 'const'? type REF? ID ('=' expr)?)* ;
+params  :  type REF? ID ('=' expr)? (',' type REF? ID ('=' expr)?)* ;
 
 return  :  'return' expr? ';' ;
 
@@ -42,7 +40,7 @@ block   :   '{' stmt* '}' ;
 while   :   'while' '(' expr ')' block ;
 if      :   'if' '(' expr ')' block ('else' 'if' '(' expr ')' block)* ('else' block)? ;
 
-fn_call  :   (ID | (ID ':' ':'))? ID '(' args? ')' ;
+fn_call  :   ID? ID '(' args? ')' ;
 args    :   expr (',' expr)* ;
 
 expr    :   fn_call                     # Call
@@ -72,11 +70,13 @@ expr    :   fn_call                     # Call
         ;
 
 constructor :   ID '(' params? ')' (':' ID '(' args? ')')? ';'
-             |  (ID ':' ':')? ID '(' params? ')' (':' ID '(' args? ')')? (',' ID '(' args? ')')* block ;
+             |  ID '(' params? ')' (':' ID '(' args? ')')? (',' ID '(' args? ')')* block ;
 
 destructor  :   'virtual'? '~' ID '(' params? ')' (';' | block) ;
 
-class   :   'class' ID (':' 'public' ID)? '{' ('public' ':')? (var_decl | constructor | destructor | 'virtual'? fn_decl | abstract_fn)* '}' ';' ;
+operator    :   ID REF 'operator' '=' '(' params ')' (';' | block);
+
+class   :   'class' ID (':' 'public' ID)? '{' ('public' ':')? (var_decl | constructor | destructor | operator | 'virtual'? fn_decl | abstract_fn)* '}' ';' ;
 
 main    :   ('void' | type) 'main' '(' params? ')' (';' | block) ;
 
