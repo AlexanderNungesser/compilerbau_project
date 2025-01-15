@@ -234,16 +234,15 @@ public class SecondScopeVisitor {
       System.out.println("Error: The symbol must be an instance of class");
     }
 
-    ASTNode returnTypeID = copyconstNode.children.getFirst();
-    ASTNode paramID = copyconstNode.children.get(1).children.getFirst().children.getFirst();
+    ASTNode paramID = copyconstNode.children.getFirst();
 
-    if (!returnTypeID.getValue().equals(classSymbol.name)) {
+    if (!copyconstName.equals(classSymbol.name)) {
       System.out.println("Error: Operator return type must match class name: " + classSymbol.name);
     } else if (!paramID.getValue().equals(classSymbol.name)) {
       System.out.println("Error: Param type must match class name: " + classSymbol.name);
     }
 
-    if (!(returnTypeID.getValue().equals(paramID.getValue()))) {
+    if (!(copyconstName.equals(paramID.getValue()))) {
       System.out.println("Error: Return type ID must match parameter ID");
     }
 
