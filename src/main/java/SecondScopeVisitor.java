@@ -303,7 +303,7 @@ public class SecondScopeVisitor {
     String destructorName = destructorNode.getValue();
 
     if (!(classSymbol instanceof SymbolTable.Class)) {
-      System.out.println("Error: The symbol must be an instance of a class" + classSymbol.getClass().getName());
+      System.out.println("Error: The symbol must be an instance of a class " + classSymbol.getClass().getName());
     }
 
     Symbol alreadyDeclared = currentScope.resolve(destructorName);

@@ -17,6 +17,9 @@ public class TypeCheckVisitor {
             case Type.BLOCK, Type.FN_DECL:
                 visitScopes(node);
                 break;
+            case Type.PARAMS:
+                visitScopes(node);
+                break;
             case Type.CLASS:
                 visitClass(node);
                 break;
@@ -105,6 +108,7 @@ public class TypeCheckVisitor {
     }
 
     public ASTNode visitConstructor(ASTNode constructorNode, Symbol classSymbol) {
+        visitChildren(constructorNode);
         return constructorNode;
     }
 
@@ -114,6 +118,7 @@ public class TypeCheckVisitor {
     }
 
     public ASTNode visitAssign(ASTNode node) {
+        visitChildren(node);
         return node;
     }
 
