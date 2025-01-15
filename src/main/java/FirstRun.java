@@ -188,7 +188,7 @@ public class FirstRun extends CppParseTreeVisitor {
       Symbol typeSymbol = getTypeEqual(type, child);
       Symbol param = new Variable(name, typeSymbol.name);
       currentScope.bind(param);
-      if(child.children.getLast().getType() != Type.REF){
+      if (!child.children.isEmpty() && child.children.getLast().getType() != Type.REF) {
         visitExpr(child.children.getLast());
       }
     }
@@ -262,7 +262,7 @@ public class FirstRun extends CppParseTreeVisitor {
   }
 
   public ASTNode visitConstructor(ASTNode constructorNode, Symbol classSymbol) {
-    String constructorName = constructorNode.children.getFirst().getValue();
+    String constructorName = constructorNode.getValue();
 
     if (!(classSymbol instanceof SymbolTable.Class)) {
       System.out.println("Error: The symbol must be an instance of class");
