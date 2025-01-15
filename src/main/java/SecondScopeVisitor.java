@@ -367,5 +367,4 @@ public class SecondScopeVisitor {
 
     return operatorNode;
   }
-
 }
