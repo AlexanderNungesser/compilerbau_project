@@ -230,10 +230,6 @@ public class SecondScopeVisitor {
   private ASTNode visitCopyConstructor(ASTNode copyconstNode, Symbol classSymbol) {
     String copyconstName = copyconstNode.getValue();
 
-    if (!(classSymbol instanceof SymbolTable.Class)) {
-      System.out.println("Error: The symbol must be an instance of class");
-    }
-
     ASTNode paramID = copyconstNode.children.getFirst();
 
     if (!copyconstName.equals(classSymbol.name)) {
@@ -265,10 +261,6 @@ public class SecondScopeVisitor {
 
   public ASTNode visitConstructor(ASTNode constructorNode, Symbol classSymbol) {
     String constructorName = constructorNode.getValue();
-
-    if (!(classSymbol instanceof SymbolTable.Class)) {
-      System.out.println("Error: The symbol must be an instance of class");
-    }
 
     if (!constructorName.equals(classSymbol.name)) {
       System.out.println("Error: Constructor name must match class name: " + classSymbol.name);
@@ -343,10 +335,6 @@ public class SecondScopeVisitor {
 
   public ASTNode visitOperator(ASTNode operatorNode, Symbol classSymbol) {
     String operatorName = operatorNode.getValue();
-
-    if (!(classSymbol instanceof SymbolTable.Class)) {
-      System.out.println("Error: The symbol must be an instance of class");
-    }
 
     ASTNode returnTypeID = operatorNode.children.getFirst();
     ASTNode paramID = operatorNode.children.get(1).children.getFirst().children.getFirst();
