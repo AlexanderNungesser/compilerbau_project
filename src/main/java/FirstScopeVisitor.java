@@ -36,9 +36,6 @@ public class FirstScopeVisitor {
         break;
       case Type.ARRAY_ITEM:
         visitArrayItem(node);
-      case null:
-        System.out.println("Type: " + node.getType().name() + " Value: " + node.getValue());
-        break;
       default:
         if (node.children.isEmpty()) {
           break;

@@ -176,7 +176,7 @@ public class SecondScopeVisitor {
 
     if (firstChild.getType() == Type.OBJ_USAGE) {
       variable = visitObj_usage(firstChild);
-    } else {
+    } else{
       variable = currentScope.resolve(firstChild.getValue());
     }
 
