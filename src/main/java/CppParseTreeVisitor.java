@@ -517,7 +517,9 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
   public ASTNode visitOperator(CppParser.OperatorContext ctx) {
     ASTNode node = new ASTNode(Type.OPERATOR);
     if (ctx.ID() != null) {
-      node.setValue(ctx.ID().getText());
+      ASTNode child = new ASTNode(Type.ID, ctx.ID().getText());
+      child.addChild(new ASTNode(Type.REF));
+      node.addChild(child);
     }
 
     if (ctx.params() != null) {
