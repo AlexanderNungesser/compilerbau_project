@@ -48,7 +48,7 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
 
   @Override
   public ASTNode visitVar_ref(CppParser.Var_refContext ctx) {
-    ASTNode node = new ASTNode(Type.VAR_DECL);
+    ASTNode node = new ASTNode(Type.VAR_REF);
     ASTNode type = visit(ctx.type());
     type.setValue(ctx.ID().getText());
     type.addChild(new ASTNode(Type.REF));
@@ -59,7 +59,7 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
 
   @Override
   public ASTNode visitArray_decl(CppParser.Array_declContext ctx) {
-    ASTNode node = new ASTNode(Type.VAR_DECL);
+    ASTNode node = new ASTNode(Type.ARRAY_DECL);
     ASTNode type = visit(ctx.type());
     type.setValue(ctx.ID().getText());
     for (int i = 0; i < ctx.expr().size(); i++) {
@@ -71,7 +71,7 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
 
   @Override
   public ASTNode visitArray_init(CppParser.Array_initContext ctx) {
-    ASTNode node = new ASTNode(Type.VAR_DECL);
+    ASTNode node = new ASTNode(Type.ARRAY_INIT);
     ASTNode type = visit(ctx.type());
     type.setValue(ctx.ID().getText());
     if (ctx.expr() != null){
@@ -86,7 +86,7 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
 
   @Override
   public ASTNode visitArray_ref(CppParser.Array_refContext ctx) {
-    ASTNode node = new ASTNode(Type.VAR_DECL);
+    ASTNode node = new ASTNode(Type.ARRAY_REF);
     ASTNode type = visit(ctx.type());
     type.setValue(ctx.ID(0).getText());
     type.addChild(new ASTNode(Type.REF));
