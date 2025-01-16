@@ -67,7 +67,22 @@ public class FirstScopeVisitor {
 
   public ASTNode visitVardecl(ASTNode variableNode) {
     String type = variableNode.children.getFirst().getType().name().toLowerCase();
-    Symbol typeSymbol = getTypeEqual(type, variableNode.children.getFirst());
+    ASTNode firstChild = variableNode.children.getFirst();
+    Symbol typeSymbol = getTypeEqual(type, firstChild);
+    // TODO: an die richtige stelle packen; BSP: B z = y; --> als FNCALL 'operator='
+    //--operator= (FN_CALL)
+    //  |-- z (CLASSTYPE)
+    //  |   '__ B (ID)
+    //  '__ (ARGS)
+    //      '__ y (ID)
+//    if(firstChild.getType() == Type.CLASSTYPE && variableNode.children.size() > 1) {
+//      variableNode.setType(Type.FN_CALL);
+//      variableNode.setValue("operator=");
+//      ASTNode arg = variableNode.children.removeLast();
+//      ASTNode args = new ASTNode(Type.ARGS);
+//      args.addChild(arg);
+//      variableNode.addChild(args);
+//    }
     boolean isArray = false;
 
     if (variableNode.children.getLast().getType() == Type.ARRAY) {
