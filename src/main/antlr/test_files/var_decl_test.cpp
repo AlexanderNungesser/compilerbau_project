@@ -10,6 +10,7 @@ int b = 3 + 1 + '2' + 5;
 int &ref = a;
 
 // Destfall 4: Array-Deklaration ohne Initialisierung
+int i = 5;
 int arr[5];
 
 // Destfall 5: Array-Deklaration mit Initialisierung

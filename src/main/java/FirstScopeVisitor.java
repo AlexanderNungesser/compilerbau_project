@@ -1,6 +1,8 @@
 import SymbolTable.*;
 import SymbolTable.Class;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 
 public class FirstScopeVisitor {
@@ -13,6 +15,18 @@ public class FirstScopeVisitor {
         break;
       case Type.VAR_DECL:
         visitVardecl(node);
+        break;
+      case Type.VAR_REF:
+        visitVarRef(node);
+        break;
+      case Type.ARRAY_DECL:
+        visitArrayDecl(node);
+        break;
+      case Type.ARRAY_INIT:
+        visitArrayInit(node);
+        break;
+      case Type.ARRAY_REF:
+        visitArrayRef(node);
         break;
       case Type.ARRAY:
         visitArray(node);
@@ -66,8 +80,8 @@ public class FirstScopeVisitor {
   }
 
   public ASTNode visitVardecl(ASTNode variableNode) {
-    String type = variableNode.children.getFirst().getType().name().toLowerCase();
     ASTNode firstChild = variableNode.children.getFirst();
+    String type = firstChild.getType().name().toLowerCase();
     Symbol typeSymbol = getTypeEqual(type, firstChild);
     // TODO: an die richtige stelle packen; BSP: B z = y; --> als FNCALL 'operator='
     //--operator= (FN_CALL)
@@ -83,23 +97,8 @@ public class FirstScopeVisitor {
 //      args.addChild(arg);
 //      variableNode.addChild(args);
 //    }
-    boolean isArray = false;
 
-    if (variableNode.children.getLast().getType() == Type.ARRAY) {
-      isArray = true;
-    }
-
-    Symbol variable;
-    if (isArray) {
-      variable = new Array(variableNode.children.getFirst().getValue(), typeSymbol.name);
-      visit(variableNode.children.getLast());
-    } else if(!variableNode.children.getFirst().children.isEmpty() && variableNode.children.getFirst().children.getFirst().getType() == Type.REF) {
-      variable = new Reference(variableNode.children.getFirst().getValue(), typeSymbol.name);
-      Symbol origin = currentScope.resolve(variableNode.children.get(1).getValue());
-      ((Reference) variable).setOrigin(origin);
-    } else {
-      variable = new Variable(variableNode.children.getFirst().getValue(), typeSymbol.name);
-    }
+    Variable variable = new Variable(firstChild.getValue(), typeSymbol.name);
 
     Symbol alreadyDeclared = currentScope.resolve(variable.name);
     if (alreadyDeclared != null) {
@@ -111,17 +110,175 @@ public class FirstScopeVisitor {
     return variableNode;
   }
 
-  public ASTNode visitArray(ASTNode node) {
+  public ArrayList<Integer> countArray(ASTNode node) {
+    ArrayList<Integer> sizes = new ArrayList<Integer>();
+    int length = 0;
     for (ASTNode child : node.children) {
       switch (child.getType()) {
         case Type.ARRAY:
+          length = 0;
+          countArray(child);
+          break;
+        default:
+          length++;
+          break;
+      }
+      sizes.add(length);
+    }
+    return sizes;
+  }
+
+  public ASTNode visitArray(ASTNode node) {
+    ArrayList<Integer> sizes = new ArrayList<Integer>();
+    int length = 0;
+    for (ASTNode child : node.children) {
+      switch (child.getType()) {
+        case Type.ARRAY:
+          length = 0;
           visitArray(child);
           break;
         default:
+          length++;
           visitExpr(child);
           break;
       }
+      sizes.add(length);
     }
+    return node;
+  }
+
+  public ASTNode visitArrayDecl(ASTNode node) {
+    String type = node.children.getFirst().getType().name().toLowerCase();
+    ASTNode firstChild = node.children.getFirst();
+    Symbol typeSymbol = getTypeEqual(type, firstChild);
+
+    Array arr = new Array(firstChild.getValue(), typeSymbol.name, firstChild.children.size());
+    for (int i = 0; i < firstChild.children.size(); i++) {
+      ASTNode expr = visitExpr(firstChild.children.get(i));
+      // TODO was wenn expr kein Int?
+      if (expr.getType() == Type.INT) {
+        arr.length[i] = Integer.parseInt(expr.getValue());
+      }
+
+    }
+
+    Symbol alreadyDeclared = currentScope.resolve(arr.name);
+    if (alreadyDeclared != null) {
+      System.out.println("Error: such variable " + arr.name + " already exists");
+    } else {
+      currentScope.bind(arr);
+    }
+
+    return node;
+  }
+
+  public ASTNode visitArrayInit(ASTNode node) {
+    String type = node.children.getFirst().getType().name().toLowerCase();
+    ASTNode firstChild = node.children.getFirst();
+    Symbol typeSymbol = getTypeEqual(type, firstChild);
+
+    int dimensions = 0;
+    Array arr = new Array(firstChild.getValue(), typeSymbol.name, dimensions);
+    ArrayList<Integer> sizes = countArray(node.children.getLast());
+
+    if(!firstChild.children.isEmpty()) {
+      dimensions = firstChild.children.size();
+      arr = new Array(firstChild.getValue(), typeSymbol.name, dimensions);
+      for (int i = 0; i < firstChild.children.size(); i++) {
+        ASTNode expr = visitExpr(firstChild.children.get(i));
+        // TODO was wenn expr kein Int?
+        if (expr.getType() == Type.INT) {
+          arr.length[i] = Integer.parseInt(expr.getValue());
+        }
+
+      }
+    } else {
+      dimensions = sizes.size();
+    }
+
+    if(dimensions != sizes.size()) {
+      System.out.println("Error: initial and declaration dimensions mismatch");
+    }
+    if(firstChild.children.isEmpty()) {
+      arr = new Array(firstChild.getValue(), typeSymbol.name, dimensions);
+      for (int i = 0; i < dimensions; i++) {
+        arr.length[i] = sizes.get(i);
+      }
+    }
+
+    Symbol alreadyDeclared = currentScope.resolve(arr.name);
+    if (alreadyDeclared != null) {
+      System.out.println("Error: such variable " + arr.name + " already exists");
+    } else {
+      currentScope.bind(arr);
+    }
+
+    visitArray(node.children.getLast());
+    return node;
+  }
+
+  public ASTNode visitArrayRef(ASTNode node) {
+    ASTNode lastChild = node.children.getLast();
+    Symbol lastSymbol = currentScope.resolve(lastChild.getValue());
+
+    if(lastSymbol == null) {
+      System.out.println("Error: such variable " + lastChild.getValue() + " does not exist");
+    }
+
+    ASTNode firstChild = node.children.getFirst();
+    String type = firstChild.getType().name().toLowerCase();
+    Symbol typeSymbol = getTypeEqual(type, firstChild);
+
+    Array arr = new Array(firstChild.getValue(), typeSymbol.name, firstChild.children.size());
+    for (int i = 0; i < firstChild.children.size(); i++) {
+      ASTNode expr = visitExpr(firstChild.children.get(i));
+      // TODO was wenn expr kein Int?
+      if (expr.getType() == Type.INT) {
+        arr.length[i] = Integer.parseInt(expr.getValue());
+      }
+
+    }
+    Reference arrRef = new Reference(firstChild.getValue(), typeSymbol.name);
+
+    Symbol alreadyDeclared = currentScope.resolve(firstChild.getValue());
+    if (alreadyDeclared != null) {
+      System.out.println("Error: such variable " + firstChild.getValue() + " already exists");
+    } else {
+      if(lastSymbol instanceof Array) {
+        if(!Arrays.equals(((Array) lastSymbol).length, arr.length)) {
+          System.out.println("Error: initial and reference dimensions mismatch");
+        }
+      }
+      currentScope.bind(arrRef);
+    }
+
+    return node;
+  }
+
+  public ASTNode visitVarRef(ASTNode node) {
+    ASTNode lastChild = node.children.getLast();
+    Symbol lastSymbol = currentScope.resolve(lastChild.getValue());
+
+    if(lastSymbol == null) {
+      System.out.println("Error: such variable " + lastChild.getValue() + " does not exist");
+    }
+
+    Variable var = new Variable(lastChild.getValue(), lastSymbol.name);
+
+    String type = node.children.getFirst().getType().name().toLowerCase();
+    ASTNode firstChild = node.children.getFirst();
+    Symbol typeSymbol = getTypeEqual(type, firstChild);
+
+    Reference refVariable = new Reference(firstChild.getValue(), typeSymbol.name);
+    Symbol alreadyDeclared = currentScope.resolve(refVariable.name);
+    if (alreadyDeclared != null) {
+      System.out.println("Error: such variable " + refVariable.name + " already exists");
+    } else {
+      currentScope.bind(refVariable);
+    }
+
+    refVariable.setOrigin(var);
+
     return node;
   }
 
