@@ -285,7 +285,15 @@ public class FirstScopeVisitor {
               .orElse("Unknown");
       if (!superclassName.equals("Unknown")) {
         constructorNode.addChild(new ASTNode(Type.ID, superclassName));
-        // TODO: args of superclass constructor????
+        Scope superclassScope = currentScope.resolve(superclassName).scope;
+        Symbol superclassConstructor = superclassScope.resolve(superclassName);
+        if(superclassConstructor != null){
+          if (superclassConstructor instanceof Function) {
+            if(((Function) superclassConstructor).getParamCount() > 0){
+              System.out.println("Error: constructor must be implemented, because superclass has no base constructor");
+            }
+          }
+        }
       }
       constructorNode.addChild(new ASTNode(Type.BLOCK));
       classNode.addChild(constructorNode);
