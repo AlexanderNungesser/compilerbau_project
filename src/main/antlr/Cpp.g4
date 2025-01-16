@@ -86,7 +86,7 @@ type    :   'int' | 'char' | 'bool' | ID ;
 array   :   '{' (args | array (',' array)*) '}' ;
 array_item  :  ID ('[' expr ']')+ ;
 
-obj_usage   :   ( 'this' '->' | '(' '*' 'this' ')' '.' )? ID ( '.' ID)* ('.' (array_item | dec_inc | fn_call))?
+obj_usage   :   ( 'this' '->' | '(' '*' 'this' ')' '.' )? (fn_call | ID) ( '.' (fn_call | ID))* ('.' (array_item | dec_inc))?
             |   '*'? 'this'
             ;
 

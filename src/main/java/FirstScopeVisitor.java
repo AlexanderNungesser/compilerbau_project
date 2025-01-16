@@ -53,7 +53,7 @@ public class FirstScopeVisitor {
         visitArrayItem(node);
       default:
         if (node.children.isEmpty()) {
-          break;
+          visitExpr(node);
         } else {
           visitChildren(node);
         }
@@ -523,14 +523,28 @@ public class FirstScopeVisitor {
   }
 
   public ASTNode visitExpr(ASTNode node) {
+    Symbol variable;
     if (node.children.isEmpty() && node.getType() == Type.ID) {
-      String name = node.getValue();
-      Symbol var = currentScope.resolve(name);
-      if (var == null) {
-        System.out.println("Error: in Expr no such variable: " + name);
+      if (node.getType() == Type.OBJ_USAGE) {
+        variable = visitObj_usage(node);
+      } else {
+        variable = currentScope.resolve(node.getValue());
       }
+      if (variable == null) {
+        System.out.println("Error: no such variable: " + node.getValue());
+      }
+    } else {
+      visitChildren(node);
     }
     return node;
+  }
+
+  public Symbol visitObj_usage(ASTNode node) {
+    Symbol usage = currentScope.resolve(node.getValue());
+    if (!(usage instanceof SymbolTable.Class)) {
+      usage = currentScope.resolve(usage.type);
+    }
+    return ((SymbolTable.Class) usage).getClassScope().resolve(node.children.getFirst().getValue());
   }
 
   public ASTNode visitChildren(ASTNode node) {

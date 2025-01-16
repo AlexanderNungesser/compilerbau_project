@@ -1,5 +1,6 @@
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.TerminalNode;
 
 public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
 
@@ -701,35 +702,51 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
   public ASTNode visitObj_usage(CppParser.Obj_usageContext ctx) {
     ASTNode node = new ASTNode(Type.OBJ_USAGE);
 
-    // Process "this" keyword if present
-    if (ctx.children.size() == 1) {
+    // Handle the optional 'this' or '(*this)' part
+    if (ctx.getText().startsWith("this")) {
       node.setValue("this");
-      return node;
-    } else if (ctx.getChild(0).getText().equals("*") && ctx.children.size() == 2
-        || ctx.getChild(0).getText().equals("(")) {
-      node.setValue("*this");
-      return node;
-    }
-    if (ctx.getChild(0).getText().equals("this")) {
-      node.setValue("this");
-      node.addChild(new ASTNode(Type.ID, ctx.ID(0).getText()));
-    } else {
-      node.setValue(ctx.ID(0).getText());
-    }
-
-    // Process optional member access
-    if (ctx.ID().size() > 1) {
-      for (int i = 1; i < ctx.ID().size(); i++) {
-        node.addChild(new ASTNode(Type.ID, ctx.ID(i).getText()));
+      if (ctx.children.size() > 1) {
+        for (int i = 2; i < ctx.getChildCount() - 1; i += 2) {
+          if (ctx.getChild(i) instanceof TerminalNode){
+            node.addChild(new ASTNode(Type.ID, ctx.getChild(i).getText()));
+          } else if (ctx.getChild(i) instanceof CppParser.Fn_callContext){
+            node.addChild(new ASTNode(Type.FN_CALL, ctx.getChild(i).getText()));
+          }
+        }
       }
-    }
+    } else if (ctx.getText().startsWith("*this")) {
+      node.setValue("*this");
+    } else if (ctx.getText().startsWith("(*this)")) {
+      node.setValue("*this");
+        for (int i = 5; i < ctx.getChildCount() - 1; i += 2) {
+          if (ctx.getChild(i) instanceof TerminalNode){
+            node.addChild(new ASTNode(Type.ID, ctx.getChild(i).getText()));
+          } else if (ctx.getChild(i) instanceof CppParser.Fn_callContext){
+            node.addChild(new ASTNode(Type.FN_CALL, ctx.getChild(i).getText()));
+          }
+      }
+    } else {
+        for (int i = 0; i < ctx.getChildCount() - 1; i += 2) {
+          if (ctx.getChild(i) instanceof TerminalNode){
+            node.addChild(new ASTNode(Type.ID, ctx.getChild(i).getText()));
+          } else if (ctx.getChild(i) instanceof CppParser.Fn_callContext){
+            node.addChild(new ASTNode(Type.FN_CALL, ctx.getChild(i).getText()));
+          }
+        }
+      }
 
     if (ctx.array_item() != null) {
       node.addChild(visit(ctx.array_item()));
-    } else if (ctx.dec_inc() != null) {
+    }else if (ctx.dec_inc() != null) {
       node.addChild(visit(ctx.dec_inc()));
-    } else if (ctx.fn_call() != null) {
-      node.addChild(visit(ctx.fn_call()));
+    }else {
+          if (ctx.children.getLast() instanceof TerminalNode){
+            node.addChild(new ASTNode(Type.ID, ctx.children.getLast().getText()));
+          } else if (ctx.children.getLast() instanceof CppParser.Fn_callContext){
+            node.addChild(new ASTNode(Type.FN_CALL, ctx.children.getLast().getText()));
+          }
+
+
     }
 
     return node;
