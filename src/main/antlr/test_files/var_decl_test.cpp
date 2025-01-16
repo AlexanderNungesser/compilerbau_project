@@ -12,6 +12,7 @@ int &ref = a;
 // Destfall 4: Array-Deklaration ohne Initialisierung
 int i = 5;
 int arr[5];
+int j = arr[0];
 
 // Destfall 5: Array-Deklaration mit Initialisierung
 int arr2[] = {1, 2, 3};

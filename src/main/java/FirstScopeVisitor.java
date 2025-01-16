@@ -107,6 +107,10 @@ public class FirstScopeVisitor {
       currentScope.bind(variable);
     }
 
+    if (variableNode.children.size() == 2) {
+      visit(variableNode.children.getLast());
+    }
+
     return variableNode;
   }
 
@@ -265,8 +269,8 @@ public class FirstScopeVisitor {
 
     Variable var = new Variable(lastChild.getValue(), lastSymbol.name);
 
-    String type = node.children.getFirst().getType().name().toLowerCase();
     ASTNode firstChild = node.children.getFirst();
+    String type = firstChild.getType().name().toLowerCase();
     Symbol typeSymbol = getTypeEqual(type, firstChild);
 
     Reference refVariable = new Reference(firstChild.getValue(), typeSymbol.name);
@@ -288,6 +292,21 @@ public class FirstScopeVisitor {
     if (symbol == null) {
       System.out.println("Error: array " + arrayName + " not found");
     }
+
+    if(symbol instanceof Array) {
+      for (int i = 0; i < node.children.size(); i++) {
+        ASTNode expr = visitExpr(node.children.get(i));
+        // TODO was wenn expr kein Int?
+        if (expr.getType() == Type.INT) {
+          if (((Array) symbol).length[i] <= Integer.parseInt(expr.getValue()) || Integer.parseInt(expr.getValue()) < 0){
+            System.out.println("Error: index " + expr.getValue() + " is out of bounds " + ((Array) symbol).length[i]);
+          }
+        }
+      }
+    }else {
+      System.out.println("Error: no such array " + arrayName);
+    }
+
     return node;
   }
 
