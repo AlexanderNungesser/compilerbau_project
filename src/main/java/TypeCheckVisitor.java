@@ -33,6 +33,12 @@ public class TypeCheckVisitor {
       case Type.ASSIGN:
         visitAssign(node);
         break;
+      case Type.ARRAY_INIT:
+        visitArrayInit(node);
+        break;
+      case Type.ARRAY_DECL:
+        visitArraydecl(node);
+        break;
       case Type.GREATER, Type.GREATER_EQUAL, Type.LESS, Type.LESS_EQUAL:
         visitCompare(node);
         break;
@@ -180,12 +186,42 @@ public class TypeCheckVisitor {
       System.out.println("Error: type mismatch in arrayRef: " + arr + " is not an array");
     }
 
-    ASTNode ref = node.children.getFirst();
-    if(Integer.parseInt(ref.children.getFirst().getValue()) != ((Array) arr).length){
-      System.out.println("Error: dimensions of reference " + ref.getValue() + " does not match length of array " + arr.name);
+    return node;
+  }
+
+  public ASTNode visitArraydecl(ASTNode node) {
+    for(ASTNode child : node.children.getFirst().children ) {
+      String childType = getEndType(child);
+      if(!childType.equals("int")){
+        System.out.println("Error: type " + childType + " not cannot describe array length");
+      }
     }
 
-    return ref;
+    return node;
+  }
+
+  public ASTNode visitArrayInit(ASTNode node) {
+    String arrayType = getEndType(node.children.getFirst());
+
+    visitArraydecl(node);
+
+
+    visitArray(node.children.getLast(), arrayType);
+
+    return node;
+  }
+
+  private void visitArray(ASTNode node, String arrayType) {
+    if(node.children.getFirst().getType() == Type.ARRAY){
+      visitArray(node.children.getFirst(), arrayType);
+    } else {
+      for (ASTNode child : node.children) {
+        String childType = getEndType(child);
+        if(!childType.equals(arrayType)){
+          System.out.println("Error: type mismatch in arrayInit: " + childType + " is not the same as " + arrayType);
+        }
+      }
+    }
   }
 
   public ASTNode visitCalculate(ASTNode node) {

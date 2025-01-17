@@ -2,11 +2,11 @@ package SymbolTable;
 
 public class Array extends Symbol {
   private Object[] array;
-  public int[] length;
+  public Object[] length;
 
   public Array(String name, String type, int dimensions) {
     super(name, type);
-    this.length = new int[dimensions];
+    this.length = new Object[dimensions];
   }
 
   public Object[] getArray() {

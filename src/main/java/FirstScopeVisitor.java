@@ -255,8 +255,10 @@ public class FirstScopeVisitor {
     for (int i = 0; i < firstChild.children.size(); i++) {
       ASTNode expr = visitExpr(firstChild.children.get(i));
       // TODO was wenn expr kein Int?
-      if (expr.getType() == Type.INT) {
-        arr.length[i] = Integer.parseInt(expr.getValue());
+      if (expr.getType() == Type.INT || expr.getType() == Type.ID) {
+        arr.length[i] = expr.getValue();
+      } else {
+        System.out.println("Error: type " + expr.getType().name() + " not cannot describe array length");
       }
     }
     Reference arrRef = new Reference(firstChild.getValue(), typeSymbol.name);
@@ -265,11 +267,11 @@ public class FirstScopeVisitor {
     if (alreadyDeclared != null) {
       System.out.println("Error: such variable " + firstChild.getValue() + " already exists");
     } else {
-      if (lastSymbol instanceof Array) {
-        if (!Arrays.equals(((Array) lastSymbol).length, arr.length)) {
-          System.out.println("Error: initial and reference dimensions mismatch");
-        }
-      }
+//      if (lastSymbol instanceof Array) {
+//        if (!Arrays.equals(((Array) lastSymbol).length, arr.length)) {
+//          System.out.println("Error: initial and reference dimensions mismatch");
+//        }
+//      }
       currentScope.bind(arrRef);
     }
 
@@ -331,20 +333,20 @@ public class FirstScopeVisitor {
     }
 
     if (symbol instanceof Array) {
-      for (int i = 0; i < node.children.size(); i++) {
-        ASTNode expr = visitExpr(node.children.get(i));
-        // TODO was wenn expr kein Int?
-        if (expr.getType() == Type.INT) {
-          if (((Array) symbol).length[i] <= Integer.parseInt(expr.getValue())
-                  || Integer.parseInt(expr.getValue()) < 0) {
-            System.out.println(
-                    "Error: index "
-                            + expr.getValue()
-                            + " is out of bounds "
-                            + ((Array) symbol).length[i]);
-          }
-        }
-      }
+//      for (int i = 0; i < node.children.size(); i++) {
+//        ASTNode expr = visitExpr(node.children.get(i));
+//        // TODO was wenn expr kein Int?
+//        if (expr.getType() == Type.INT && ((Array) symbol).length[i] instanceof Integer) {
+//          if (((Array) symbol).length[i] <= Integer.parseInt(expr.getValue())
+//                  || Integer.parseInt(expr.getValue()) < 0) {
+//            System.out.println(
+//                    "Error: index "
+//                            + expr.getValue()
+//                            + " is out of bounds "
+//                            + ((Array) symbol).length[i]);
+//          }
+//        }
+//      }
     } else {
       System.out.println("Error: no such array " + arrayName);
     }
