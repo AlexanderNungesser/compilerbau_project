@@ -76,7 +76,7 @@ public class TypeCheckVisitor {
     for (Scope scope : this.currentScope.innerScopes) {
       if (!visitedScopes.contains(scope)) {
         this.currentScope = scope;
-        if(node.getType() == Type.CLASS) {
+        if (node.getType() == Type.CLASS) {
           for (ASTNode child : node.children) {
             switch (child.getType()) {
               case Type.FN_DECL: // Methoden
@@ -85,10 +85,10 @@ public class TypeCheckVisitor {
               case Type.CONSTRUCTOR:
                 visitConstructor(child, currentScope.resolve(node.getValue()));
                 break;
-              //                        case Type.DESTRUCTOR:
-              //                            visitDestructor(child,
-              // currentScope.resolve(classNode.getValue()));
-              //                            break;
+                //                        case Type.DESTRUCTOR:
+                //                            visitDestructor(child,
+                // currentScope.resolve(classNode.getValue()));
+                //                            break;
             }
           }
           this.currentScope = this.currentScope.enclosingScope;
@@ -124,7 +124,7 @@ public class TypeCheckVisitor {
   public Symbol visitObj_usage(ASTNode node) {
     ASTNode classObject = node.children.getFirst();
 
-    if(classObject.getType() == Type.OBJ_USAGE) {
+    if (classObject.getType() == Type.OBJ_USAGE) {
       return visitObj_usage(classObject);
     }
 
@@ -176,7 +176,7 @@ public class TypeCheckVisitor {
       return node;
     }
 
-    //TODO params der Funktion kriegen und sie mit den args vergleichen
+    // TODO params der Funktion kriegen und sie mit den args vergleichen
 
     return node;
   }
@@ -208,13 +208,14 @@ public class TypeCheckVisitor {
 
   public ASTNode visitVardecl(ASTNode node) {
     ASTNode firstChild = node.children.getFirst();
-    if(node.children.size()==2){
+    if (node.children.size() == 2) {
       ASTNode secondChild = node.children.getLast();
       String firstType = getEndType(firstChild), secondType = getEndType(secondChild);
 
-      if(!Objects.equals(firstType, secondType)){
+      if (!Objects.equals(firstType, secondType)) {
         System.out.println(firstChild.getValue() + " " + secondChild.getValue());
-        System.out.println("Error: type mismatch in vardecl: type " + firstType + " cannot be " + secondType);
+        System.out.println(
+            "Error: type mismatch in vardecl: type " + firstType + " cannot be " + secondType);
       }
     }
     return node;
@@ -224,7 +225,7 @@ public class TypeCheckVisitor {
     visitVardecl(node);
     Symbol arr = currentScope.resolve(node.children.getLast().getValue());
 
-    if(!(arr instanceof Array)){
+    if (!(arr instanceof Array)) {
       System.out.println("Error: type mismatch in arrayRef: " + arr + " is not an array");
     }
 
@@ -232,9 +233,9 @@ public class TypeCheckVisitor {
   }
 
   public ASTNode visitArraydecl(ASTNode node) {
-    for(ASTNode child : node.children.getFirst().children ) {
+    for (ASTNode child : node.children.getFirst().children) {
       String childType = getEndType(child);
-      if(!childType.equals("int")){
+      if (!childType.equals("int")) {
         System.out.println("Error: type " + childType + " not cannot describe array length");
       }
     }
@@ -247,20 +248,23 @@ public class TypeCheckVisitor {
 
     visitArraydecl(node);
 
-
     visitArray(node.children.getLast(), arrayType);
 
     return node;
   }
 
   private void visitArray(ASTNode node, String arrayType) {
-    if(node.children.getFirst().getType() == Type.ARRAY){
+    if (node.children.getFirst().getType() == Type.ARRAY) {
       visitArray(node.children.getFirst(), arrayType);
     } else {
       for (ASTNode child : node.children) {
         String childType = getEndType(child);
-        if(!childType.equals(arrayType)){
-          System.out.println("Error: type mismatch in arrayInit: " + childType + " is not the same as " + arrayType);
+        if (!childType.equals(arrayType)) {
+          System.out.println(
+              "Error: type mismatch in arrayInit: "
+                  + childType
+                  + " is not the same as "
+                  + arrayType);
         }
       }
     }
@@ -305,8 +309,8 @@ public class TypeCheckVisitor {
     return false;
   }
 
-  private String  getEndType(ASTNode node) {
-    if(node.getType() == Type.ID) {
+  private String getEndType(ASTNode node) {
+    if (node.getType() == Type.ID) {
       Symbol classSymbol = currentScope.resolve(node.getValue());
       return currentScope.resolve(classSymbol.type).name;
     }
@@ -320,10 +324,10 @@ public class TypeCheckVisitor {
         return node.getType().name().toLowerCase();
       }
 
-      if(node.getType() == Type.CLASSTYPE ){
+      if (node.getType() == Type.CLASSTYPE) {
         return currentScope.resolve(node.getValue()).type;
       }
-      if(node.getType() == Type.OBJ_USAGE) {
+      if (node.getType() == Type.OBJ_USAGE) {
         return visitObj_usage(node).type;
       }
       return getEndType(node.children.getFirst());

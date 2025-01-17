@@ -1,6 +1,5 @@
 import SymbolTable.*;
 import SymbolTable.Class;
-
 import java.util.HashSet;
 import java.util.Set;
 
@@ -197,14 +196,13 @@ public class SecondScopeVisitor {
     }
 
     ASTNode value = node.children.getLast();
-    if (value.getType() == Type.OBJ_USAGE){
+    if (value.getType() == Type.OBJ_USAGE) {
       Symbol valueSymbol = visitObj_usage(value);
       if (valueSymbol == null) {
         System.out.println("Error: no such variable: " + value.getValue());
       }
     }
-    if (value.getType() == Type.ID
-        || value.getType() == Type.ARRAY_ITEM) {
+    if (value.getType() == Type.ID || value.getType() == Type.ARRAY_ITEM) {
       Symbol valueSymbol = currentScope.resolve(value.getValue());
       if (valueSymbol == null) {
         System.out.println("Error: no such variable: " + value.getValue());
@@ -346,7 +344,7 @@ public class SecondScopeVisitor {
   public Symbol visitObj_usage(ASTNode node) {
     ASTNode classObject = node.children.getFirst();
 
-    if(classObject.getType() == Type.OBJ_USAGE) {
+    if (classObject.getType() == Type.OBJ_USAGE) {
       return visitObj_usage(classObject);
     }
 
@@ -357,13 +355,15 @@ public class SecondScopeVisitor {
     Symbol usedValueOfObject = classScope.resolve(node.children.getLast().getValue());
     return usedValueOfObject;
   }
-//  public Symbol visitObj_usage(ASTNode node) {
-//    Symbol usage = currentScope.resolve(node.getValue());
-//    if (!(usage instanceof SymbolTable.Class)) {
-//      usage = currentScope.resolve(usage.type);
-//    }
-//    return ((SymbolTable.Class) usage).getClassScope().resolve(node.children.getFirst().getValue());
-//  }
+
+  //  public Symbol visitObj_usage(ASTNode node) {
+  //    Symbol usage = currentScope.resolve(node.getValue());
+  //    if (!(usage instanceof SymbolTable.Class)) {
+  //      usage = currentScope.resolve(usage.type);
+  //    }
+  //    return ((SymbolTable.Class)
+  // usage).getClassScope().resolve(node.children.getFirst().getValue());
+  //  }
 
   public ASTNode visitOperator(ASTNode operatorNode, Symbol classSymbol) {
     String operatorName = operatorNode.getValue();

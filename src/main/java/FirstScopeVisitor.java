@@ -1,7 +1,6 @@
 import SymbolTable.*;
 import SymbolTable.Class;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 
 public class FirstScopeVisitor {
@@ -90,9 +89,9 @@ public class FirstScopeVisitor {
           currentScope.bind(new Variable(fncall.getValue(), classtype.name));
         } else {
           System.out.println(
-                  "Error: cannot create object of class, cause class "
-                          + classtype.name
-                          + " does not exist");
+              "Error: cannot create object of class, cause class "
+                  + classtype.name
+                  + " does not exist");
         }
       }
     }
@@ -258,7 +257,8 @@ public class FirstScopeVisitor {
       if (expr.getType() == Type.INT || expr.getType() == Type.ID) {
         arr.length[i] = expr.getValue();
       } else {
-        System.out.println("Error: type " + expr.getType().name() + " not cannot describe array length");
+        System.out.println(
+            "Error: type " + expr.getType().name() + " not cannot describe array length");
       }
     }
     Reference arrRef = new Reference(firstChild.getValue(), typeSymbol.name);
@@ -267,11 +267,11 @@ public class FirstScopeVisitor {
     if (alreadyDeclared != null) {
       System.out.println("Error: such variable " + firstChild.getValue() + " already exists");
     } else {
-//      if (lastSymbol instanceof Array) {
-//        if (!Arrays.equals(((Array) lastSymbol).length, arr.length)) {
-//          System.out.println("Error: initial and reference dimensions mismatch");
-//        }
-//      }
+      //      if (lastSymbol instanceof Array) {
+      //        if (!Arrays.equals(((Array) lastSymbol).length, arr.length)) {
+      //          System.out.println("Error: initial and reference dimensions mismatch");
+      //        }
+      //      }
       currentScope.bind(arrRef);
     }
 
@@ -281,7 +281,7 @@ public class FirstScopeVisitor {
   public Symbol visitObj_usage(ASTNode node) {
     ASTNode classObject = node.children.getFirst();
 
-    if(classObject.getType() == Type.OBJ_USAGE) {
+    if (classObject.getType() == Type.OBJ_USAGE) {
       return visitObj_usage(classObject);
     }
 
@@ -296,7 +296,7 @@ public class FirstScopeVisitor {
   public ASTNode visitVarRef(ASTNode node) {
     ASTNode lastChild = node.children.getLast();
     Symbol lastSymbol;
-    if(lastChild.getType() == Type.OBJ_USAGE) {
+    if (lastChild.getType() == Type.OBJ_USAGE) {
       lastSymbol = visitObj_usage(lastChild);
     } else {
       lastSymbol = currentScope.resolve(lastChild.getValue());
@@ -333,20 +333,20 @@ public class FirstScopeVisitor {
     }
 
     if (symbol instanceof Array) {
-//      for (int i = 0; i < node.children.size(); i++) {
-//        ASTNode expr = visitExpr(node.children.get(i));
-//        // TODO was wenn expr kein Int?
-//        if (expr.getType() == Type.INT && ((Array) symbol).length[i] instanceof Integer) {
-//          if (((Array) symbol).length[i] <= Integer.parseInt(expr.getValue())
-//                  || Integer.parseInt(expr.getValue()) < 0) {
-//            System.out.println(
-//                    "Error: index "
-//                            + expr.getValue()
-//                            + " is out of bounds "
-//                            + ((Array) symbol).length[i]);
-//          }
-//        }
-//      }
+      //      for (int i = 0; i < node.children.size(); i++) {
+      //        ASTNode expr = visitExpr(node.children.get(i));
+      //        // TODO was wenn expr kein Int?
+      //        if (expr.getType() == Type.INT && ((Array) symbol).length[i] instanceof Integer) {
+      //          if (((Array) symbol).length[i] <= Integer.parseInt(expr.getValue())
+      //                  || Integer.parseInt(expr.getValue()) < 0) {
+      //            System.out.println(
+      //                    "Error: index "
+      //                            + expr.getValue()
+      //                            + " is out of bounds "
+      //                            + ((Array) symbol).length[i]);
+      //          }
+      //        }
+      //      }
     } else {
       System.out.println("Error: no such array " + arrayName);
     }
@@ -397,11 +397,11 @@ public class FirstScopeVisitor {
   public ASTNode visitAbstractFn(ASTNode node) {
     if (!node.children.getLast().getValue().equals("0")) {
       System.out.println(
-              "Error: function "
-                      + node.getValue()
-                      + " is not abstract, "
-                      + node.children.getLast().getValue()
-                      + " must be 0");
+          "Error: function "
+              + node.getValue()
+              + " is not abstract, "
+              + node.children.getLast().getValue()
+              + " must be 0");
     }
     ASTNode funcInfo = node.children.getFirst();
     String name = funcInfo.children.getFirst().getValue();
@@ -498,11 +498,11 @@ public class FirstScopeVisitor {
     if (!mustHave.get(Type.CONSTRUCTOR)) {
       ASTNode constructorNode = new ASTNode(Type.CONSTRUCTOR, classNode.getValue());
       String superclassName =
-              classNode.children.stream()
-                      .filter(c -> c.getType() == Type.CLASSTYPE)
-                      .map(n -> n.children.getFirst().getValue())
-                      .findFirst()
-                      .orElse("Unknown");
+          classNode.children.stream()
+              .filter(c -> c.getType() == Type.CLASSTYPE)
+              .map(n -> n.children.getFirst().getValue())
+              .findFirst()
+              .orElse("Unknown");
       if (!superclassName.equals("Unknown")) {
         constructorNode.addChild(new ASTNode(Type.ID, superclassName));
         Scope superclassScope = currentScope.resolve(superclassName).scope;
@@ -511,7 +511,7 @@ public class FirstScopeVisitor {
           if (superclassConstructor instanceof Function) {
             if (((Function) superclassConstructor).getParamCount() > 0) {
               System.out.println(
-                      "Error: constructor must be implemented, because superclass has no base constructor");
+                  "Error: constructor must be implemented, because superclass has no base constructor");
             }
           }
         }
@@ -525,11 +525,11 @@ public class FirstScopeVisitor {
       ref.addChild(new ASTNode(Type.REF));
       copyConstructorNode.addChild(ref);
       String superclassName =
-              classNode.children.stream()
-                      .filter(c -> c.getType() == Type.CLASSTYPE)
-                      .map(n -> n.children.getFirst().getValue())
-                      .findFirst()
-                      .orElse("Unknown");
+          classNode.children.stream()
+              .filter(c -> c.getType() == Type.CLASSTYPE)
+              .map(n -> n.children.getFirst().getValue())
+              .findFirst()
+              .orElse("Unknown");
       if (!superclassName.equals("Unknown")) {
         copyConstructorNode.addChild(new ASTNode(Type.ID, superclassName));
         ASTNode arg = new ASTNode(Type.ARGS);
