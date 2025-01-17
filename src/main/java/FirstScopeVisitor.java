@@ -494,7 +494,6 @@ public class FirstScopeVisitor {
           }
         }
       }
-      constructorNode.addChild(new ASTNode(Type.BLOCK));
       classNode.addChild(constructorNode);
     }
     if (!mustHave.get(Type.COPY_CONSTRUCTOR)) {
@@ -515,14 +514,12 @@ public class FirstScopeVisitor {
         arg.addChild(new ASTNode(Type.ID, ref.children.getFirst().getValue()));
         copyConstructorNode.addChild(arg);
       }
-      copyConstructorNode.addChild(new ASTNode(Type.BLOCK));
       classNode.addChild(copyConstructorNode);
     }
     if (!mustHave.get(Type.DESTRUCTOR)) {
       ASTNode destructorNode = new ASTNode(Type.DESTRUCTOR);
       // TODO: how to handle "virtual" -> should be value of destructorNode
       destructorNode.addChild(new ASTNode(Type.ID, classNode.getValue()));
-      destructorNode.addChild(new ASTNode(Type.BLOCK));
       classNode.addChild(destructorNode);
     }
     if (!mustHave.get(Type.OPERATOR)) {
@@ -536,7 +533,6 @@ public class FirstScopeVisitor {
       ref.addChild(new ASTNode(Type.REF));
       param.addChild(ref);
       operatorNode.addChild(param);
-      operatorNode.addChild(new ASTNode(Type.BLOCK));
       classNode.addChild(operatorNode);
     }
 
