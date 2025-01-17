@@ -1,5 +1,6 @@
 import SymbolTable.*;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 public class TypeCheckVisitor {
@@ -24,9 +25,12 @@ public class TypeCheckVisitor {
       case Type.CLASS:
         visitScopes(node);
         break;
-//      case Type.FN_CALL:
-//        visitFncall(node);
-//        break;
+      case Type.FN_CALL:
+        visitFncall(node);
+        break;
+      case Type.VAR_DECL:
+        visitVardecl(node);
+        break;
       case Type.ASSIGN:
         visitAssign(node);
         break;
@@ -140,6 +144,11 @@ public class TypeCheckVisitor {
     return node;
   }
 
+  public ASTNode visitFncall(ASTNode node) {
+    visitChildren(node);
+    return node;
+  }
+
   public ASTNode visitConstructor(ASTNode constructorNode, Symbol classSymbol) {
     return constructorNode;
   }
@@ -159,6 +168,22 @@ public class TypeCheckVisitor {
   }
 
   public ASTNode visitDecInc(ASTNode node) {
+    return node;
+  }
+
+  public ASTNode visitVardecl(ASTNode node) {
+    ASTNode firstChild = node.children.getFirst();
+    if(node.children.size()==2){
+      ASTNode secondChild = node.children.getLast();
+      String firstType = firstChild.getType().name(), secondType = secondChild.getType().name();
+      if(firstChild.getType() == Type.CLASSTYPE){
+        firstType = currentScope.resolve(firstChild.getValue()).type;
+        secondType = currentScope.resolve(currentScope.resolve(secondChild.getValue()).type).name;
+      }
+      if(!Objects.equals(firstType, secondType)){
+        System.out.println("Error: type mismatch in vardecl: type " + firstChild.getType() + " cannot be " + secondChild.getType());
+      }
+    }
     return node;
   }
 

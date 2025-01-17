@@ -1,4 +1,6 @@
 import SymbolTable.*;
+import SymbolTable.Class;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -98,7 +100,10 @@ public class SecondScopeVisitor {
       }
 
       if (function instanceof Variable) {
-        System.out.println("Error: " + functionName + " is not a function");
+        Symbol typeSymbol = currentScope.resolve(function.type);
+        if (!(typeSymbol instanceof Class)) {
+          System.out.println("Error: " + functionName + " is not a function");
+        }
         return fncall;
       }
 
