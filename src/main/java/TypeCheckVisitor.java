@@ -19,16 +19,13 @@ public class TypeCheckVisitor {
       case Type.OBJ_USAGE:
         visitObj_usage(node);
         break;
-      case Type.BLOCK, Type.FN_DECL:
+      case Type.BLOCK, Type.FN_DECL, Type.CLASS:
         visitScopes(node);
         break;
-      case Type.CLASS:
-        visitScopes(node);
-        break;
-      case Type.FN_CALL:
+        case Type.FN_CALL:
         visitFncall(node);
         break;
-      case Type.VAR_DECL:
+      case Type.VAR_DECL, Type.VAR_REF:
         visitVardecl(node);
         break;
       case Type.ASSIGN:
@@ -164,13 +161,7 @@ public class TypeCheckVisitor {
     if(node.children.size()==2){
       ASTNode secondChild = node.children.getLast();
       String firstType = getEndType(firstChild), secondType = getEndType(secondChild);
-      if(firstChild.getType() == Type.CLASSTYPE ){
-        firstType = currentScope.resolve(firstChild.getValue()).type;
-      }
-      if(secondType.equals("id")) {
-        Symbol classSymbol = currentScope.resolve(secondChild.getValue());
-        secondType = currentScope.resolve(classSymbol.type).name;
-      }
+
       if(!Objects.equals(firstType, secondType)){
         System.out.println(firstChild.getValue() + " " + secondChild.getValue());
         System.out.println("Error: type mismatch in vardecl: type " + firstType + " cannot be " + secondType);
@@ -219,7 +210,23 @@ public class TypeCheckVisitor {
   }
 
   private String  getEndType(ASTNode node) {
+    if(node.getType() == Type.ID) {
+      Symbol classSymbol = currentScope.resolve(node.getValue());
+      return currentScope.resolve(classSymbol.type).name;
+    }
     if (!node.children.isEmpty()) {
+      boolean isRef = false;
+      for (ASTNode child : node.children) {
+        isRef = child.getType() == Type.REF;
+        if (isRef) break;
+      }
+      if (isRef) {
+        return node.getType().name().toLowerCase();
+      }
+
+      if(node.getType() == Type.CLASSTYPE ){
+        return currentScope.resolve(node.getValue()).type;
+      }
       if(node.getType() == Type.OBJ_USAGE) {
         return visitObj_usage(node).type;
       }

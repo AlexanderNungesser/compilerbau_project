@@ -276,9 +276,29 @@ public class FirstScopeVisitor {
     return node;
   }
 
+  public Symbol visitObj_usage(ASTNode node) {
+    ASTNode classObject = node.children.getFirst();
+
+    if(classObject.getType() == Type.OBJ_USAGE) {
+      return visitObj_usage(classObject);
+    }
+
+    Symbol objectSymbol = currentScope.resolve(classObject.getValue());
+    Symbol classSymbol = currentScope.resolve(objectSymbol.type);
+    Scope classScope = ((SymbolTable.Class) classSymbol).getClassScope();
+
+    Symbol usedValueOfObject = classScope.resolve(node.children.getLast().getValue());
+    return usedValueOfObject;
+  }
+
   public ASTNode visitVarRef(ASTNode node) {
     ASTNode lastChild = node.children.getLast();
-    Symbol lastSymbol = currentScope.resolve(lastChild.getValue());
+    Symbol lastSymbol;
+    if(lastChild.getType() == Type.OBJ_USAGE) {
+      lastSymbol = visitObj_usage(lastChild);
+    } else {
+      lastSymbol = currentScope.resolve(lastChild.getValue());
+    }
 
     if (lastSymbol == null) {
       System.out.println("Error: such variable " + lastChild.getValue() + " does not exist");
@@ -556,14 +576,6 @@ public class FirstScopeVisitor {
       visitChildren(node);
     }
     return node;
-  }
-
-  public Symbol visitObj_usage(ASTNode node) {
-    Symbol usage = currentScope.resolve(node.getValue());
-    if (!(usage instanceof SymbolTable.Class)) {
-      usage = currentScope.resolve(usage.type);
-    }
-    return ((SymbolTable.Class) usage).getClassScope().resolve(node.children.getFirst().getValue());
   }
 
   public ASTNode visitChildren(ASTNode node) {
