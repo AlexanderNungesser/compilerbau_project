@@ -187,12 +187,12 @@ public class TypeCheckVisitor {
   }
 
   public ASTNode visitProgram(ASTNode program) {
-
+    visitChildren(program);
     return program;
   }
 
   public ASTNode visitAssign(ASTNode node) {
-
+    visitChildren(node);
     return node;
   }
 
