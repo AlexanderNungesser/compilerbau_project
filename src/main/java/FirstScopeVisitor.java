@@ -51,6 +51,10 @@ public class FirstScopeVisitor {
         break;
       case Type.ARRAY_ITEM:
         visitArrayItem(node);
+        break;
+      case Type.FN_CALL:
+        visitFncall(node);
+        break;
       default:
         if (node.children.isEmpty()) {
           visitExpr(node);
@@ -77,6 +81,20 @@ public class FirstScopeVisitor {
 
     visitChildren(program);
     return program;
+  }
+
+  public ASTNode visitFncall(ASTNode fncall) {
+    for (ASTNode child : fncall.children) {
+      if (child.getType() == Type.CLASSTYPE) {
+        Symbol classtype = currentScope.resolve(child.getValue());
+        if (classtype != null) {
+          currentScope.bind(new Variable(fncall.getValue(), classtype.name));
+        } else {
+          System.out.println("Error: cannot create object of class, cause class " + classtype.name + " does not exist");
+        }
+      }
+    }
+    return fncall;
   }
 
   public ASTNode visitVardecl(ASTNode variableNode) {
@@ -531,7 +549,7 @@ public class FirstScopeVisitor {
         variable = currentScope.resolve(node.getValue());
       }
       if (variable == null) {
-        System.out.println("Error: no such variable: " + node.getValue());
+        return node;
       }
     } else {
       visitChildren(node);
