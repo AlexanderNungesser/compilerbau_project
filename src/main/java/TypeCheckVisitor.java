@@ -48,6 +48,9 @@ public class TypeCheckVisitor {
       case Type.NOT:
         visitNot(node);
         break;
+      case Type.AND, Type.OR:
+        visitBoolOperator(node);
+        break;
       case Type.DEC_INC:
         visitDecInc(node);
         break;
@@ -136,13 +139,25 @@ public class TypeCheckVisitor {
     return usedValueOfObject;
   }
 
-  private ASTNode visitNot(ASTNode node) {
+  public ASTNode visitNot(ASTNode node) {
     String type = getEndType(node.children.getFirst());
     if (!typeIsValid(type)) {
       System.out.println("Error: invalid type for negation: " + type);
     }
     return node;
   }
+
+  public ASTNode visitBoolOperator(ASTNode node) {
+    String firstType = getEndType(node.children.getFirst());
+    String secondType = getEndType(node.children.getLast());
+    if (!typeIsValid(firstType)) {
+      System.out.println("Error: invalid type for bool operation: " + firstType);
+    }else if (!typeIsValid(secondType)) {
+      System.out.println("Error: invalid type for bool operation: " + secondType);
+    }
+    return node;
+  }
+
 
   public ASTNode visitFndecl(ASTNode node) {
     ASTNode returnTypeNode = node.children.getFirst();
