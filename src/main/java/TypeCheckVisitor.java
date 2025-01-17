@@ -128,18 +128,6 @@ public class TypeCheckVisitor {
     return usedValueOfObject;
   }
 
-  public ASTNode visitClass(ASTNode classNode) {
-    for (Scope scope : this.currentScope.innerScopes) {
-      if (!visitedScopes.contains(scope)) {
-        this.currentScope = scope;
-
-        this.currentScope = this.currentScope.enclosingScope;
-        visitedScopes.add(scope);
-      }
-    }
-    return classNode;
-  }
-
   private ASTNode visitNot(ASTNode node) {
     return node;
   }
@@ -175,13 +163,17 @@ public class TypeCheckVisitor {
     ASTNode firstChild = node.children.getFirst();
     if(node.children.size()==2){
       ASTNode secondChild = node.children.getLast();
-      String firstType = firstChild.getType().name(), secondType = secondChild.getType().name();
-      if(firstChild.getType() == Type.CLASSTYPE){
+      String firstType = getEndType(firstChild), secondType = getEndType(secondChild);
+      if(firstChild.getType() == Type.CLASSTYPE ){
         firstType = currentScope.resolve(firstChild.getValue()).type;
-        secondType = currentScope.resolve(currentScope.resolve(secondChild.getValue()).type).name;
+      }
+      if(secondType.equals("id")) {
+        Symbol classSymbol = currentScope.resolve(secondChild.getValue());
+        secondType = currentScope.resolve(classSymbol.type).name;
       }
       if(!Objects.equals(firstType, secondType)){
-        System.out.println("Error: type mismatch in vardecl: type " + firstChild.getType() + " cannot be " + secondChild.getType());
+        System.out.println(firstChild.getValue() + " " + secondChild.getValue());
+        System.out.println("Error: type mismatch in vardecl: type " + firstType + " cannot be " + secondType);
       }
     }
     return node;

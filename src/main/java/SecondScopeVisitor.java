@@ -158,11 +158,7 @@ public class SecondScopeVisitor {
   public ASTNode visitExpr(ASTNode node) {
     Symbol variable;
     if (node.children.isEmpty() && node.getType() == Type.ID) {
-      if (node.getType() == Type.OBJ_USAGE) {
-        variable = visitObj_usage(node);
-      } else {
-        variable = currentScope.resolve(node.getValue());
-      }
+      variable = currentScope.resolve(node.getValue());
       if (variable == null) {
         System.out.println("Error: no such variable: " + node.getValue());
       }
