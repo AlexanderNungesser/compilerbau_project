@@ -42,6 +42,7 @@ int main() {
         print_int(x.value);     // 9
         print_int(y.value);     // 7
 
+        int al = y.value;
         A z = y;
         print_int(x.value);     // 9
         print_int(y.value);     // 7
@@ -91,6 +92,8 @@ int main() {
         C x;
         x.value = 9;
         print_int(x.value);     // 9
+        int zahl;
+         zahl = x.value + '1' + true + x;
 
         C y(x);
         print_int(x.value);     // 9
