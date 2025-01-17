@@ -90,9 +90,9 @@ public class FirstScopeVisitor {
           currentScope.bind(new Variable(fncall.getValue(), classtype.name));
         } else {
           System.out.println(
-              "Error: cannot create object of class, cause class "
-                  + classtype.name
-                  + " does not exist");
+                  "Error: cannot create object of class, cause class "
+                          + classtype.name
+                          + " does not exist");
         }
       }
     }
@@ -181,7 +181,7 @@ public class FirstScopeVisitor {
       ASTNode expr = visitExpr(firstChild.children.get(i));
       // TODO was wenn expr kein Int?
       if (expr.getType() == Type.INT) {
-        arr.array[i] = Integer.parseInt(expr.getValue());
+        arr.length[i] = Integer.parseInt(expr.getValue());
       }
     }
 
@@ -211,7 +211,7 @@ public class FirstScopeVisitor {
         ASTNode expr = visitExpr(firstChild.children.get(i));
         // TODO was wenn expr kein Int?
         if (expr.getType() == Type.INT) {
-          arr.array[i] = Integer.parseInt(expr.getValue());
+          arr.length[i] = Integer.parseInt(expr.getValue());
         }
       }
     } else {
@@ -224,7 +224,7 @@ public class FirstScopeVisitor {
     if (firstChild.children.isEmpty()) {
       arr = new Array(firstChild.getValue(), typeSymbol.name, dimensions);
       for (int i = 0; i < dimensions; i++) {
-        arr.array[i] = sizes.get(i);
+        arr.length[i] = sizes.get(i);
       }
     }
 
@@ -256,7 +256,7 @@ public class FirstScopeVisitor {
       ASTNode expr = visitExpr(firstChild.children.get(i));
       // TODO was wenn expr kein Int?
       if (expr.getType() == Type.INT) {
-        arr.array[i] = Integer.parseInt(expr.getValue());
+        arr.length[i] = Integer.parseInt(expr.getValue());
       }
     }
     Reference arrRef = new Reference(firstChild.getValue(), typeSymbol.name);
@@ -266,7 +266,7 @@ public class FirstScopeVisitor {
       System.out.println("Error: such variable " + firstChild.getValue() + " already exists");
     } else {
       if (lastSymbol instanceof Array) {
-        if (!Arrays.equals(((Array) lastSymbol).array, arr.array)) {
+        if (!Arrays.equals(((Array) lastSymbol).length, arr.length)) {
           System.out.println("Error: initial and reference dimensions mismatch");
         }
       }
@@ -335,13 +335,13 @@ public class FirstScopeVisitor {
         ASTNode expr = visitExpr(node.children.get(i));
         // TODO was wenn expr kein Int?
         if (expr.getType() == Type.INT) {
-          if (((Array) symbol).array[i] <= Integer.parseInt(expr.getValue())
-              || Integer.parseInt(expr.getValue()) < 0) {
+          if (((Array) symbol).length[i] <= Integer.parseInt(expr.getValue())
+                  || Integer.parseInt(expr.getValue()) < 0) {
             System.out.println(
-                "Error: index "
-                    + expr.getValue()
-                    + " is out of bounds "
-                    + ((Array) symbol).array[i]);
+                    "Error: index "
+                            + expr.getValue()
+                            + " is out of bounds "
+                            + ((Array) symbol).length[i]);
           }
         }
       }
@@ -395,11 +395,11 @@ public class FirstScopeVisitor {
   public ASTNode visitAbstractFn(ASTNode node) {
     if (!node.children.getLast().getValue().equals("0")) {
       System.out.println(
-          "Error: function "
-              + node.getValue()
-              + " is not abstract, "
-              + node.children.getLast().getValue()
-              + " must be 0");
+              "Error: function "
+                      + node.getValue()
+                      + " is not abstract, "
+                      + node.children.getLast().getValue()
+                      + " must be 0");
     }
     ASTNode funcInfo = node.children.getFirst();
     String name = funcInfo.children.getFirst().getValue();
@@ -496,11 +496,11 @@ public class FirstScopeVisitor {
     if (!mustHave.get(Type.CONSTRUCTOR)) {
       ASTNode constructorNode = new ASTNode(Type.CONSTRUCTOR, classNode.getValue());
       String superclassName =
-          classNode.children.stream()
-              .filter(c -> c.getType() == Type.CLASSTYPE)
-              .map(n -> n.children.getFirst().getValue())
-              .findFirst()
-              .orElse("Unknown");
+              classNode.children.stream()
+                      .filter(c -> c.getType() == Type.CLASSTYPE)
+                      .map(n -> n.children.getFirst().getValue())
+                      .findFirst()
+                      .orElse("Unknown");
       if (!superclassName.equals("Unknown")) {
         constructorNode.addChild(new ASTNode(Type.ID, superclassName));
         Scope superclassScope = currentScope.resolve(superclassName).scope;
@@ -509,7 +509,7 @@ public class FirstScopeVisitor {
           if (superclassConstructor instanceof Function) {
             if (((Function) superclassConstructor).getParamCount() > 0) {
               System.out.println(
-                  "Error: constructor must be implemented, because superclass has no base constructor");
+                      "Error: constructor must be implemented, because superclass has no base constructor");
             }
           }
         }
@@ -523,11 +523,11 @@ public class FirstScopeVisitor {
       ref.addChild(new ASTNode(Type.REF));
       copyConstructorNode.addChild(ref);
       String superclassName =
-          classNode.children.stream()
-              .filter(c -> c.getType() == Type.CLASSTYPE)
-              .map(n -> n.children.getFirst().getValue())
-              .findFirst()
-              .orElse("Unknown");
+              classNode.children.stream()
+                      .filter(c -> c.getType() == Type.CLASSTYPE)
+                      .map(n -> n.children.getFirst().getValue())
+                      .findFirst()
+                      .orElse("Unknown");
       if (!superclassName.equals("Unknown")) {
         copyConstructorNode.addChild(new ASTNode(Type.ID, superclassName));
         ASTNode arg = new ASTNode(Type.ARGS);
