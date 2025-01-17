@@ -181,7 +181,7 @@ public class FirstScopeVisitor {
       ASTNode expr = visitExpr(firstChild.children.get(i));
       // TODO was wenn expr kein Int?
       if (expr.getType() == Type.INT) {
-        arr.length[i] = Integer.parseInt(expr.getValue());
+        arr.array[i] = Integer.parseInt(expr.getValue());
       }
     }
 
@@ -211,7 +211,7 @@ public class FirstScopeVisitor {
         ASTNode expr = visitExpr(firstChild.children.get(i));
         // TODO was wenn expr kein Int?
         if (expr.getType() == Type.INT) {
-          arr.length[i] = Integer.parseInt(expr.getValue());
+          arr.array[i] = Integer.parseInt(expr.getValue());
         }
       }
     } else {
@@ -224,7 +224,7 @@ public class FirstScopeVisitor {
     if (firstChild.children.isEmpty()) {
       arr = new Array(firstChild.getValue(), typeSymbol.name, dimensions);
       for (int i = 0; i < dimensions; i++) {
-        arr.length[i] = sizes.get(i);
+        arr.array[i] = sizes.get(i);
       }
     }
 
@@ -256,7 +256,7 @@ public class FirstScopeVisitor {
       ASTNode expr = visitExpr(firstChild.children.get(i));
       // TODO was wenn expr kein Int?
       if (expr.getType() == Type.INT) {
-        arr.length[i] = Integer.parseInt(expr.getValue());
+        arr.array[i] = Integer.parseInt(expr.getValue());
       }
     }
     Reference arrRef = new Reference(firstChild.getValue(), typeSymbol.name);
@@ -266,7 +266,7 @@ public class FirstScopeVisitor {
       System.out.println("Error: such variable " + firstChild.getValue() + " already exists");
     } else {
       if (lastSymbol instanceof Array) {
-        if (!Arrays.equals(((Array) lastSymbol).length, arr.length)) {
+        if (!Arrays.equals(((Array) lastSymbol).array, arr.array)) {
           System.out.println("Error: initial and reference dimensions mismatch");
         }
       }
@@ -335,13 +335,13 @@ public class FirstScopeVisitor {
         ASTNode expr = visitExpr(node.children.get(i));
         // TODO was wenn expr kein Int?
         if (expr.getType() == Type.INT) {
-          if (((Array) symbol).length[i] <= Integer.parseInt(expr.getValue())
+          if (((Array) symbol).array[i] <= Integer.parseInt(expr.getValue())
               || Integer.parseInt(expr.getValue()) < 0) {
             System.out.println(
                 "Error: index "
                     + expr.getValue()
                     + " is out of bounds "
-                    + ((Array) symbol).length[i]);
+                    + ((Array) symbol).array[i]);
           }
         }
       }
