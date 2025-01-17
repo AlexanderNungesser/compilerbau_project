@@ -46,6 +46,7 @@ args    :   expr (',' expr)* ;
 expr    :   fn_call                     # Call
         |   array_item                  # Arr_item
         |   dec_inc                     # De_in
+        |   '!' e=expr                 # Not
         |   e1=expr '*' e2=expr       # Mul
         |   e1=expr '/' e2=expr       # Div
         |   e1=expr '+' e2=expr       # Add
@@ -59,7 +60,6 @@ expr    :   fn_call                     # Call
         |   e1=expr '&&' e2=expr      # And
         |   e1=expr '||' e2=expr      # Or
         |   e1=expr '%' e2=expr       # Mod
-        |   '!' e=expr                 # Not
         |   NULL                        # Null
         |   BOOL                        # Bool
         |   NEG? INT                    # Int
