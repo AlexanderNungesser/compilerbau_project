@@ -28,6 +28,8 @@ public class TypeCheckVisitor {
       case Type.VAR_DECL, Type.VAR_REF:
         visitVardecl(node);
         break;
+      case Type.ARRAY_REF:
+        visitArrayRef(node);
       case Type.ASSIGN:
         visitAssign(node);
         break;
@@ -168,6 +170,22 @@ public class TypeCheckVisitor {
       }
     }
     return node;
+  }
+
+  public ASTNode visitArrayRef(ASTNode node) {
+    visitVardecl(node);
+    Symbol arr = currentScope.resolve(node.children.getLast().getValue());
+
+    if(!(arr instanceof Array)){
+      System.out.println("Error: type mismatch in arrayRef: " + arr + " is not an array");
+    }
+
+    ASTNode ref = node.children.getFirst();
+    if(Integer.parseInt(ref.children.getFirst().getValue()) != ((Array) arr).length){
+      System.out.println("Error: dimensions of reference " + ref.getValue() + " does not match length of array " + arr.name);
+    }
+
+    return ref;
   }
 
   public ASTNode visitCalculate(ASTNode node) {
