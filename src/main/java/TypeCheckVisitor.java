@@ -137,7 +137,10 @@ public class TypeCheckVisitor {
   }
 
   private ASTNode visitNot(ASTNode node) {
-
+    String type = getEndType(node.children.getFirst());
+    if (!typeIsValid(type)) {
+      System.out.println("Error: invalid type for negation: " + type);
+    }
     return node;
   }
 
