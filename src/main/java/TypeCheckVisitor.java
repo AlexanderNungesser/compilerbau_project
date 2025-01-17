@@ -19,10 +19,13 @@ public class TypeCheckVisitor {
       case Type.OBJ_USAGE:
         visitObj_usage(node);
         break;
-      case Type.BLOCK, Type.FN_DECL, Type.CLASS:
+      case Type.BLOCK, Type.CLASS:
         visitScopes(node);
         break;
-        case Type.FN_CALL:
+      case Type.FN_DECL:
+        visitFndecl(node);
+        break;
+      case Type.FN_CALL:
         visitFncall(node);
         break;
       case Type.VAR_DECL, Type.VAR_REF:
@@ -134,33 +137,72 @@ public class TypeCheckVisitor {
   }
 
   private ASTNode visitNot(ASTNode node) {
+
+    return node;
+  }
+
+  public ASTNode visitFndecl(ASTNode node) {
+    ASTNode returnTypeNode = node.children.getFirst();
+    String returnType = returnTypeNode.getValue();
+
+    if (!typeIsValid(returnType)) {
+      System.out.println("Error: Invalid return type in function declaration: " + returnType);
+    }
+
+    for (int i = 1; i < node.children.size(); i++) {
+      ASTNode paramNode = node.children.get(i);
+      if (paramNode.getType() == Type.VAR_DECL) {
+        ASTNode paramTypeNode = paramNode.children.getFirst();
+        String paramType = paramTypeNode.getValue();
+
+        if (!typeIsValid(paramType)) {
+          System.out.println("Error: Invalid parameter type in function declaration: " + paramType);
+        }
+      }
+    }
+
+    visitChildren(node);
+
     return node;
   }
 
   public ASTNode visitFncall(ASTNode node) {
-    visitChildren(node);
+    ASTNode functionNameNode = node.children.getFirst();
+    String functionName = functionNameNode.getValue();
+
+    Symbol functionSymbol = currentScope.resolve(functionName);
+    if (functionSymbol == null || !(functionSymbol instanceof SymbolTable.Function)) {
+      System.out.println("Error: Function " + functionName + " is not declared.");
+      return node;
+    }
+
+    //TODO params der Funktion kriegen und sie mit den args vergleichen
+
     return node;
   }
 
   public ASTNode visitConstructor(ASTNode constructorNode, Symbol classSymbol) {
+
     return constructorNode;
   }
 
   public ASTNode visitProgram(ASTNode program) {
-    visitChildren(program);
+
     return program;
   }
 
   public ASTNode visitAssign(ASTNode node) {
-    visitChildren(node);
+
     return node;
   }
 
   public ASTNode visitCompare(ASTNode node) {
+
     return node;
   }
 
   public ASTNode visitDecInc(ASTNode node) {
+
     return node;
   }
 
@@ -236,7 +278,7 @@ public class TypeCheckVisitor {
     }
 
     if (!typeIsValid(firstType)) {
-      System.out.println("ERROR: Expected int, got " + firstType);
+      System.out.println("ERROR: Expected valid type, got " + firstType);
     }
 
     ASTNode secondChild = node.children.get(1);
@@ -246,7 +288,7 @@ public class TypeCheckVisitor {
     }
 
     if (!typeIsValid(secondType)) {
-      System.out.println("ERROR: Expected int, got " + secondType);
+      System.out.println("ERROR: Expected valid type, got " + secondType);
     }
 
     visitChildren(node);
