@@ -41,7 +41,7 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
     ASTNode type = visit(ctx.type());
     type.setValue(ctx.ID().getText());
     node.addChild(type);
-    if (ctx.expr() != null){
+    if (ctx.expr() != null) {
       node.addChild(visit(ctx.expr()));
     }
     return node;
@@ -75,7 +75,7 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
     ASTNode node = new ASTNode(Type.ARRAY_INIT);
     ASTNode type = visit(ctx.type());
     type.setValue(ctx.ID().getText());
-    if (ctx.expr() != null){
+    if (ctx.expr() != null) {
       for (int i = 0; i < ctx.expr().size(); i++) {
         type.addChild(visit(ctx.expr(i)));
       }
@@ -707,9 +707,9 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
       node.setValue("this");
       if (ctx.children.size() > 1) {
         for (int i = 2; i < ctx.getChildCount() - 1; i += 2) {
-          if (ctx.getChild(i) instanceof TerminalNode){
+          if (ctx.getChild(i) instanceof TerminalNode) {
             node.addChild(new ASTNode(Type.ID, ctx.getChild(i).getText()));
-          } else if (ctx.getChild(i) instanceof CppParser.Fn_callContext){
+          } else if (ctx.getChild(i) instanceof CppParser.Fn_callContext) {
             node.addChild(new ASTNode(Type.FN_CALL, ctx.getChild(i).getText()));
           }
         }
@@ -718,35 +718,33 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
       node.setValue("*this");
     } else if (ctx.getText().startsWith("(*this)")) {
       node.setValue("*this");
-        for (int i = 5; i < ctx.getChildCount() - 1; i += 2) {
-          if (ctx.getChild(i) instanceof TerminalNode){
-            node.addChild(new ASTNode(Type.ID, ctx.getChild(i).getText()));
-          } else if (ctx.getChild(i) instanceof CppParser.Fn_callContext){
-            node.addChild(new ASTNode(Type.FN_CALL, ctx.getChild(i).getText()));
-          }
-      }
-    } else {
-        for (int i = 0; i < ctx.getChildCount() - 1; i += 2) {
-          if (ctx.getChild(i) instanceof TerminalNode){
-            node.addChild(new ASTNode(Type.ID, ctx.getChild(i).getText()));
-          } else if (ctx.getChild(i) instanceof CppParser.Fn_callContext){
-            node.addChild(new ASTNode(Type.FN_CALL, ctx.getChild(i).getText()));
-          }
+      for (int i = 5; i < ctx.getChildCount() - 1; i += 2) {
+        if (ctx.getChild(i) instanceof TerminalNode) {
+          node.addChild(new ASTNode(Type.ID, ctx.getChild(i).getText()));
+        } else if (ctx.getChild(i) instanceof CppParser.Fn_callContext) {
+          node.addChild(new ASTNode(Type.FN_CALL, ctx.getChild(i).getText()));
         }
       }
+    } else {
+      for (int i = 0; i < ctx.getChildCount() - 1; i += 2) {
+        if (ctx.getChild(i) instanceof TerminalNode) {
+          node.addChild(new ASTNode(Type.ID, ctx.getChild(i).getText()));
+        } else if (ctx.getChild(i) instanceof CppParser.Fn_callContext) {
+          node.addChild(new ASTNode(Type.FN_CALL, ctx.getChild(i).getText()));
+        }
+      }
+    }
 
     if (ctx.array_item() != null) {
       node.addChild(visit(ctx.array_item()));
-    }else if (ctx.dec_inc() != null) {
+    } else if (ctx.dec_inc() != null) {
       node.addChild(visit(ctx.dec_inc()));
-    }else {
-          if (ctx.children.getLast() instanceof TerminalNode){
-            node.addChild(new ASTNode(Type.ID, ctx.children.getLast().getText()));
-          } else if (ctx.children.getLast() instanceof CppParser.Fn_callContext){
-            node.addChild(new ASTNode(Type.FN_CALL, ctx.children.getLast().getText()));
-          }
-
-
+    } else {
+      if (ctx.children.getLast() instanceof TerminalNode) {
+        node.addChild(new ASTNode(Type.ID, ctx.children.getLast().getText()));
+      } else if (ctx.children.getLast() instanceof CppParser.Fn_callContext) {
+        node.addChild(new ASTNode(Type.FN_CALL, ctx.children.getLast().getText()));
+      }
     }
 
     return node;

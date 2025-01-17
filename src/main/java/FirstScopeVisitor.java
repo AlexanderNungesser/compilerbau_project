@@ -1,6 +1,5 @@
 import SymbolTable.*;
 import SymbolTable.Class;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -90,7 +89,10 @@ public class FirstScopeVisitor {
         if (classtype != null) {
           currentScope.bind(new Variable(fncall.getValue(), classtype.name));
         } else {
-          System.out.println("Error: cannot create object of class, cause class " + classtype.name + " does not exist");
+          System.out.println(
+              "Error: cannot create object of class, cause class "
+                  + classtype.name
+                  + " does not exist");
         }
       }
     }
@@ -102,19 +104,19 @@ public class FirstScopeVisitor {
     String type = firstChild.getType().name().toLowerCase();
     Symbol typeSymbol = getTypeEqual(type, firstChild);
     // TODO: an die richtige stelle packen; BSP: B z = y; --> als FNCALL 'operator='
-    //--operator= (FN_CALL)
+    // --operator= (FN_CALL)
     //  |-- z (CLASSTYPE)
     //  |   '__ B (ID)
     //  '__ (ARGS)
     //      '__ y (ID)
-//    if(firstChild.getType() == Type.CLASSTYPE && variableNode.children.size() > 1) {
-//      variableNode.setType(Type.FN_CALL);
-//      variableNode.setValue("operator=");
-//      ASTNode arg = variableNode.children.removeLast();
-//      ASTNode args = new ASTNode(Type.ARGS);
-//      args.addChild(arg);
-//      variableNode.addChild(args);
-//    }
+    //    if(firstChild.getType() == Type.CLASSTYPE && variableNode.children.size() > 1) {
+    //      variableNode.setType(Type.FN_CALL);
+    //      variableNode.setValue("operator=");
+    //      ASTNode arg = variableNode.children.removeLast();
+    //      ASTNode args = new ASTNode(Type.ARGS);
+    //      args.addChild(arg);
+    //      variableNode.addChild(args);
+    //    }
 
     Variable variable = new Variable(firstChild.getValue(), typeSymbol.name);
 
@@ -181,7 +183,6 @@ public class FirstScopeVisitor {
       if (expr.getType() == Type.INT) {
         arr.length[i] = Integer.parseInt(expr.getValue());
       }
-
     }
 
     Symbol alreadyDeclared = currentScope.resolve(arr.name);
@@ -203,7 +204,7 @@ public class FirstScopeVisitor {
     Array arr = new Array(firstChild.getValue(), typeSymbol.name, dimensions);
     ArrayList<Integer> sizes = countArray(node.children.getLast());
 
-    if(!firstChild.children.isEmpty()) {
+    if (!firstChild.children.isEmpty()) {
       dimensions = firstChild.children.size();
       arr = new Array(firstChild.getValue(), typeSymbol.name, dimensions);
       for (int i = 0; i < firstChild.children.size(); i++) {
@@ -212,16 +213,15 @@ public class FirstScopeVisitor {
         if (expr.getType() == Type.INT) {
           arr.length[i] = Integer.parseInt(expr.getValue());
         }
-
       }
     } else {
       dimensions = sizes.size();
     }
 
-    if(dimensions != sizes.size()) {
+    if (dimensions != sizes.size()) {
       System.out.println("Error: initial and declaration dimensions mismatch");
     }
-    if(firstChild.children.isEmpty()) {
+    if (firstChild.children.isEmpty()) {
       arr = new Array(firstChild.getValue(), typeSymbol.name, dimensions);
       for (int i = 0; i < dimensions; i++) {
         arr.length[i] = sizes.get(i);
@@ -243,7 +243,7 @@ public class FirstScopeVisitor {
     ASTNode lastChild = node.children.getLast();
     Symbol lastSymbol = currentScope.resolve(lastChild.getValue());
 
-    if(lastSymbol == null) {
+    if (lastSymbol == null) {
       System.out.println("Error: such variable " + lastChild.getValue() + " does not exist");
     }
 
@@ -258,7 +258,6 @@ public class FirstScopeVisitor {
       if (expr.getType() == Type.INT) {
         arr.length[i] = Integer.parseInt(expr.getValue());
       }
-
     }
     Reference arrRef = new Reference(firstChild.getValue(), typeSymbol.name);
 
@@ -266,8 +265,8 @@ public class FirstScopeVisitor {
     if (alreadyDeclared != null) {
       System.out.println("Error: such variable " + firstChild.getValue() + " already exists");
     } else {
-      if(lastSymbol instanceof Array) {
-        if(!Arrays.equals(((Array) lastSymbol).length, arr.length)) {
+      if (lastSymbol instanceof Array) {
+        if (!Arrays.equals(((Array) lastSymbol).length, arr.length)) {
           System.out.println("Error: initial and reference dimensions mismatch");
         }
       }
@@ -281,7 +280,7 @@ public class FirstScopeVisitor {
     ASTNode lastChild = node.children.getLast();
     Symbol lastSymbol = currentScope.resolve(lastChild.getValue());
 
-    if(lastSymbol == null) {
+    if (lastSymbol == null) {
       System.out.println("Error: such variable " + lastChild.getValue() + " does not exist");
     }
 
@@ -311,17 +310,22 @@ public class FirstScopeVisitor {
       System.out.println("Error: array " + arrayName + " not found");
     }
 
-    if(symbol instanceof Array) {
+    if (symbol instanceof Array) {
       for (int i = 0; i < node.children.size(); i++) {
         ASTNode expr = visitExpr(node.children.get(i));
         // TODO was wenn expr kein Int?
         if (expr.getType() == Type.INT) {
-          if (((Array) symbol).length[i] <= Integer.parseInt(expr.getValue()) || Integer.parseInt(expr.getValue()) < 0){
-            System.out.println("Error: index " + expr.getValue() + " is out of bounds " + ((Array) symbol).length[i]);
+          if (((Array) symbol).length[i] <= Integer.parseInt(expr.getValue())
+              || Integer.parseInt(expr.getValue()) < 0) {
+            System.out.println(
+                "Error: index "
+                    + expr.getValue()
+                    + " is out of bounds "
+                    + ((Array) symbol).length[i]);
           }
         }
       }
-    }else {
+    } else {
       System.out.println("Error: no such array " + arrayName);
     }
 
@@ -481,10 +485,11 @@ public class FirstScopeVisitor {
         constructorNode.addChild(new ASTNode(Type.ID, superclassName));
         Scope superclassScope = currentScope.resolve(superclassName).scope;
         Symbol superclassConstructor = superclassScope.resolve(superclassName);
-        if(superclassConstructor != null){
+        if (superclassConstructor != null) {
           if (superclassConstructor instanceof Function) {
-            if(((Function) superclassConstructor).getParamCount() > 0){
-              System.out.println("Error: constructor must be implemented, because superclass has no base constructor");
+            if (((Function) superclassConstructor).getParamCount() > 0) {
+              System.out.println(
+                  "Error: constructor must be implemented, because superclass has no base constructor");
             }
           }
         }

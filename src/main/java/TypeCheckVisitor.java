@@ -22,7 +22,7 @@ public class TypeCheckVisitor {
         visitScopes(node);
         break;
       case Type.CLASS:
-        visitClass(node);
+        visitScopes(node);
         break;
       case Type.FN_CALL:
         visitFncall(node);
@@ -64,7 +64,27 @@ public class TypeCheckVisitor {
     for (Scope scope : this.currentScope.innerScopes) {
       if (!visitedScopes.contains(scope)) {
         this.currentScope = scope;
-        visitChildren(node);
+        if(node.getType() == Type.CLASS) {
+          for (ASTNode child : node.children) {
+            switch (child.getType()) {
+              case Type.FN_DECL: // Methoden
+                visitScopes(child);
+                break;
+              case Type.CONSTRUCTOR:
+                visitConstructor(child, currentScope.resolve(node.getValue()));
+                break;
+              //                        case Type.DESTRUCTOR:
+              //                            visitDestructor(child,
+              // currentScope.resolve(classNode.getValue()));
+              //                            break;
+            }
+          }
+          this.currentScope = this.currentScope.enclosingScope;
+          visitedScopes.add(scope);
+          break;
+        } else {
+          visitChildren(node);
+        }
         this.currentScope = this.currentScope.enclosingScope;
         visitedScopes.add(scope);
       }
@@ -105,20 +125,7 @@ public class TypeCheckVisitor {
     for (Scope scope : this.currentScope.innerScopes) {
       if (!visitedScopes.contains(scope)) {
         this.currentScope = scope;
-        for (ASTNode child : classNode.children) {
-          switch (child.getType()) {
-            case Type.FN_DECL: // Methoden
-              visitScopes(child);
-              break;
-            case Type.CONSTRUCTOR:
-              visitConstructor(child, currentScope.resolve(classNode.getValue()));
-              break;
-              //                        case Type.DESTRUCTOR:
-              //                            visitDestructor(child,
-              // currentScope.resolve(classNode.getValue()));
-              //                            break;
-          }
-        }
+
         this.currentScope = this.currentScope.enclosingScope;
         visitedScopes.add(scope);
       }
@@ -159,7 +166,7 @@ public class TypeCheckVisitor {
       firstType = this.currentScope.resolve(firstChild.getValue()).type;
     }
 
-    if (!(firstType.equals("int"))) {
+    if (!typeIsValid(firstType)) {
       System.out.println("ERROR: Expected int, got " + firstType);
     }
 
@@ -169,13 +176,23 @@ public class TypeCheckVisitor {
       secondType = this.currentScope.resolve(secondChild.getValue()).type;
     }
 
-    if (!(secondType.equals("int"))) {
+    System.out.println(secondType);
+    if (!typeIsValid(secondType)) {
       System.out.println("ERROR: Expected int, got " + secondType);
     }
 
     visitChildren(node);
 
     return node;
+  }
+
+  private boolean typeIsValid(String type) {
+    Symbol typeSymbol = currentScope.resolve(type);
+
+    if (typeSymbol instanceof SymbolTable.BuiltIn && !type.equals("void")) {
+      return true;
+    }
+    return false;
   }
 
   private Type getEndType(ASTNode node) {

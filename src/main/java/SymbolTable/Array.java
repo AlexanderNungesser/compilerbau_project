@@ -16,5 +16,4 @@ public class Array extends Symbol {
   public void setArray(Object o, int index) {
     this.array[index] = o;
   }
-
 }
