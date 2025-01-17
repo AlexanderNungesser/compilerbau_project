@@ -24,9 +24,9 @@ public class TypeCheckVisitor {
       case Type.CLASS:
         visitScopes(node);
         break;
-      case Type.FN_CALL:
-        visitFncall(node);
-        break;
+//      case Type.FN_CALL:
+//        visitFncall(node);
+//        break;
       case Type.ASSIGN:
         visitAssign(node);
         break;
@@ -110,15 +110,18 @@ public class TypeCheckVisitor {
   }
 
   public Symbol visitObj_usage(ASTNode node) {
-    Symbol usage = currentScope.resolve(node.getValue());
-    if (!(usage instanceof SymbolTable.Class)) {
-      usage = currentScope.resolve(usage.type);
-    }
-    return ((SymbolTable.Class) usage).getClassScope().resolve(node.children.getFirst().getValue());
-  }
+    ASTNode classObject = node.children.getFirst();
 
-  private ASTNode visitFncall(ASTNode node) {
-    return node;
+    if(classObject.getType() == Type.OBJ_USAGE) {
+      return visitObj_usage(classObject);
+    }
+
+    Symbol objectSymbol = currentScope.resolve(classObject.getValue());
+    Symbol classSymbol = currentScope.resolve(objectSymbol.type);
+    Scope classScope = ((SymbolTable.Class) classSymbol).getClassScope();
+
+    Symbol usedValueOfObject = classScope.resolve(node.children.getLast().getValue());
+    return usedValueOfObject;
   }
 
   public ASTNode visitClass(ASTNode classNode) {
@@ -161,7 +164,11 @@ public class TypeCheckVisitor {
 
   public ASTNode visitCalculate(ASTNode node) {
     ASTNode firstChild = node.children.getFirst();
-    String firstType = getEndType(node.children.getFirst()).name().toLowerCase();
+    if (firstChild.getType() == Type.ADD) {
+      firstChild = visitCalculate(firstChild);
+    }
+
+    String firstType = getEndType(node.children.getFirst());
     if (firstType.equals("id")) {
       firstType = this.currentScope.resolve(firstChild.getValue()).type;
     }
@@ -171,12 +178,11 @@ public class TypeCheckVisitor {
     }
 
     ASTNode secondChild = node.children.get(1);
-    String secondType = getEndType(secondChild).name().toLowerCase();
+    String secondType = getEndType(secondChild);
     if (secondType.equals("id")) {
       secondType = this.currentScope.resolve(secondChild.getValue()).type;
     }
 
-    System.out.println(secondType);
     if (!typeIsValid(secondType)) {
       System.out.println("ERROR: Expected int, got " + secondType);
     }
@@ -195,10 +201,13 @@ public class TypeCheckVisitor {
     return false;
   }
 
-  private Type getEndType(ASTNode node) {
+  private String  getEndType(ASTNode node) {
     if (!node.children.isEmpty()) {
+      if(node.getType() == Type.OBJ_USAGE) {
+        return visitObj_usage(node).type;
+      }
       return getEndType(node.children.getFirst());
     }
-    return node.getType();
+    return node.getType().name().toLowerCase();
   }
 }

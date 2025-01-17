@@ -162,7 +162,14 @@ public class SecondScopeVisitor {
         System.out.println("Error: no such variable: " + node.getValue());
       }
     } else {
-      visitChildren(node);
+      if (node.getType() == Type.OBJ_USAGE) {
+        variable = visitObj_usage(node);
+        if (variable == null) {
+          System.out.println("Error: no such variable: " + node.getValue());
+        }
+      } else {
+        visitChildren(node);
+      }
     }
     return node;
   }
@@ -189,8 +196,13 @@ public class SecondScopeVisitor {
     }
 
     ASTNode value = node.children.getLast();
+    if (value.getType() == Type.OBJ_USAGE){
+      Symbol valueSymbol = visitObj_usage(value);
+      if (valueSymbol == null) {
+        System.out.println("Error: no such variable: " + value.getValue());
+      }
+    }
     if (value.getType() == Type.ID
-        || value.getType() == Type.OBJ_USAGE
         || value.getType() == Type.ARRAY_ITEM) {
       Symbol valueSymbol = currentScope.resolve(value.getValue());
       if (valueSymbol == null) {
@@ -198,7 +210,9 @@ public class SecondScopeVisitor {
       }
     }
 
-    return visitChildren(node);
+    visitChildren(node);
+
+    return node;
   }
 
   public ASTNode visitClass(ASTNode classNode) {
@@ -226,6 +240,7 @@ public class SecondScopeVisitor {
         }
         this.currentScope = this.currentScope.enclosingScope;
         visitedScopes.add(scope);
+        break;
       }
     }
     return classNode;
@@ -328,12 +343,26 @@ public class SecondScopeVisitor {
   }
 
   public Symbol visitObj_usage(ASTNode node) {
-    Symbol usage = currentScope.resolve(node.getValue());
-    if (!(usage instanceof SymbolTable.Class)) {
-      usage = currentScope.resolve(usage.type);
+    ASTNode classObject = node.children.getFirst();
+
+    if(classObject.getType() == Type.OBJ_USAGE) {
+      return visitObj_usage(classObject);
     }
-    return ((SymbolTable.Class) usage).getClassScope().resolve(node.children.getFirst().getValue());
+
+    Symbol objectSymbol = currentScope.resolve(classObject.getValue());
+    Symbol classSymbol = currentScope.resolve(objectSymbol.type);
+    Scope classScope = ((SymbolTable.Class) classSymbol).getClassScope();
+
+    Symbol usedValueOfObject = classScope.resolve(node.children.getLast().getValue());
+    return usedValueOfObject;
   }
+//  public Symbol visitObj_usage(ASTNode node) {
+//    Symbol usage = currentScope.resolve(node.getValue());
+//    if (!(usage instanceof SymbolTable.Class)) {
+//      usage = currentScope.resolve(usage.type);
+//    }
+//    return ((SymbolTable.Class) usage).getClassScope().resolve(node.children.getFirst().getValue());
+//  }
 
   public ASTNode visitOperator(ASTNode operatorNode, Symbol classSymbol) {
     String operatorName = operatorNode.getValue();
