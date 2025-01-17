@@ -202,7 +202,15 @@ public class TypeCheckVisitor {
   }
 
   public ASTNode visitDecInc(ASTNode node) {
-
+    ASTNode child =
+        (node.children.getFirst().getType() == Type.DEC
+                || node.children.getFirst().getType() == Type.INC)
+            ? node.children.getLast()
+            : node.children.getFirst();
+    String type = getEndType(child);
+    if (!typeIsValid(type)) {
+      System.out.println("Error: Invalid type for decremental or incremental: " + type);
+    }
     return node;
   }
 
