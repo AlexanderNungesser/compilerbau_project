@@ -79,7 +79,7 @@ operator    :   ID REF 'operator' '=' '(' params ')' block ;
 
 class   :   'class' ID (':' 'public' ID)? '{' 'public' ':' (var_decl | copy_constructor | constructor | destructor | operator | 'virtual'? fn_decl | abstract_fn)* '}' ';' ;
 
-main    :   ('void' | type) 'main' '(' ')' block ;
+main    :   'int' 'main' '(' ')' block ;
 
 type    :   'int' | 'char' | 'bool' | ID ;
 
