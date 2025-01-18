@@ -234,6 +234,9 @@ public class TypeCheckVisitor {
                 || node.children.getFirst().getType() == Type.INC)
             ? node.children.getLast()
             : node.children.getFirst();
+    if (child.getType() == Type.ARRAY_ITEM) {
+      visit(child);
+    }
     String type = getEndType(child);
     if (!typeIsValid(type)) {
       System.out.println("Error: Invalid type for decremental or incremental: " + type);
