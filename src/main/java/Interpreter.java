@@ -30,11 +30,13 @@ public class Interpreter {
         break;
       case Type.ARRAY_ITEM:
         break;
-      case Type.EQUAL, Type.NOT_EQUAL, Type.GREATER, Type.GREATER_EQUAL, Type.LESS, Type.LESS_EQUAL:
-        break;
-      case Type.NOT:
+      case Type.GREATER, Type.GREATER_EQUAL, Type.LESS, Type.LESS_EQUAL, Type.EQUAL, Type.NOT_EQUAL:
+        evaluateComparison(node);
         break;
       case Type.AND, Type.OR:
+        evaluateLogical(node);
+        break;
+      case Type.NOT:
         break;
       case Type.DEC_INC:
         break;
@@ -64,30 +66,87 @@ public class Interpreter {
     return null;
   }
 
-  private char convertToChar(ASTNode node) {
-    return switch (node.getType()) {
-      case Type.INT -> (char) Integer.parseInt(node.getValue());
-      case Type.NULL -> (char) 0;
-      case Type.BOOL -> (char) ((Boolean.parseBoolean(node.getValue())) ? 1 : 0);
-      default -> node.getValue().charAt(0);
-    };
+  public ASTNode visitCompare(ASTNode node) {
+        return node;
   }
 
-  private int convertToInt(ASTNode node) {
-    return switch (node.getType()) {
-      case Type.CHAR -> (char) Integer.parseInt(node.getValue());
-      case Type.NULL -> 0;
-      case Type.BOOL -> (Boolean.parseBoolean(node.getValue())) ? 1 : 0;
-      default -> Integer.parseInt(node.getValue());
-    };
+  public ASTNode visitLogical(ASTNode node) {
+      return node;
   }
 
-  private boolean convertToBoolean(ASTNode node) {
-    return switch (node.getType()) {
-      case Type.CHAR -> ((int) node.getValue().charAt(0)) != 0;
-      case Type.INT -> Integer.parseInt(node.getValue()) != 0;
-      case Type.NULL -> false;
-      default -> Boolean.parseBoolean(node.getValue());
-    };
+  public boolean evaluateComparison(ASTNode node) {
+      Type operator = node.getType();
+
+      Object l = eval(node.children.getFirst());
+      Object r = eval(node.children.getLast());
+      int left = 0;
+      int right = 0;
+
+      left = convertToInteger(l, left);
+      right = convertToInteger(r, right);
+
+      return switch (operator) {
+          case Type.GREATER -> left > right;
+          case Type.GREATER_EQUAL -> left >= right;
+          case Type.LESS -> left < right;
+          case Type.LESS_EQUAL -> left <= right;
+          case Type.EQUAL -> left == right;
+          case Type.NOT_EQUAL -> left != right;
+          default -> throw new IllegalStateException("Unexpected value: " + operator);
+      };
   }
+
+  public boolean evaluateLogical(ASTNode node) {
+      Type operator = node.getType();
+
+      Object l = eval(node.children.getFirst());
+      Object r = eval(node.children.getLast());
+      boolean left = false;
+      boolean right = false;
+
+      left = convertToBoolean(l, left);
+      right = convertToBoolean(r, right);
+
+      return switch (operator) {
+          case Type.AND -> left && right;
+          case Type.OR -> left || right;
+          default -> throw new IllegalStateException("Unexpected value: " + operator);
+      };
+  }
+
+    private static boolean convertToBoolean(Object obj, boolean bool) {
+        switch (obj) {
+            case null -> bool = false;
+            case Character c -> bool = c != 0;
+            case Integer i -> bool = i != 0;
+            case Boolean b -> bool = b;
+            default -> {
+            }
+        }
+        return bool;
+    }
+
+    private static int convertToInteger(Object obj, int num) {
+        switch (obj) {
+            case null -> num = 0;
+            case Character c -> num = (int) c;
+            case Integer i -> num = i;
+            case Boolean b -> num = b ? 1 : 0;
+            default -> {
+            }
+        }
+        return num;
+    }
+
+    private static char convertToCharacter(Object obj, char chr) {
+        switch (obj) {
+            case null -> chr = (char) 0;
+            case Character c -> chr = c;
+            case Integer i -> chr = (char) i.intValue();
+            case Boolean b -> chr = (char) (b ? 1 : 0);
+            default -> {
+            }
+        }
+        return chr;
+    }
 }
