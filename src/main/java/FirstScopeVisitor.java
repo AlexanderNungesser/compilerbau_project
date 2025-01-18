@@ -519,7 +519,7 @@ public class FirstScopeVisitor {
       classNode.addChild(constructorNode);
     }
     if (!mustHave.get(Type.COPY_CONSTRUCTOR)) {
-      ASTNode copyConstructorNode = new ASTNode(Type.COPY_CONSTRUCTOR, classNode.getValue());
+      ASTNode copyConstructorNode = new ASTNode(Type.COPY_CONSTRUCTOR, "copy_" + classNode.getValue());
       ASTNode ref = new ASTNode(Type.CLASSTYPE, "ref");
       ref.addChild(new ASTNode(Type.ID, classNode.getValue()));
       ref.addChild(new ASTNode(Type.REF));

@@ -246,7 +246,7 @@ public class SecondScopeVisitor {
   }
 
   private ASTNode visitCopyConstructor(ASTNode copyconstNode, Symbol classSymbol) {
-    String copyconstName = copyconstNode.getValue();
+    String copyconstName = copyconstNode.getValue().replaceFirst("copy_", "");
 
     ASTNode paramType = copyconstNode.children.getFirst().children.getFirst();
 
@@ -260,7 +260,7 @@ public class SecondScopeVisitor {
       System.out.println("Error: Return type ID must match parameter ID");
     }
 
-    Function operator = new Function(copyconstName, classSymbol.name);
+    Function operator = new Function("copy_" + copyconstName, classSymbol.name);
 
     currentScope.bind(operator);
 
