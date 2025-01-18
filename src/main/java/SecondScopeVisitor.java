@@ -246,7 +246,7 @@ public class SecondScopeVisitor {
   }
 
   private ASTNode visitCopyConstructor(ASTNode copyconstNode, Symbol classSymbol) {
-    String copyconstName = copyconstNode.getValue();
+    String copyconstName = copyconstNode.getValue().replace("copy_", "");
 
     ASTNode paramType = copyconstNode.children.getFirst().children.getFirst();
 
