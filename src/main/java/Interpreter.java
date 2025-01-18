@@ -7,7 +7,16 @@ public class Interpreter {
 
   public Object eval(ASTNode node) {
     switch (node.getType()) {
+      case Type.MAIN:
+        eval(node.children.getLast());
+        break;
       case Type.OBJ_USAGE:
+        break;
+      case IF:
+        evalIf(node);
+        break;
+      case WHILE:
+        evalWhile(node);
         break;
       case Type.BLOCK:
         evalBlock(node);
@@ -18,7 +27,11 @@ public class Interpreter {
         break;
       case Type.FN_CALL:
         break;
-      case Type.VAR_DECL, Type.VAR_REF:
+      case Type.VAR_DECL:
+        evalVarDecl(node);
+        break;
+      case Type.VAR_REF:
+        evalVarRef(node);
         break;
       case Type.ARRAY_REF:
         break;
@@ -37,11 +50,11 @@ public class Interpreter {
         evaluateLogical(node);
         break;
       case Type.NOT:
-        break;
+        return !convertToBoolean(eval(node));
       case Type.DEC_INC:
         break;
       case Type.ADD, Type.SUB, Type.MUL, Type.DIV, Type.MOD:
-        break;
+        return evaluateCalculation(node);
       case Type.NULL:
         return null;
       case Type.INT:
@@ -57,7 +70,78 @@ public class Interpreter {
     return null;
   }
 
-  private Object evalBlock(ASTNode node) {return null;}
+  public Object evalVarDecl(ASTNode node) {
+    String name = node.children.getFirst().getValue();
+    Type type = node.children.getFirst().getType();
+    Object value =
+        switch (type) {
+          case Type.INT -> 0;
+          case Type.BOOL -> false;
+          case Type.CHAR -> (char) 0;
+          default -> null;
+        };
+    if (node.children.size() == 2) {
+      value = eval(node.children.getLast());
+    }
+    this.env.define(name, value);
+    return null;
+  }
+
+  public Object evalVarRef(ASTNode node) {
+    String name = node.children.getFirst().getValue();
+    Type type = node.children.getFirst().getType();
+
+    return null;
+  }
+
+  public Object evalWhile(ASTNode node) {
+    if ((boolean) eval(node.children.getFirst())) {
+      eval(node.children.getLast());
+    }
+    return null;
+  }
+
+  public Object evalIf(ASTNode node) {
+    for (int i = 0; i < node.children.size(); i++) {
+      if (node.children.get(i).getType() != Type.BLOCK) {
+        if ((boolean) eval(node.children.get(i))) {
+          eval(node.children.get(i + 1));
+          return null;
+        }
+      } else if (node.children.get(i).getType() == Type.BLOCK && i == (node.children.size() - 1)) {
+        eval(node.children.get(i));
+        return null;
+      }
+    }
+    return null;
+  }
+
+  public int evaluateCalculation(ASTNode node) {
+    Type operator = node.getType();
+    Object l = eval(node.children.getFirst());
+    Object r = eval(node.children.getLast());
+    int left = convertToInteger(l);
+    int right = convertToInteger(r);
+    return switch (operator) {
+      case Type.ADD -> left + right;
+      case Type.SUB -> left - right;
+      case Type.MUL -> left * right;
+      case Type.DIV -> left / right;
+      case Type.MOD -> left % right;
+      default -> throw new IllegalStateException("Unexpected value: " + operator);
+    };
+  }
+
+  private Object evalBlock(ASTNode node) {
+    Environment prevEnv = this.env;
+    try {
+      this.env = new Environment(this.env);
+      evalChildren(node);
+    } finally {
+      this.env = prevEnv;
+    }
+    return null;
+  }
 
   public Object evalChildren(ASTNode node) {
     for (ASTNode child : node.children) {
@@ -66,87 +150,74 @@ public class Interpreter {
     return null;
   }
 
-  public ASTNode visitCompare(ASTNode node) {
-        return node;
-  }
-
-  public ASTNode visitLogical(ASTNode node) {
-      return node;
-  }
-
   public boolean evaluateComparison(ASTNode node) {
-      Type operator = node.getType();
+    Type operator = node.getType();
 
-      Object l = eval(node.children.getFirst());
-      Object r = eval(node.children.getLast());
-      int left = 0;
-      int right = 0;
+    Object l = eval(node.children.getFirst());
+    Object r = eval(node.children.getLast());
+    int left = convertToInteger(l);
+    int right = convertToInteger(r);
 
-      left = convertToInteger(l, left);
-      right = convertToInteger(r, right);
-
-      return switch (operator) {
-          case Type.GREATER -> left > right;
-          case Type.GREATER_EQUAL -> left >= right;
-          case Type.LESS -> left < right;
-          case Type.LESS_EQUAL -> left <= right;
-          case Type.EQUAL -> left == right;
-          case Type.NOT_EQUAL -> left != right;
-          default -> throw new IllegalStateException("Unexpected value: " + operator);
-      };
+    return switch (operator) {
+      case Type.GREATER -> left > right;
+      case Type.GREATER_EQUAL -> left >= right;
+      case Type.LESS -> left < right;
+      case Type.LESS_EQUAL -> left <= right;
+      case Type.EQUAL -> left == right;
+      case Type.NOT_EQUAL -> left != right;
+      default -> throw new IllegalStateException("Unexpected value: " + operator);
+    };
   }
 
   public boolean evaluateLogical(ASTNode node) {
-      Type operator = node.getType();
+    Type operator = node.getType();
 
-      Object l = eval(node.children.getFirst());
-      Object r = eval(node.children.getLast());
-      boolean left = false;
-      boolean right = false;
+    Object l = eval(node.children.getFirst());
+    Object r = eval(node.children.getLast());
 
-      left = convertToBoolean(l, left);
-      right = convertToBoolean(r, right);
+    boolean left = convertToBoolean(l);
+    boolean right = convertToBoolean(r);
 
-      return switch (operator) {
-          case Type.AND -> left && right;
-          case Type.OR -> left || right;
-          default -> throw new IllegalStateException("Unexpected value: " + operator);
-      };
+    return switch (operator) {
+      case Type.AND -> left && right;
+      case Type.OR -> left || right;
+      default -> throw new IllegalStateException("Unexpected value: " + operator);
+    };
   }
 
-    private static boolean convertToBoolean(Object obj, boolean bool) {
-        switch (obj) {
-            case null -> bool = false;
-            case Character c -> bool = c != 0;
-            case Integer i -> bool = i != 0;
-            case Boolean b -> bool = b;
-            default -> {
-            }
-        }
-        return bool;
+  private boolean convertToBoolean(Object obj) {
+    boolean bool = false;
+    switch (obj) {
+      case null -> bool = false;
+      case Character c -> bool = c != 0;
+      case Integer i -> bool = i != 0;
+      case Boolean b -> bool = b;
+      default -> {}
     }
+    return bool;
+  }
 
-    private static int convertToInteger(Object obj, int num) {
-        switch (obj) {
-            case null -> num = 0;
-            case Character c -> num = (int) c;
-            case Integer i -> num = i;
-            case Boolean b -> num = b ? 1 : 0;
-            default -> {
-            }
-        }
-        return num;
+  private int convertToInteger(Object obj) {
+    int num = 0;
+    switch (obj) {
+      case null -> num = 0;
+      case Character c -> num = (int) c;
+      case Integer i -> num = i;
+      case Boolean b -> num = b ? 1 : 0;
+      default -> {}
     }
+    return num;
+  }
 
-    private static char convertToCharacter(Object obj, char chr) {
-        switch (obj) {
-            case null -> chr = (char) 0;
-            case Character c -> chr = c;
-            case Integer i -> chr = (char) i.intValue();
-            case Boolean b -> chr = (char) (b ? 1 : 0);
-            default -> {
-            }
-        }
-        return chr;
+  private char convertToCharacter(Object obj) {
+    char chr = (char) 0;
+    switch (obj) {
+      case null -> chr = (char) 0;
+      case Character c -> chr = c;
+      case Integer i -> chr = (char) i.intValue();
+      case Boolean b -> chr = (char) (b ? 1 : 0);
+      default -> {}
     }
+    return chr;
+  }
 }
