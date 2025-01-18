@@ -57,4 +57,34 @@ public class Scope {
 
     System.out.println(indent + "}");
   }
+
+  public void printValues() {
+    printValues(0);
+  }
+
+  private void printValues(int indentLevel) {
+    String indent = "  ".repeat(indentLevel);
+    System.out.println(indent + "Scope {");
+
+    for (Map.Entry<String, Symbol> entry : symbols.entrySet()) {
+      System.out.println(
+          indent
+              + "  "
+              + entry.getValue().getClass().getSimpleName()
+              + " "
+              + entry.getKey()
+              + ": "
+              + entry.getValue().type
+              + "= "
+              + entry.getValue().getValue());
+    }
+
+    // Gib alle inneren Scopes aus
+    for (Scope scope : innerScopes) {
+      System.out.println(indent + "  Inner Scope:");
+      scope.print(indentLevel + 1);
+    }
+
+    System.out.println(indent + "}");
+  }
 }
