@@ -53,5 +53,10 @@ public class Main {
     typeCheckVisitor.visit(ast);
     System.out.println("\nType Check Run:");
     typeCheckVisitor.currentScope.print();
+
+    Interpreter interpreter = new Interpreter(scopeVisitor.currentScope);
+    interpreter.visit(ast);
+    System.out.println("\nInterpret Run:");
+    interpreter.currentScope.print();
   }
 }
