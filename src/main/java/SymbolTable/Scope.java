@@ -30,6 +30,20 @@ public class Scope {
     }
   }
 
+  public Symbol resolve(String name, String nameOfClass) {
+    if (symbols.containsKey(name)) {
+      Symbol symbol = symbols.get(name);
+      if (symbol.getClass().getName().contains(nameOfClass)) {
+        return symbol;
+      }
+    }
+    try {
+      return enclosingScope.resolve(name, nameOfClass);
+    } catch (Exception e) {
+      return null;
+    }
+  }
+
   public void print() {
     print(0);
   }

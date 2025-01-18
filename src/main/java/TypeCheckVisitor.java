@@ -1,11 +1,8 @@
 import SymbolTable.*;
-import java.util.HashSet;
 import java.util.Objects;
-import java.util.Set;
 
 public class TypeCheckVisitor {
   Scope currentScope;
-  Set<Scope> visitedScopes = new HashSet<>();
 
   public TypeCheckVisitor(Scope scope) {
     this.currentScope = scope;
@@ -20,7 +17,7 @@ public class TypeCheckVisitor {
         visitObj_usage(node);
         break;
       case Type.BLOCK, Type.CLASS:
-        visitScopes(node);
+        visitChildren(node);
         break;
       case Type.FN_DECL:
         visitFndecl(node);
@@ -78,39 +75,40 @@ public class TypeCheckVisitor {
     return node;
   }
 
-  private ASTNode visitScopes(ASTNode node) {
-    for (Scope scope : this.currentScope.innerScopes) {
-      if (!visitedScopes.contains(scope)) {
-        this.currentScope = scope;
-        if (node.getType() == Type.CLASS) {
-          for (ASTNode child : node.children) {
-            switch (child.getType()) {
-              case Type.FN_DECL: // Methoden
-                visitScopes(child);
-                break;
-              case Type.CONSTRUCTOR:
-                visitConstructor(child, currentScope.resolve(node.getValue()));
-                break;
-                //                        case Type.DESTRUCTOR:
-                //                            visitDestructor(child,
-                // currentScope.resolve(classNode.getValue()));
-                //                            break;
-            }
-          }
-          this.currentScope = this.currentScope.enclosingScope;
-          visitedScopes.add(scope);
-          break;
-        } else {
-          visitChildren(node);
-        }
-        this.currentScope = this.currentScope.enclosingScope;
-        visitedScopes.add(scope);
-      }
-    }
-    return node;
-  }
+//  private ASTNode visitScopes(ASTNode node) {
+//    for (Scope scope : this.currentScope.innerScopes) {
+//      if (!visitedScopes.contains(scope)) {
+//        this.currentScope = scope;
+//        if (node.getType() == Type.CLASS) {
+//          for (ASTNode child : node.children) {
+//            switch (child.getType()) {
+//              case Type.FN_DECL: // Methoden
+//                visitScopes(child);
+//                break;
+//              case Type.CONSTRUCTOR:
+//                visitConstructor(child, currentScope.resolve(node.getValue()));
+//                break;
+//                //                        case Type.DESTRUCTOR:
+//                //                            visitDestructor(child,
+//                // currentScope.resolve(classNode.getValue()));
+//                //                            break;
+//            }
+//          }
+//          this.currentScope = this.currentScope.enclosingScope;
+//          visitedScopes.add(scope);
+//          break;
+//        } else {
+//          visitChildren(node);
+//        }
+//        this.currentScope = this.currentScope.enclosingScope;
+//        visitedScopes.add(scope);
+//      }
+//    }
+//    return node;
+//  }
 
   public ASTNode visitExpr(ASTNode node) {
+    this.currentScope = node.getScope();
     Symbol variable;
     if (node.children.isEmpty() && node.getType() == Type.ID) {
       if (node.getType() == Type.OBJ_USAGE) {
@@ -128,6 +126,7 @@ public class TypeCheckVisitor {
   }
 
   public Symbol visitObj_usage(ASTNode node) {
+    this.currentScope = node.getScope();
     ASTNode classObject = node.children.getFirst();
 
     if (classObject.getType() == Type.OBJ_USAGE) {
@@ -143,6 +142,7 @@ public class TypeCheckVisitor {
   }
 
   public ASTNode visitNot(ASTNode node) {
+    this.currentScope = node.getScope();
     ASTNode firstChild = node.children.getFirst();
     if (firstChild.getType() == Type.AND
         || firstChild.getType() == Type.OR
@@ -158,6 +158,7 @@ public class TypeCheckVisitor {
   }
 
   public ASTNode visitBoolOperator(ASTNode node) {
+    this.currentScope = node.getScope();
     ASTNode firstChild = node.children.getFirst();
     if (firstChild.getType() == Type.AND
         || firstChild.getType() == Type.OR
@@ -176,6 +177,7 @@ public class TypeCheckVisitor {
 
 
   public ASTNode visitFndecl(ASTNode node) {
+    this.currentScope = node.getScope();
     this.currentScope = this.currentScope.innerScopes.getFirst();
     ASTNode returnTypeNode = node.children.getFirst();
     Type returnType = returnTypeNode.getType();
@@ -194,7 +196,9 @@ public class TypeCheckVisitor {
 
     if (returnTypeNode.getType() != Type.VOID){
       if(node.children.getLast().getType() == Type.BLOCK){
-        visitReturn(node.children.getLast(), returnType.name().toLowerCase());
+        if(!visitReturn(node.children.getLast(), returnType.name().toLowerCase())){
+          System.out.println("Error: Return from type " + returnType.name().toLowerCase() + " expected.");
+        }
       }
     }
     if(node.children.getLast().getType() == Type.BLOCK){
@@ -206,11 +210,8 @@ public class TypeCheckVisitor {
   }
 
   public boolean visitReturn(ASTNode node, String methodType) {
-    for (Scope scope : this.currentScope.innerScopes) {
-      if (!visitedScopes.contains(scope)) {
-        this.currentScope = scope;
-
         for (ASTNode child : node.children) {
+          this.currentScope = child.getScope();
           if (child.getType() == Type.RETURN) {
             if (child.children.isEmpty()) {
               if (!methodType.equals("void")) {
@@ -231,16 +232,11 @@ public class TypeCheckVisitor {
           }
         }
 
-        this.currentScope = this.currentScope.enclosingScope;
-        visitedScopes.add(scope);
-      }
-    }
-
-    System.out.println("Error: Return from type " + methodType + " expected.");
     return false;
   }
 
   public ASTNode visitFncall(ASTNode node) {
+    this.currentScope = node.getScope();
     // ASTNode functionNameNode = node.children.getFirst();
     // String functionName = functionNameNode.getValue();
 
@@ -250,16 +246,19 @@ public class TypeCheckVisitor {
   }
 
   public ASTNode visitConstructor(ASTNode constructorNode, Symbol classSymbol) {
+    this.currentScope = constructorNode.getScope();
 
     return constructorNode;
   }
 
   public ASTNode visitProgram(ASTNode program) {
+    this.currentScope = program.getScope();
     visitChildren(program);
     return program;
   }
 
   public ASTNode visitAssign(ASTNode node) {
+    this.currentScope = node.getScope();
     ASTNode firstChild = node.children.getFirst();
     String firstType;
     if (firstChild.getType() == Type.ARRAY_ITEM) {
@@ -312,6 +311,7 @@ public class TypeCheckVisitor {
   }
 
   public ASTNode visitCompare(ASTNode node) {
+    this.currentScope = node.getScope();
     ASTNode firstChild = node.children.getFirst();
     if (firstChild.getType() == Type.EQUAL
         || firstChild.getType() == Type.NOT_EQUAL
@@ -332,6 +332,7 @@ public class TypeCheckVisitor {
   }
 
   public ASTNode visitDecInc(ASTNode node) {
+    this.currentScope = node.getScope();
     ASTNode child =
         (node.children.getFirst().getType() == Type.DEC
                 || node.children.getFirst().getType() == Type.INC)
@@ -348,6 +349,7 @@ public class TypeCheckVisitor {
   }
 
   public ASTNode visitVardecl(ASTNode node) {
+    this.currentScope = node.getScope();
     ASTNode firstChild = node.children.getFirst();
     if (node.children.size() == 2) {
       ASTNode secondChild = node.children.getLast();
@@ -368,6 +370,7 @@ public class TypeCheckVisitor {
   }
 
   public ASTNode visitArrayRef(ASTNode node) {
+    this.currentScope = node.getScope();
     visitVardecl(node);
     Symbol arr = currentScope.resolve(node.children.getLast().getValue());
 
@@ -379,6 +382,7 @@ public class TypeCheckVisitor {
   }
 
   public ASTNode visitArraydecl(ASTNode node) {
+    this.currentScope = node.getScope();
     for (ASTNode child : node.children.getFirst().children) {
       String childType = getEndType(child);
       if (!typeIsValid(childType)) {
@@ -390,6 +394,7 @@ public class TypeCheckVisitor {
   }
 
   public ASTNode visitArrayInit(ASTNode node) {
+    this.currentScope = node.getScope();
     String arrayType = getEndType(node.children.getFirst());
 
     visitArraydecl(node);
@@ -401,6 +406,7 @@ public class TypeCheckVisitor {
 
   private ASTNode visitArray(ASTNode node, String arrayType) {
     for (ASTNode child : node.children) {
+      this.currentScope = child.getScope();
       String childType = getEndType(child);
       if (typeIsValid(arrayType)) {
         if (!typeIsValid(childType)) {
@@ -422,6 +428,7 @@ public class TypeCheckVisitor {
   }
 
   public ASTNode visitArrayItem(ASTNode node) {
+    this.currentScope = node.getScope();
     String type = getEndType(node.children.getFirst());
     if (!typeIsValid(type)) {
       System.out.println("Error: type " + type + " must be built in type");
@@ -430,6 +437,7 @@ public class TypeCheckVisitor {
   }
 
   public ASTNode visitCalculate(ASTNode node) {
+    this.currentScope = node.getScope();
     ASTNode firstChild = node.children.getFirst();
     if (firstChild.getType() == Type.ADD
         || firstChild.getType() == Type.SUB
@@ -458,6 +466,7 @@ public class TypeCheckVisitor {
   }
 
   private String getEndType(ASTNode node) {
+    this.currentScope = node.getScope();
     if (node.getType() == Type.ID) {
       Symbol classSymbol = currentScope.resolve(node.getValue());
       return currentScope.resolve(classSymbol.type).name;

@@ -1,15 +1,10 @@
 import SymbolTable.*;
 import SymbolTable.Class;
-import java.util.HashSet;
-import java.util.Set;
 
 public class SecondScopeVisitor {
   Scope currentScope;
-  Set<Scope> visitedScopes = new HashSet<>();
 
-  public SecondScopeVisitor(Scope scope) {
-    this.currentScope = scope;
-  }
+  public SecondScopeVisitor(Scope scope) {}
 
   public ASTNode visit(ASTNode node) {
     switch (node.getType()) {
@@ -25,18 +20,15 @@ public class SecondScopeVisitor {
       case Type.ASSIGN:
         visitAssign(node);
         break;
-      case Type.BLOCK:
-        visitScopes(node);
+      case Type.BLOCK, Type.FN_DECL:
+        visitChildren(node);
         break;
-      case Type.FN_DECL:
-        visitScopes(node);
-        break;
-      case Type.CLASS:
+        case Type.CLASS:
         visitClass(node);
         break;
-//      case Type.OBJ_USAGE:
-//        visitObjUsage(node);
-//        break;
+      case Type.OBJ_USAGE:
+        visitObjUsage(node);
+        break;
       case null:
         System.out.println("Type: " + node.getType().name() + "Value: " + node.getValue());
         break;
@@ -51,24 +43,13 @@ public class SecondScopeVisitor {
     return node;
   }
 
-  private ASTNode visitScopes(ASTNode node) {
-    for (Scope scope : this.currentScope.innerScopes) {
-      if (!visitedScopes.contains(scope)) {
-        this.currentScope = scope;
-        visitChildren(node);
-        this.currentScope = this.currentScope.enclosingScope;
-        visitedScopes.add(scope);
-      }
-    }
-    return node;
-  }
-
   public ASTNode visitProgram(ASTNode program) {
     visitChildren(program);
     return program;
   }
 
   public ASTNode visitFncall(ASTNode fncall) {
+    this.currentScope = fncall.getScope();
     String functionName = fncall.getValue();
 
     if (!fncall.children.isEmpty() && fncall.children.getFirst().getType() == Type.CLASSTYPE) {
@@ -140,6 +121,7 @@ public class SecondScopeVisitor {
   }
 
   public ASTNode visitArgs(ASTNode args) {
+    this.currentScope = args.getScope();
     for (ASTNode child : args.children) {
       if (child.getType() == Type.OBJ_USAGE || child.getType() == Type.ID) {
         currentScope.resolve(child.getType().name().toLowerCase());
@@ -150,6 +132,7 @@ public class SecondScopeVisitor {
   }
 
   public ASTNode visitParams(ASTNode node) {
+    this.currentScope = node.getScope();
     for (ASTNode child : node.children) {
       String name = child.getValue();
       String type = child.getType().name().toLowerCase();
@@ -161,8 +144,9 @@ public class SecondScopeVisitor {
   }
 
   public ASTNode visitExpr(ASTNode node) {
+    this.currentScope = node.getScope();
     Symbol variable;
-    if (node.children.isEmpty() && node.getType() == Type.ID) {
+    if (node.children.isEmpty() && node.getType() == Type.ID && !node.getValue().equals("this")) {
       variable = currentScope.resolve(node.getValue());
       if (variable == null) {
         System.out.println("Error: no such variable: " + node.getValue());
@@ -188,6 +172,7 @@ public class SecondScopeVisitor {
   }
 
   public ASTNode visitAssign(ASTNode node) {
+    this.currentScope = node.getScope();
     Symbol variable;
     ASTNode firstChild = node.children.getFirst();
 
@@ -221,13 +206,11 @@ public class SecondScopeVisitor {
   }
 
   public ASTNode visitClass(ASTNode classNode) {
-    for (Scope scope : this.currentScope.innerScopes) {
-      if (!visitedScopes.contains(scope)) {
-        this.currentScope = scope;
+        this.currentScope = classNode.getScope();
         for (ASTNode child : classNode.children) {
           switch (child.getType()) {
             case Type.FN_DECL: // Methoden
-              visitScopes(child);
+              visitChildren(child);
               break;
             case Type.CONSTRUCTOR:
               visitConstructor(child, currentScope.resolve(classNode.getValue()));
@@ -244,14 +227,12 @@ public class SecondScopeVisitor {
           }
         }
         this.currentScope = this.currentScope.enclosingScope;
-        visitedScopes.add(scope);
-        break;
-      }
-    }
+
     return classNode;
   }
 
   private ASTNode visitCopyConstructor(ASTNode copyconstNode, Symbol classSymbol) {
+    this.currentScope = copyconstNode.getScope();
     String copyconstName = copyconstNode.getValue().replaceFirst("copy_", "");
 
     ASTNode paramType = copyconstNode.children.getFirst().children.getFirst();
@@ -270,22 +251,18 @@ public class SecondScopeVisitor {
 
     currentScope.bind(operator);
 
-    Scope constructorScope = new Scope(currentScope);
-    currentScope.innerScopes.add(constructorScope);
-    currentScope = constructorScope;
-
     ASTNode param = new ASTNode(Type.PARAMS);
+    param.setScope(currentScope);
     param.addChild(copyconstNode.children.getFirst());
     visitParams(param);
 
     visit(copyconstNode.children.getLast());
 
-    currentScope = currentScope.enclosingScope;
-
     return copyconstNode;
   }
 
   public ASTNode visitConstructor(ASTNode constructorNode, Symbol classSymbol) {
+    this.currentScope = constructorNode.getScope();
     String constructorName = constructorNode.getValue();
 
     if (!constructorName.equals(classSymbol.name)) {
@@ -296,11 +273,8 @@ public class SecondScopeVisitor {
 
     currentScope.bind(constructor);
 
-    Scope constructorScope = new Scope(currentScope);
-    currentScope.innerScopes.add(constructorScope);
-    currentScope = constructorScope;
-
     for (ASTNode child : constructorNode.children) {
+      this.currentScope = child.getScope();
       if (child.getType() == Type.PARAMS) {
         visitParams(child);
       }
@@ -308,12 +282,11 @@ public class SecondScopeVisitor {
 
     visitChildren(constructorNode);
 
-    currentScope = currentScope.enclosingScope;
-
     return constructorNode;
   }
 
   public ASTNode visitDestructor(ASTNode destructorNode, Symbol classSymbol) {
+    this.currentScope = destructorNode.getScope();
     String destructorName = "~" + destructorNode.children.getFirst().getValue();
 
     Symbol alreadyDeclared = currentScope.resolve(destructorName);
@@ -324,18 +297,14 @@ public class SecondScopeVisitor {
     Function destructor = new Function(destructorName, classSymbol.name);
     currentScope.bind(destructor);
 
-    Scope destructorScope = new Scope(currentScope);
-    currentScope.innerScopes.add(destructorScope);
-    currentScope = destructorScope;
-
     visitChildren(destructorNode);
 
-    currentScope = currentScope.enclosingScope;
 
     return destructorNode;
   }
 
   public Symbol getTypeEqual(String type, ASTNode node) {
+    this.currentScope = node.getScope();
     Symbol typeSymbol;
 
     if (type.equals("classtype")) {
@@ -347,34 +316,40 @@ public class SecondScopeVisitor {
     return typeSymbol;
   }
 
-//  public ASTNode visitObjUsage(ASTNode node) {
-//    ASTNode classObject = node.children.getFirst();
-//
-//    if (classObject.getType() == Type.OBJ_USAGE) {
-//      return visit(classObject);
-//    }
-//
-//    Symbol objectSymbol = currentScope.resolve(classObject.getValue());
-//    Symbol classSymbol = currentScope.resolve(objectSymbol.type);
-//    Scope classScope = ((SymbolTable.Class) classSymbol).getClassScope();
-//
-//    Scope oldScope = currentScope;
-//    this.currentScope = classScope;
-//    visit(node.children.getLast());
-//    currentScope = oldScope;
-//
-//    return node;
-//  }
+  public ASTNode visitObjUsage(ASTNode node) {
+    currentScope = node.getScope();
+    ASTNode classObject = node.children.getFirst();
+
+    if (classObject.getType() == Type.OBJ_USAGE) {
+      return visit(classObject);
+    }
+
+    Symbol objectSymbol = currentScope.resolve(classObject.getValue());
+    Symbol classSymbol = currentScope.resolve(objectSymbol.type);
+    Scope classScope = ((SymbolTable.Class) classSymbol).getClassScope();
+
+    visit(node.children.getLast());
+
+    return node;
+  }
 
   public Symbol getSymbolOfObjUsage(ASTNode node) {
+    this.currentScope = node.getScope();
     ASTNode classObject = node.children.getFirst();
 
     if (classObject.getType() == Type.OBJ_USAGE) {
       return getSymbolOfObjUsage(classObject);
     }
 
+    if(node.getValue() != null &&( node.getValue().equals("this") || node.getValue().equals("*this"))) {
+      if(classObject.getValue().equals("this")) {
+        return null;
+      }
+      return currentScope.resolve(classObject.getValue());
+    }
+
     Symbol objectSymbol = currentScope.resolve(classObject.getValue());
-    Symbol classSymbol = currentScope.resolve(objectSymbol.type);
+    Symbol classSymbol = currentScope.resolve(objectSymbol.type, "Class");
     Scope classScope = ((SymbolTable.Class) classSymbol).getClassScope();
 
     Symbol usedValueOfObject = classScope.resolve(node.children.getLast().getValue());
@@ -382,6 +357,7 @@ public class SecondScopeVisitor {
   }
 
   public ASTNode visitOperator(ASTNode operatorNode, Symbol classSymbol) {
+    this.currentScope = operatorNode.getScope();
     String operatorName = operatorNode.getValue();
 
     ASTNode returnTypeID = operatorNode.children.getFirst();
@@ -401,19 +377,14 @@ public class SecondScopeVisitor {
 
     currentScope.bind(operator);
 
-    Scope constructorScope = new Scope(currentScope);
-    currentScope.innerScopes.add(constructorScope);
-    currentScope = constructorScope;
-
     for (ASTNode child : operatorNode.children) {
+      this.currentScope = child.getScope();
       if (child.getType() == Type.PARAMS) {
         visitParams(child);
       }
     }
 
     visit(operatorNode.children.getLast());
-
-    currentScope = currentScope.enclosingScope;
 
     return operatorNode;
   }

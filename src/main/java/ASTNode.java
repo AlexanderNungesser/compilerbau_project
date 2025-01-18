@@ -1,7 +1,9 @@
+import SymbolTable.Scope;
 import java.util.ArrayList;
 
 public class ASTNode {
 
+  private Scope scope;
   private Type type;
   private String value;
   public ArrayList<ASTNode> children = new ArrayList<>();
@@ -19,6 +21,14 @@ public class ASTNode {
   public ASTNode(Type type, String value) {
     this.type = type;
     this.value = value;
+  }
+
+  public Scope getScope() { return scope; }
+
+  public void setScope(Scope scope) {
+    if (this.scope == null) {
+      this.scope = scope;
+    }
   }
 
   public Type getType() {
@@ -55,7 +65,8 @@ public class ASTNode {
         prefix
             + (isLast ? "'__" : "|--")
             + (this.value == null ? "" : " " + this.value)
-            + (this.type == null ? "" : " (" + this.type.name() + ")"));
+            + (this.type == null ? "" : " (" + this.type.name() + ")")
+            + (this.scope == null ? " no " : " yes " ));
 
     // Anzeige der Kinder
     for (int i = 0; i < children.size(); i++) {

@@ -38,29 +38,29 @@ public class Main {
     ast.print();
 
     FirstScopeVisitor scopeVisitor = new FirstScopeVisitor();
-    scopeVisitor.visit(ast);
+    ASTNode scopedAst = scopeVisitor.visitProgram(ast);
     System.out.println("First Scope Run:");
     scopeVisitor.currentScope.print();
-    ast.print();
+    scopedAst.print();
 
     SecondScopeVisitor scopeVisitor2 = new SecondScopeVisitor(scopeVisitor.currentScope);
-    scopeVisitor2.visit(ast);
+    scopeVisitor2.visit(scopedAst);
     System.out.println("\nSecond Scope Run:");
     scopeVisitor2.currentScope.print();
-    ast.print();
+    scopedAst.print();
 
     TypeCheckVisitor typeCheckVisitor = new TypeCheckVisitor(scopeVisitor.currentScope);
-    typeCheckVisitor.visit(ast);
+    typeCheckVisitor.visit(scopedAst);
     System.out.println("\nType Check Run:");
     typeCheckVisitor.currentScope.print();
 
-    InsertValueRun insertValueRun = new InsertValueRun(typeCheckVisitor.currentScope);
-    insertValueRun.visit(ast);
-    System.out.println("\nInsert Value Run:");
-    insertValueRun.currentScope.printValues();
+//    InsertValueRun insertValueRun = new InsertValueRun(typeCheckVisitor.currentScope);
+//    insertValueRun.visit(scopedAst);
+//    System.out.println("\nInsert Value Run:");
+//    insertValueRun.currentScope.printValues();
 
     Interpreter interpreter = new Interpreter();
-    interpreter.eval(ast);
+    interpreter.eval(scopedAst);
     System.out.println("\nInterpret Run:");
   }
 }
