@@ -140,7 +140,12 @@ public class TypeCheckVisitor {
   }
 
   public ASTNode visitNot(ASTNode node) {
+    ASTNode firstChild = node.children.getFirst();
+    if (firstChild.getType() == Type.AND || firstChild.getType() == Type.OR || firstChild.getType() == Type.NOT) {
+      visit(firstChild);
+    }
     String type = getEndType(node.children.getFirst());
+
     if (!typeIsValid(type)) {
       System.out.println("Error: invalid type for negation: " + type);
     }
@@ -148,6 +153,10 @@ public class TypeCheckVisitor {
   }
 
   public ASTNode visitBoolOperator(ASTNode node) {
+    ASTNode firstChild = node.children.getFirst();
+    if (firstChild.getType() == Type.AND || firstChild.getType() == Type.OR || firstChild.getType() == Type.NOT) {
+      visit(firstChild);
+    }
     String firstType = getEndType(node.children.getFirst());
     String secondType = getEndType(node.children.getLast());
     if (!typeIsValid(firstType)) {
