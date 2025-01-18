@@ -59,9 +59,8 @@ public class Main {
     System.out.println("\nInsert Value Run:");
     insertValueRun.currentScope.printValues();
 
-    Interpreter interpreter = new Interpreter(scopeVisitor.currentScope);
-    interpreter.visit(ast);
+    Interpreter interpreter = new Interpreter();
+    interpreter.eval(ast);
     System.out.println("\nInterpret Run:");
-    interpreter.currentScope.print();
   }
 }

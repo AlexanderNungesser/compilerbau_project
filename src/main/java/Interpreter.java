@@ -1,23 +1,18 @@
-import SymbolTable.*;
-import java.util.HashSet;
-import java.util.Set;
-
 public class Interpreter {
-  Scope currentScope;
-  Set<Scope> visitedScopes = new HashSet<>();
+  Environment env;
 
-  public Interpreter(Scope scope) {
-    this.currentScope = scope;
+  public Interpreter() {
+    this.env = new Environment(null);
   }
 
-  public ASTNode visit(ASTNode node) {
+  public Object eval(ASTNode node) {
     switch (node.getType()) {
-      case Type.PROGRAM:
-        visitChildren(node);
-        break;
       case Type.OBJ_USAGE:
         break;
-      case Type.BLOCK, Type.CLASS:
+      case Type.BLOCK:
+        evalBlock(node);
+        break;
+      case Type.CLASS:
         break;
       case Type.FN_DECL:
         break;
@@ -45,20 +40,28 @@ public class Interpreter {
         break;
       case Type.ADD, Type.SUB, Type.MUL, Type.DIV, Type.MOD:
         break;
-      case Type.NULL, Type.INT, Type.BOOL, Type.CHAR:
-        return node;
+      case Type.NULL:
+        return null;
+      case Type.INT:
+        return Integer.parseInt(node.getValue());
+      case Type.BOOL:
+        return Boolean.parseBoolean(node.getValue());
+      case Type.CHAR:
+        return node.getValue().charAt(0);
       default:
-          visitChildren(node);
+        evalChildren(node);
         break;
     }
-    return node;
+    return null;
   }
 
-  public ASTNode visitChildren(ASTNode node) {
+  private Object evalBlock(ASTNode node) {return null;}
+
+  public Object evalChildren(ASTNode node) {
     for (ASTNode child : node.children) {
-      visit(child);
+      eval(child);
     }
-    return node;
+    return null;
   }
 
   private char convertToChar(ASTNode node) {
