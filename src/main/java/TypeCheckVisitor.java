@@ -42,7 +42,7 @@ public class TypeCheckVisitor {
       case Type.ARRAY_DECL:
         visitArraydecl(node);
         break;
-      case Type.GREATER, Type.GREATER_EQUAL, Type.LESS, Type.LESS_EQUAL:
+      case Type.EQUAL, Type.NOT_EQUAL, Type.GREATER, Type.GREATER_EQUAL, Type.LESS, Type.LESS_EQUAL:
         visitCompare(node);
         break;
       case Type.NOT:
@@ -224,7 +224,17 @@ public class TypeCheckVisitor {
   }
 
   public ASTNode visitCompare(ASTNode node) {
-
+    ASTNode firstChild = node.children.getFirst();
+    if (firstChild.getType() == Type.EQUAL || firstChild.getType() == Type.NOT_EQUAL || firstChild.getType() == Type.GREATER_EQUAL || firstChild.getType() == Type.LESS_EQUAL || firstChild.getType() == Type.GREATER || firstChild.getType() == Type.LESS) {
+      visit(firstChild);
+    }
+    String firstType = getEndType(node.children.getFirst());
+    String secondType = getEndType(node.children.getLast());
+    if (!typeIsValid(firstType)) {
+      System.out.println("Error: invalid type for compare operation: " + firstType);
+    }else if (!typeIsValid(secondType)) {
+      System.out.println("Error: invalid type for compare operation: " + secondType);
+    }
     return node;
   }
 
@@ -311,30 +321,15 @@ public class TypeCheckVisitor {
   public ASTNode visitCalculate(ASTNode node) {
     ASTNode firstChild = node.children.getFirst();
     if (firstChild.getType() == Type.ADD || firstChild.getType() == Type.SUB || firstChild.getType() == Type.MUL || firstChild.getType() == Type.DIV || firstChild.getType() == Type.MOD) {
-      firstChild = visitCalculate(firstChild);
+      visit(firstChild);
     }
-
     String firstType = getEndType(node.children.getFirst());
-    if (firstType.equals("id")) {
-      firstType = this.currentScope.resolve(firstChild.getValue()).type;
-    }
-
+    String secondType = getEndType(node.children.getLast());
     if (!typeIsValid(firstType)) {
-      System.out.println("ERROR: Expected valid type, got " + firstType);
+      System.out.println("Error: invalid type for calc operation: " + firstType);
+    }else if (!typeIsValid(secondType)) {
+      System.out.println("Error: invalid type for calc operation: " + secondType);
     }
-
-    ASTNode secondChild = node.children.get(1);
-    String secondType = getEndType(secondChild);
-    if (secondType.equals("id")) {
-      secondType = this.currentScope.resolve(secondChild.getValue()).type;
-    }
-
-    if (!typeIsValid(secondType)) {
-      System.out.println("ERROR: Expected valid type, got " + secondType);
-    }
-
-    visitChildren(node);
-
     return node;
   }
 
