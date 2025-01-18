@@ -93,7 +93,7 @@ int main() {
         x.value = 9;
         print_int(x.value);     // 9
         int zahl;
-         zahl = x.value + '1' + true + x;
+        zahl = x.value + '1' + true + x;
 
         C y(x);
         print_int(x.value);     // 9

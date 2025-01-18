@@ -18,9 +18,12 @@ int b;
 int &ref = aclass.value;
 
 // Destfall 4: Array-Deklaration ohne Initialisierung
-int i = 5;
+int i;
+ i = 5 == 4;
 int arr[5];
 int j = arr[0];
+A u;
+ u = true <= 5;
 
 // Destfall 5: Array-Deklaration mit Initialisierung
 int arr2[] = {1, 2, 3};
@@ -31,7 +34,7 @@ int matrix[3][3];
 int five = 5;
 char cc = 'c'
 // Destfall 7: Mehrdimensionales Array mit Initialisierung
-int matrix2[2][2] = {{1, 2}, {3, 4}};
+int matrix2[2][2] = {{4, 2}, {3, 4}};
 
 // Destfall 8: Komplexe Referenz mit Array
 int (&ref_arr)[five] = arr;

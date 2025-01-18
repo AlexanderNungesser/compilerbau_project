@@ -42,6 +42,9 @@ public class TypeCheckVisitor {
       case Type.ARRAY_DECL:
         visitArraydecl(node);
         break;
+      case Type.ARRAY_ITEM:
+        visitArrayItem(node);
+        break;
       case Type.EQUAL, Type.NOT_EQUAL, Type.GREATER, Type.GREATER_EQUAL, Type.LESS, Type.LESS_EQUAL:
         visitCompare(node);
         break;
@@ -141,7 +144,9 @@ public class TypeCheckVisitor {
 
   public ASTNode visitNot(ASTNode node) {
     ASTNode firstChild = node.children.getFirst();
-    if (firstChild.getType() == Type.AND || firstChild.getType() == Type.OR || firstChild.getType() == Type.NOT) {
+    if (firstChild.getType() == Type.AND
+        || firstChild.getType() == Type.OR
+        || firstChild.getType() == Type.NOT) {
       visit(firstChild);
     }
     String type = getEndType(node.children.getFirst());
@@ -154,19 +159,20 @@ public class TypeCheckVisitor {
 
   public ASTNode visitBoolOperator(ASTNode node) {
     ASTNode firstChild = node.children.getFirst();
-    if (firstChild.getType() == Type.AND || firstChild.getType() == Type.OR || firstChild.getType() == Type.NOT) {
+    if (firstChild.getType() == Type.AND
+        || firstChild.getType() == Type.OR
+        || firstChild.getType() == Type.NOT) {
       visit(firstChild);
     }
     String firstType = getEndType(node.children.getFirst());
     String secondType = getEndType(node.children.getLast());
     if (!typeIsValid(firstType)) {
       System.out.println("Error: invalid type for bool operation: " + firstType);
-    }else if (!typeIsValid(secondType)) {
+    } else if (!typeIsValid(secondType)) {
       System.out.println("Error: invalid type for bool operation: " + secondType);
     }
     return node;
   }
-
 
   public ASTNode visitFndecl(ASTNode node) {
     ASTNode returnTypeNode = node.children.getFirst();
@@ -197,11 +203,11 @@ public class TypeCheckVisitor {
     ASTNode functionNameNode = node.children.getFirst();
     String functionName = functionNameNode.getValue();
 
-//    Symbol functionSymbol = currentScope.resolve(functionName);
-//    if (functionSymbol == null || !(functionSymbol instanceof SymbolTable.Function)) {
-//      System.out.println("Error: Function " + functionName + " is not declared.");
-//      return node;
-//    }
+    //    Symbol functionSymbol = currentScope.resolve(functionName);
+    //    if (functionSymbol == null || !(functionSymbol instanceof SymbolTable.Function)) {
+    //      System.out.println("Error: Function " + functionName + " is not declared.");
+    //      return node;
+    //    }
 
     // TODO params der Funktion kriegen und sie mit den args vergleichen
 
@@ -219,20 +225,72 @@ public class TypeCheckVisitor {
   }
 
   public ASTNode visitAssign(ASTNode node) {
+    ASTNode firstChild = node.children.getFirst();
+    String firstType;
+    if (firstChild.getType() == Type.ARRAY_ITEM) {
+      visitArrayItem(firstChild);
+      firstType = Type.ARRAY_ITEM.name();
+    } else {
+      firstType = getEndType(firstChild);
+    }
+
+    ASTNode secondChild = node.children.getLast();
+    String secondType;
+    switch (secondChild.getType()) {
+      case Type.ARRAY_ITEM:
+        visitArrayItem(secondChild);
+        break;
+      case Type.FN_CALL:
+        break;
+      case Type.DEC_INC,
+          Type.NOT,
+          Type.ADD,
+          Type.SUB,
+          Type.MUL,
+          Type.DIV,
+          Type.MOD,
+          Type.EQUAL,
+          Type.NOT_EQUAL,
+          Type.LESS,
+          Type.LESS_EQUAL,
+          Type.GREATER,
+          Type.GREATER_EQUAL,
+          Type.AND,
+          Type.OR:
+        if (!typeIsValid(firstType)) {
+          System.out.println("Error: types need to be built in to use operators in assign");
+        }
+        break;
+      default:
+        secondType = getEndType(secondChild);
+        if(typeIsValid(secondType) && typeIsValid(firstType)) {
+          break;
+        }
+        if (!firstType.equals(secondType)) {
+          System.out.println(
+              "Error: types " + firstType + " and " + secondType + " do not match in assign");
+        }
+    }
+
     visitChildren(node);
     return node;
   }
 
   public ASTNode visitCompare(ASTNode node) {
     ASTNode firstChild = node.children.getFirst();
-    if (firstChild.getType() == Type.EQUAL || firstChild.getType() == Type.NOT_EQUAL || firstChild.getType() == Type.GREATER_EQUAL || firstChild.getType() == Type.LESS_EQUAL || firstChild.getType() == Type.GREATER || firstChild.getType() == Type.LESS) {
+    if (firstChild.getType() == Type.EQUAL
+        || firstChild.getType() == Type.NOT_EQUAL
+        || firstChild.getType() == Type.GREATER_EQUAL
+        || firstChild.getType() == Type.LESS_EQUAL
+        || firstChild.getType() == Type.GREATER
+        || firstChild.getType() == Type.LESS) {
       visit(firstChild);
     }
     String firstType = getEndType(node.children.getFirst());
     String secondType = getEndType(node.children.getLast());
     if (!typeIsValid(firstType)) {
       System.out.println("Error: invalid type for compare operation: " + firstType);
-    }else if (!typeIsValid(secondType)) {
+    } else if (!typeIsValid(secondType)) {
       System.out.println("Error: invalid type for compare operation: " + secondType);
     }
     return node;
@@ -260,6 +318,11 @@ public class TypeCheckVisitor {
       ASTNode secondChild = node.children.getLast();
       String firstType = getEndType(firstChild), secondType = getEndType(secondChild);
 
+      if (secondChild.getType() == Type.ARRAY_ITEM) {
+        visitArrayItem(secondChild);
+        return node;
+      }
+
       if (!Objects.equals(firstType, secondType)) {
         System.out.println(firstChild.getValue() + " " + secondChild.getValue());
         System.out.println(
@@ -283,8 +346,8 @@ public class TypeCheckVisitor {
   public ASTNode visitArraydecl(ASTNode node) {
     for (ASTNode child : node.children.getFirst().children) {
       String childType = getEndType(child);
-      if (!childType.equals("int")) {
-        System.out.println("Error: type " + childType + " not cannot describe array length");
+      if (!typeIsValid(childType)) {
+        System.out.println("Error: type " + childType + " cannot describe array length");
       }
     }
 
@@ -304,30 +367,47 @@ public class TypeCheckVisitor {
   private ASTNode visitArray(ASTNode node, String arrayType) {
     for (ASTNode child : node.children) {
       String childType = getEndType(child);
-      if (!childType.equals(arrayType)) {
-        System.out.println(
-                "Error: type mismatch in arrayInit: "
-                        + childType
-                        + " is not the same as "
-                        + arrayType);
-      }
-      if( child.getType() == Type.ARRAY) {
-        visitArray(child, arrayType);
+      if (typeIsValid(arrayType)) {
+        if (!typeIsValid(childType)) {
+          System.out.println(
+              "Error: type mismatch in arrayInit: "
+                  + childType
+                  + " is not the same as "
+                  + arrayType);
         }
+      } else if (!childType.equals(arrayType)) {
+        System.out.println(
+            "Error: type mismatch in arrayInit: " + childType + " is not the same as " + arrayType);
       }
-      return node;
+      if (child.getType() == Type.ARRAY) {
+        visitArray(child, arrayType);
+      }
+    }
+    return node;
+  }
+
+  public ASTNode visitArrayItem(ASTNode node) {
+    String type = getEndType(node.children.getFirst());
+    if (!typeIsValid(type)) {
+      System.out.println("Error: type " + type + " must be built in type");
+    }
+    return node;
   }
 
   public ASTNode visitCalculate(ASTNode node) {
     ASTNode firstChild = node.children.getFirst();
-    if (firstChild.getType() == Type.ADD || firstChild.getType() == Type.SUB || firstChild.getType() == Type.MUL || firstChild.getType() == Type.DIV || firstChild.getType() == Type.MOD) {
+    if (firstChild.getType() == Type.ADD
+        || firstChild.getType() == Type.SUB
+        || firstChild.getType() == Type.MUL
+        || firstChild.getType() == Type.DIV
+        || firstChild.getType() == Type.MOD) {
       visit(firstChild);
     }
     String firstType = getEndType(node.children.getFirst());
     String secondType = getEndType(node.children.getLast());
     if (!typeIsValid(firstType)) {
       System.out.println("Error: invalid type for calc operation: " + firstType);
-    }else if (!typeIsValid(secondType)) {
+    } else if (!typeIsValid(secondType)) {
       System.out.println("Error: invalid type for calc operation: " + secondType);
     }
     return node;
@@ -360,6 +440,7 @@ public class TypeCheckVisitor {
       if (node.getType() == Type.CLASSTYPE) {
         return currentScope.resolve(node.getValue()).type;
       }
+
       if (node.getType() == Type.OBJ_USAGE) {
         return visitObj_usage(node).type;
       }
