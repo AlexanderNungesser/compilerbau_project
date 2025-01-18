@@ -197,11 +197,11 @@ public class TypeCheckVisitor {
     ASTNode functionNameNode = node.children.getFirst();
     String functionName = functionNameNode.getValue();
 
-    Symbol functionSymbol = currentScope.resolve(functionName);
-    if (functionSymbol == null || !(functionSymbol instanceof SymbolTable.Function)) {
-      System.out.println("Error: Function " + functionName + " is not declared.");
-      return node;
-    }
+//    Symbol functionSymbol = currentScope.resolve(functionName);
+//    if (functionSymbol == null || !(functionSymbol instanceof SymbolTable.Function)) {
+//      System.out.println("Error: Function " + functionName + " is not declared.");
+//      return node;
+//    }
 
     // TODO params der Funktion kriegen und sie mit den args vergleichen
 
@@ -288,26 +288,26 @@ public class TypeCheckVisitor {
     return node;
   }
 
-  private void visitArray(ASTNode node, String arrayType) {
-    if (node.children.getFirst().getType() == Type.ARRAY) {
-      visitArray(node.children.getFirst(), arrayType);
-    } else {
-      for (ASTNode child : node.children) {
-        String childType = getEndType(child);
-        if (!childType.equals(arrayType)) {
-          System.out.println(
-              "Error: type mismatch in arrayInit: "
-                  + childType
-                  + " is not the same as "
-                  + arrayType);
+  private ASTNode visitArray(ASTNode node, String arrayType) {
+    for (ASTNode child : node.children) {
+      String childType = getEndType(child);
+      if (!childType.equals(arrayType)) {
+        System.out.println(
+                "Error: type mismatch in arrayInit: "
+                        + childType
+                        + " is not the same as "
+                        + arrayType);
+      }
+      if( child.getType() == Type.ARRAY) {
+        visitArray(child, arrayType);
         }
       }
-    }
+      return node;
   }
 
   public ASTNode visitCalculate(ASTNode node) {
     ASTNode firstChild = node.children.getFirst();
-    if (firstChild.getType() == Type.ADD) {
+    if (firstChild.getType() == Type.ADD || firstChild.getType() == Type.SUB || firstChild.getType() == Type.MUL || firstChild.getType() == Type.DIV || firstChild.getType() == Type.MOD) {
       firstChild = visitCalculate(firstChild);
     }
 
