@@ -2,7 +2,7 @@
 void foo() {
     int b = 3;
     b = b + 5;
-    print_char('f');    // 'f'
+    print_char('f');// 'f'
 }
 
 void bar();
@@ -14,6 +14,15 @@ int wuppie(int x) {
     print_int(x);       // 99
     return x;
 }
+
+//class A{
+//    public:
+//};
+//
+//A test() {
+//    A a;
+//    return a;
+//}
 
 int fluppie(int &x) {
     print_char('f');    // 'f'

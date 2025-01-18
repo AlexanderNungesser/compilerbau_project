@@ -174,40 +174,75 @@ public class TypeCheckVisitor {
     return node;
   }
 
+
   public ASTNode visitFndecl(ASTNode node) {
+    this.currentScope = this.currentScope.innerScopes.getFirst();
     ASTNode returnTypeNode = node.children.getFirst();
-    String returnType = returnTypeNode.getValue();
+    Type returnType = returnTypeNode.getType();
 
-    if (!typeIsValid(returnType)) {
-      System.out.println("Error: Invalid return type in function declaration: " + returnType);
-    }
-
-    for (int i = 1; i < node.children.size(); i++) {
+    for(int i = 1; i < node.children.size(); i++) {
       ASTNode paramNode = node.children.get(i);
-      if (paramNode.getType() == Type.VAR_DECL) {
+      if(paramNode.getType() == Type.VAR_DECL) {
         ASTNode paramTypeNode = paramNode.children.getFirst();
         String paramType = paramTypeNode.getValue();
 
-        if (!typeIsValid(paramType)) {
+        if(!typeIsValid(paramType) && returnType != Type.CLASSTYPE) {
           System.out.println("Error: Invalid parameter type in function declaration: " + paramType);
         }
       }
     }
 
-    visitChildren(node);
+    if (returnTypeNode.getType() != Type.VOID){
+      if(node.children.getLast().getType() == Type.BLOCK){
+        visitReturn(node.children.getLast(), returnType.name().toLowerCase());
+      }
+    }
+    if(node.children.getLast().getType() == Type.BLOCK){
+      visit(node.children.getLast());
+    }
+    this.currentScope = this.currentScope.enclosingScope;
 
     return node;
   }
 
-  public ASTNode visitFncall(ASTNode node) {
-    ASTNode functionNameNode = node.children.getFirst();
-    String functionName = functionNameNode.getValue();
+  public boolean visitReturn(ASTNode node, String methodType) {
+    for (Scope scope : this.currentScope.innerScopes) {
+      if (!visitedScopes.contains(scope)) {
+        this.currentScope = scope;
 
-    //    Symbol functionSymbol = currentScope.resolve(functionName);
-    //    if (functionSymbol == null || !(functionSymbol instanceof SymbolTable.Function)) {
-    //      System.out.println("Error: Function " + functionName + " is not declared.");
-    //      return node;
-    //    }
+        for (ASTNode child : node.children) {
+          if (child.getType() == Type.RETURN) {
+            if (child.children.isEmpty()) {
+              if (!methodType.equals("void")) {
+                System.out.println("Error: Function expects return type " + methodType + ", but got void.");
+              }
+              return true;
+            } else {
+              String returnType = getEndType(child.children.getFirst());
+              if (!methodType.equals(returnType)) {
+                System.out.println("Error: Return type mismatch. Expected " + methodType + ", but got " + returnType + ".");
+              }
+              return true;
+            }
+          }
+
+          if (visitReturn(child, methodType)) {
+            return true;
+          }
+        }
+
+        this.currentScope = this.currentScope.enclosingScope;
+        visitedScopes.add(scope);
+      }
+    }
+
+    System.out.println("Error: Return from type " + methodType + " expected.");
+    return false;
+  }
+
+  public ASTNode visitFncall(ASTNode node) {
+    // ASTNode functionNameNode = node.children.getFirst();
+    // String functionName = functionNameNode.getValue();
 
     // TODO params der Funktion kriegen und sie mit den args vergleichen
 
@@ -437,7 +472,7 @@ public class TypeCheckVisitor {
         return node.getType().name().toLowerCase();
       }
 
-      if (node.getType() == Type.CLASSTYPE) {
+      if (node.getType() == Type.CLASSTYPE || node.getType() == Type.FN_CALL) {
         return currentScope.resolve(node.getValue()).type;
       }
 
