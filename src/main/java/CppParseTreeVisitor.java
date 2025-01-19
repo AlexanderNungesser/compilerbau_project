@@ -95,7 +95,11 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
       type.addChild(visit(ctx.expr(i)));
     }
     node.addChild(type);
-    node.addChild(new ASTNode(Type.ID, ctx.ID(1).getText()));
+    if(ctx.array_item() != null){
+      node.addChild(visit(ctx.array_item()));
+    }else{
+      node.addChild(new ASTNode(Type.ID, ctx.ID(1).getText()));
+    }
     return node;
   }
 

@@ -21,7 +21,7 @@ var_decl:   type ID ('=' expr)? ';'                         # Var_declaration
           | type REF ID '=' expr ';'                        # Var_ref
           | type ID ('[' expr ']')+ ';'                     # Array_decl
           | type ID ('[' expr? ']')+ '=' array ';'          # Array_init
-          | type '(' REF ID ')' ('[' expr ']')+ '=' ID ';'  # Array_ref
+          | type '(' REF ID ')' ('[' expr ']')+ '=' (array_item | ID) ';'  # Array_ref
           ;
 
 assign  :   (array_item | ID | obj_usage) ('=' | ASSIGN_OP) expr ';' ;
