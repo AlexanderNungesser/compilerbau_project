@@ -36,6 +36,14 @@ int main() {
         print_char('y');        // y
     }
 
+    if (false) {
+        print_char('x');
+    } else if (true) {
+        print_char('z');
+    } else {
+        print_char('y');
+    }
+
 
     return 0;
 }
