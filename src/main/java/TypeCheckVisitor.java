@@ -26,7 +26,7 @@ public class TypeCheckVisitor {
       case Type.FN_DECL:
         visitFndecl(node);
         break;
-      case Type.FN_CALL:
+      case Type.FN_CALL, Type.CONSTRUCTOR, Type.COPY_CONSTRUCTOR:
         visitFncall(node);
         break;
       case Type.VAR_DECL, Type.VAR_REF:
@@ -258,12 +258,6 @@ public class TypeCheckVisitor {
     if (!typeIsValid(getEndType(node.children.getFirst().children.getFirst()))) {
       System.out.println("Error builtInFunction was not called with built in type");
     }
-  }
-
-  public ASTNode visitConstructor(ASTNode constructorNode, Symbol classSymbol) {
-    this.currentScope = constructorNode.getScope();
-
-    return constructorNode;
   }
 
   public ASTNode visitProgram(ASTNode program) {

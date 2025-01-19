@@ -290,11 +290,6 @@ public class FirstScopeVisitor {
     if (alreadyDeclared != null) {
       System.out.println("Error: such variable " + firstChild.getValue() + " already exists");
     } else {
-      //      if (lastSymbol instanceof Array) {
-      //        if (!Arrays.equals(((Array) lastSymbol).length, arr.length)) {
-      //          System.out.println("Error: initial and reference dimensions mismatch");
-      //        }
-      //      }
       currentScope.bind(arrRef);
     }
 
@@ -520,9 +515,6 @@ public class FirstScopeVisitor {
         if (superClass != null) classSymbol.setSuperClass((Class) superClass);
       }
       switch (child.getType()) {
-          //        case AST.Type.VAR_DECL: // Attribute
-          //          visitVardecl(child);
-          //          break;
         case Type.CONSTRUCTOR:
           mustHave.put(Type.CONSTRUCTOR, true);
           break;
@@ -535,12 +527,6 @@ public class FirstScopeVisitor {
         case Type.OPERATOR:
           mustHave.put(Type.OPERATOR, true);
           break;
-          //        case AST.Type.FN_DECL: // Methoden
-          //          visitFndecl(child);
-          //          break;
-          //        case AST.Type.ABSTRACT_FN:
-          //          visitAbstractFn(child);
-          //          break;
       }
     }
     if (!mustHave.get(Type.CONSTRUCTOR)) {
