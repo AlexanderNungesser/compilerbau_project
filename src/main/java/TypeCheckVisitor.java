@@ -1,3 +1,5 @@
+import AST.ASTNode;
+import AST.Type;
 import SymbolTable.*;
 import java.util.Objects;
 
@@ -220,7 +222,7 @@ public class TypeCheckVisitor {
 
   public ASTNode visitFncall(ASTNode node) {
     this.currentScope = node.getScope();
-    // ASTNode functionNameNode = node.children.getFirst();
+    // AST.ASTNode functionNameNode = node.children.getFirst();
     // String functionName = functionNameNode.getValue();
 
     // TODO params der Funktion kriegen und sie mit den args vergleichen

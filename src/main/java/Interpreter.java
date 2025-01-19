@@ -1,3 +1,7 @@
+import AST.ASTNode;
+import AST.Type;
+import Environment.*;
+
 import java.lang.reflect.Array;
 
 public class Interpreter {
@@ -26,6 +30,7 @@ public class Interpreter {
       case Type.CLASS:
         break;
       case Type.FN_DECL:
+        evalFnDecl(node);
         break;
       case Type.FN_CALL:
         break;
@@ -75,6 +80,13 @@ public class Interpreter {
         evalChildren(node);
         break;
     }
+    return null;
+  }
+
+  public Object evalFnDecl(ASTNode node) {
+    ASTNode fnInfo = node.children.getFirst();
+    Function fn = new Function(node, this.env);
+    this.env.define(fnInfo.children.getFirst().getValue(), fn);
     return null;
   }
 
@@ -297,7 +309,7 @@ public class Interpreter {
 
   private int[] getArraySizes(Object array) {
     int dimensions = 0;
-    Class<?> clazz = array.getClass();
+    java.lang.Class<?> clazz = array.getClass();
 
     // Anzahl der Dimensionen ermitteln
     while (clazz.isArray()) {
@@ -439,4 +451,21 @@ public class Interpreter {
     }
     return chr;
   }
+
+  private void print_int(Object object){
+    int i = convertToInteger(object);
+    System.out.println("Print int: " + i);
+  }
+  private void print_char(Object object){
+    char c = convertToCharacter(object);
+    System.out.println("Print char: " + c);
+  }
+  private void print_bool(Object object){
+    boolean b = convertToBoolean(object);
+    System.out.println("Print bool: " + b);
+  }
+
+
+
+
 }

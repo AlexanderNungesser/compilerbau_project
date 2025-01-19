@@ -1,3 +1,5 @@
+package Environment;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -35,7 +37,7 @@ public class Environment {
   }
 
   public void print() {
-    System.out.println("  ".repeat(indentLevel) + "Environment {");
+    System.out.println("  ".repeat(indentLevel) + "Environment.Environment {");
     indentLevel++;
     for (Map.Entry<String, Object> entry : values.entrySet()) {
       System.out.println("  ".repeat(indentLevel) + entry.getKey() + ": " + entry.getValue());

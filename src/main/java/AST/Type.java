@@ -1,3 +1,5 @@
+package AST;
+
 public enum Type {
   PROGRAM,
   VAR_DECL,

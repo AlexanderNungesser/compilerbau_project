@@ -1,3 +1,5 @@
+import AST.ASTNode;
+import AST.Type;
 import SymbolTable.*;
 import SymbolTable.Class;
 import java.util.ArrayList;
@@ -120,11 +122,11 @@ public class FirstScopeVisitor {
     //  |   '__ B (ID)
     //  '__ (ARGS)
     //      '__ y (ID)
-    //    if(firstChild.getType() == Type.CLASSTYPE && variableNode.children.size() > 1) {
-    //      variableNode.setType(Type.FN_CALL);
+    //    if(firstChild.getType() == AST.Type.CLASSTYPE && variableNode.children.size() > 1) {
+    //      variableNode.setType(AST.Type.FN_CALL);
     //      variableNode.setValue("operator=");
-    //      ASTNode arg = variableNode.children.removeLast();
-    //      ASTNode args = new ASTNode(Type.ARGS);
+    //      AST.ASTNode arg = variableNode.children.removeLast();
+    //      AST.ASTNode args = new AST.ASTNode(AST.Type.ARGS);
     //      args.addChild(arg);
     //      variableNode.addChild(args);
     //    }
@@ -365,9 +367,9 @@ public class FirstScopeVisitor {
 
     if (symbol instanceof Array) {
       //      for (int i = 0; i < node.children.size(); i++) {
-      //        ASTNode expr = visitExpr(node.children.get(i));
+      //        AST.ASTNode expr = visitExpr(node.children.get(i));
       //        // TODO was wenn expr kein Int?
-      //        if (expr.getType() == Type.INT && ((Array) symbol).length[i] instanceof Integer) {
+      //        if (expr.getType() == AST.Type.INT && ((Array) symbol).length[i] instanceof Integer) {
       //          if (((Array) symbol).length[i] <= Integer.parseInt(expr.getValue())
       //                  || Integer.parseInt(expr.getValue()) < 0) {
       //            System.out.println(
@@ -515,7 +517,7 @@ public class FirstScopeVisitor {
     for (ASTNode child : classNode.children) {
       child.setScope(currentScope);
       switch (child.getType()) {
-          //        case Type.VAR_DECL: // Attribute
+          //        case AST.Type.VAR_DECL: // Attribute
           //          visitVardecl(child);
           //          break;
         case Type.CONSTRUCTOR:
@@ -530,10 +532,10 @@ public class FirstScopeVisitor {
         case Type.OPERATOR:
           mustHave.put(Type.OPERATOR, true);
           break;
-          //        case Type.FN_DECL: // Methoden
+          //        case AST.Type.FN_DECL: // Methoden
           //          visitFndecl(child);
           //          break;
-          //        case Type.ABSTRACT_FN:
+          //        case AST.Type.ABSTRACT_FN:
           //          visitAbstractFn(child);
           //          break;
       }

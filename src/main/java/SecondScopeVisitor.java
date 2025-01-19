@@ -1,3 +1,5 @@
+import AST.ASTNode;
+import AST.Type;
 import SymbolTable.*;
 import SymbolTable.Class;
 
@@ -30,7 +32,7 @@ public class SecondScopeVisitor {
         visitObjUsage(node);
         break;
       case null:
-        System.out.println("Type: " + node.getType().name() + "Value: " + node.getValue());
+        System.out.println("AST.Type: " + node.getType().name() + "Value: " + node.getValue());
         break;
       default:
         if (node.children.isEmpty()) {
