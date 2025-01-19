@@ -38,13 +38,14 @@ public class Interpreter {
       case Type.ARRAY_REF:
         break;
       case Type.ASSIGN:
+        evalAssign(node);
         break;
       case Type.ARRAY_INIT:
         break;
       case Type.ARRAY_DECL:
         evalArrayDecl(node);
         break;
-        case Type.ARRAY_ITEM:
+      case Type.ARRAY_ITEM:
         evalArrayItem(node);
         break;
       case Type.GREATER, Type.GREATER_EQUAL, Type.LESS, Type.LESS_EQUAL, Type.EQUAL, Type.NOT_EQUAL:
@@ -75,6 +76,70 @@ public class Interpreter {
         break;
     }
     return null;
+  }
+
+  public Object evalChildren(ASTNode node) {
+    for (ASTNode child : node.children) {
+      eval(child);
+    }
+    return null;
+  }
+
+  public Object evalAssign(ASTNode node) {
+    ASTNode firstChild = node.children.getFirst();
+    String name = firstChild.getValue();
+    ASTNode secondChild = node.children.getLast();
+    Object value = eval(secondChild);
+    if (firstChild.getType() == Type.OBJ_USAGE) {
+      // TODO: wie hier???
+      // eval(firstChild);
+    } else if (firstChild.getType() == Type.ARRAY_ITEM) {
+      Object array = this.env.get(name);
+      int[] indices = new int[firstChild.children.size()];
+      for (int i = 0; i < indices.length; i++) {
+        indices[i] = convertToInteger(eval(firstChild.children.get(i)));
+      }
+      setArrayItem(array, value, indices);
+    }
+    int old = convertToInteger(this.env.get(secondChild.getValue()));
+    int num = convertToInteger(value);
+    switch (node.getValue()) {
+      case "+=" -> this.env.assign(name, old + num);
+      case "-=" -> this.env.assign(name, old - num);
+      case "*=" -> this.env.assign(name, old * num);
+      case "/=" -> this.env.assign(name, old / num);
+      default -> this.env.assign(name, value);
+    }
+    evalTrailingDecInc(secondChild);
+    return null;
+  }
+
+  private void evalTrailingDecInc(ASTNode node) {
+    Object value;
+    if (node.getType() == Type.DEC_INC) {
+      ASTNode lastChild = node.children.getLast();
+      if (lastChild.getType() == Type.DEC) {
+        Object obj = eval(lastChild);
+        value =
+            switch (obj) {
+              case Integer i -> i - 1;
+              case Boolean b -> convertToBoolean(convertToInteger(b) - 1);
+              case Character c -> c - 1;
+              default -> throw new IllegalStateException("Unexpected value: " + obj);
+            };
+        this.env.assign(lastChild.getValue(), value);
+      } else if (lastChild.getType() == Type.INC) {
+        Object obj = eval(lastChild);
+        value =
+            switch (obj) {
+              case Integer i -> i + 1;
+              case Boolean b -> convertToBoolean(convertToInteger(b) + 1);
+              case Character c -> c + 1;
+              default -> throw new IllegalStateException("Unexpected value: " + obj);
+            };
+        this.env.assign(lastChild.getValue(), value);
+      }
+    }
   }
 
   public Object evalDecInc(ASTNode node) {
@@ -158,30 +223,7 @@ public class Interpreter {
     this.env.define(name, value);
     if (node.children.size() == 2) {
       ASTNode secondChild = node.children.getLast();
-      if (secondChild.getType() == Type.DEC_INC) {
-        ASTNode lastChild = secondChild.children.getLast();
-        if (lastChild.getType() == Type.DEC) {
-          Object obj = eval(lastChild);
-          value =
-                  switch (obj) {
-                    case Integer i -> i - 1;
-                    case Boolean b -> convertToBoolean(convertToInteger(b) - 1);
-                    case Character c -> c - 1;
-                    default -> throw new IllegalStateException("Unexpected value: " + obj);
-                  };
-          this.env.assign(lastChild.getValue(), value);
-        } else if (lastChild.getType() == Type.INC) {
-          Object obj = eval(lastChild);
-          value =
-                  switch (obj) {
-                    case Integer i -> i + 1;
-                    case Boolean b -> convertToBoolean(convertToInteger(b) + 1);
-                    case Character c -> c + 1;
-                    default -> throw new IllegalStateException("Unexpected value: " + obj);
-                  };
-          this.env.assign(lastChild.getValue(), value);
-        }
-      }
+      evalTrailingDecInc(secondChild);
     }
     return null;
   }
@@ -200,56 +242,82 @@ public class Interpreter {
   }
 
   public Object evalArrayItem(ASTNode node) {
-      String arrayName = node.getValue();
-      Object arrayObject = this.env.get(arrayName);
+    String arrayName = node.getValue();
+    Object arrayObject = this.env.get(arrayName);
 
-      if (arrayObject == null) {
-          System.out.println("Error: array " + arrayName + " not found in the current environment");
-          return null;
-      }
-
-      int[] sizes = getArraySizes(arrayObject);
-
-      for (int i = 0; i < node.children.size(); i++) {
-          ASTNode indexNode = node.children.get(i);
-          Object evaluatedIndex = eval(indexNode);
-          int index = convertToInteger(evaluatedIndex);
-
-          if (index < 0 || index >= sizes[i]) {
-              System.out.println("Error: index " + index + " is out of bounds for dimension " + (i + 1) +
-                      " of array " + arrayName + " (size: " + sizes[i] + ")");
-              return null;
-          }
-      }
-
-      System.out.println("Accessing array " + arrayName + " with valid indices.");
-
+    if (arrayObject == null) {
+      System.out.println("Error: array " + arrayName + " not found in the current environment");
       return null;
+    }
+
+    int[] sizes = getArraySizes(arrayObject);
+    int[] indices = new int[node.children.size()];
+    for (int i = 0; i < node.children.size(); i++) {
+      ASTNode indexNode = node.children.get(i);
+      Object evaluatedIndex = eval(indexNode);
+      int index = convertToInteger(evaluatedIndex);
+
+      if (index < 0 || index >= sizes[i]) {
+        System.out.println(
+            "Error: index "
+                + index
+                + " is out of bounds for dimension "
+                + (i + 1)
+                + " of array "
+                + arrayName
+                + " (size: "
+                + sizes[i]
+                + ")");
+        return null;
+      }
+      indices[i] = index;
+    }
+    return getArrayItem(arrayObject, indices);
   }
 
-    public static int[] getArraySizes(Object array) {
-        int dimensions = 0;
-        Class<?> clazz = array.getClass();
+  private Object getArrayItem(Object array, int[] indices) {
+    Object currentArray = array;
 
-        // Anzahl der Dimensionen ermitteln
-        while (clazz.isArray()) {
-            dimensions++;
-            clazz = clazz.getComponentType();
-        }
-
-        int[] sizes = new int[dimensions];
-        Object currentArray = array;
-
-        // Größen der einzelnen Dimensionen ermitteln
-        for (int i = 0; i < dimensions; i++) {
-            sizes[i] = Array.getLength(currentArray);
-            if (sizes[i] > 0) {
-                currentArray = Array.get(currentArray, 0);
-            }
-        }
-
-        return sizes;
+    for (int i = 0; i < indices.length - 1; i++) {
+      currentArray = Array.get(currentArray, indices[i]);
     }
+
+    return Array.get(currentArray, indices[indices.length - 1]);
+  }
+
+  private void setArrayItem(Object array, Object value, int[] indices) {
+    Object currentArray = array;
+
+    for (int i = 0; i < indices.length - 1; i++) {
+      currentArray = Array.get(currentArray, indices[i]);
+    }
+
+    Array.set(currentArray, indices[indices.length - 1], value);
+  }
+
+  private int[] getArraySizes(Object array) {
+    int dimensions = 0;
+    Class<?> clazz = array.getClass();
+
+    // Anzahl der Dimensionen ermitteln
+    while (clazz.isArray()) {
+      dimensions++;
+      clazz = clazz.getComponentType();
+    }
+
+    int[] sizes = new int[dimensions];
+    Object currentArray = array;
+
+    // Größen der einzelnen Dimensionen ermitteln
+    for (int i = 0; i < dimensions; i++) {
+      sizes[i] = Array.getLength(currentArray);
+      if (sizes[i] > 0) {
+        currentArray = Array.get(currentArray, 0);
+      }
+    }
+
+    return sizes;
+  }
 
   public Object evalWhile(ASTNode node) {
     if (convertToBoolean(eval(node.children.getFirst()))) {
@@ -289,7 +357,7 @@ public class Interpreter {
     };
   }
 
-  private Object evalBlock(ASTNode node) {
+  public Object evalBlock(ASTNode node) {
     Environment prevEnv = this.env;
     try {
       this.env = new Environment(this.env);
@@ -297,13 +365,6 @@ public class Interpreter {
     } finally {
       this.env.print();
       this.env = prevEnv;
-    }
-    return null;
-  }
-
-  public Object evalChildren(ASTNode node) {
-    for (ASTNode child : node.children) {
-      eval(child);
     }
     return null;
   }
