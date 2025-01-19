@@ -42,11 +42,13 @@ public class Interpreter {
         evalVarRef(node);
         break;
       case Type.ARRAY_REF:
+        evalArrayRef(node);
         break;
       case Type.ASSIGN:
         evalAssign(node);
         break;
       case Type.ARRAY_INIT:
+        evalArrayInit(node);
         break;
       case Type.ARRAY_DECL:
         evalArrayDecl(node);
@@ -239,6 +241,97 @@ public class Interpreter {
     }
     return null;
   }
+
+  public Object evalArrayRef(ASTNode node) {
+    ASTNode arrayNameNode = node.children.getLast();
+    String arrayName = arrayNameNode.getValue();
+
+    Object arrayObject = this.env.get(arrayName);
+
+    if (arrayObject == null) {
+      System.out.println("Error: Array " + arrayName + " not found in the current environment");
+      return null;
+    }
+
+    if (!(arrayNameNode.getType() == Type.ARRAY_ITEM)) {
+      arrayObject = eval(arrayNameNode);
+    }
+
+    int[] sizes = getArraySizes(arrayObject);
+    int[] indices = new int[node.children.getFirst().children.size()];
+
+    for (int i = 0; i < indices.length; i++) {
+      indices[i] = convertToInteger(eval(node.children.getFirst().children.get(i)));
+    }
+
+    if (indices.length != sizes.length) {
+      System.out.println("Error: Dimension mismatch");
+      return null;
+    }
+
+    for (int i = 0; i < indices.length; i++) {
+      if (indices[i] != sizes[i]) {
+        System.out.println(
+                "Error: Index "
+                        + indices[i]
+                        + " out of bounds for dimension "
+                        + (i + 1)
+                        + " of array "
+                        + arrayName);
+        return null;
+      }
+    }
+    this.env.define(node.getValue(), arrayName);
+    return null;
+  }
+
+  public Object evalArrayInit(ASTNode node) {
+    ASTNode firstChild = node.children.getFirst();
+    ASTNode lastChild = node.children.getLast();
+
+    String name = firstChild.getValue();
+    Type type = firstChild.getType();
+    int[] sizes = countArray(lastChild);
+
+    Object array =
+            switch (type) {
+              case Type.INT -> Array.newInstance(int.class, sizes);
+              case Type.BOOL -> Array.newInstance(boolean.class, sizes);
+              case Type.CHAR -> Array.newInstance(char.class, sizes);
+              default -> Array.newInstance(Object.class, sizes);
+            };
+
+
+    env.define(name, array);
+
+    return null;
+  }
+
+  public int[] countArray(ASTNode node) {
+    int[] sizes = new int[0];
+    if (node.children.getFirst().getType() == Type.ARRAY) {
+      sizes = new int[node.children.size()];
+    } else {
+      sizes = new int[1];
+    }
+    int index = 0;
+
+    for (ASTNode child : node.children) {
+      switch (child.getType()) {
+        case Type.ARRAY:
+          sizes[index] = countArray(child)[0];
+          index++;
+          break;
+        default:
+          sizes[index]++;
+          break;
+      }
+
+    }
+
+    return sizes;
+  }
+
 
   public Object evalArrayDecl(ASTNode node) {
     ASTNode firstChild = node.children.getFirst();

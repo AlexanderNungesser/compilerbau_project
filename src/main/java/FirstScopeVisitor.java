@@ -149,21 +149,28 @@ public class FirstScopeVisitor {
     return variableNode;
   }
 
-  public ArrayList<Integer> countArray(ASTNode node) {
-    ArrayList<Integer> sizes = new ArrayList<Integer>();
-    int length = 0;
+  public int[] countArray(ASTNode node) {
+    int[] sizes = new int[0];
+    if (node.children.getFirst().getType() == Type.ARRAY) {
+      sizes = new int[node.children.size()];
+    } else {
+      sizes = new int[1];
+    }
+    int index = 0;
+
     for (ASTNode child : node.children) {
       switch (child.getType()) {
         case Type.ARRAY:
-          length = 0;
-          countArray(child);
+          sizes[index] = countArray(child)[0];
+          index++;
           break;
         default:
-          length++;
+          sizes[index]++;
           break;
       }
-      sizes.add(length);
+
     }
+
     return sizes;
   }
 
@@ -223,7 +230,7 @@ public class FirstScopeVisitor {
 
     int dimensions = 0;
     Array arr = new Array(firstChild.getValue(), typeSymbol.name, dimensions);
-    ArrayList<Integer> sizes = countArray(node.children.getLast());
+    int[] sizes = countArray(node.children.getLast());
 
     if (!firstChild.children.isEmpty()) {
       dimensions = firstChild.children.size();
@@ -236,16 +243,16 @@ public class FirstScopeVisitor {
         }
       }
     } else {
-      dimensions = sizes.size();
+      dimensions = sizes.length;
     }
 
-    if (dimensions != sizes.size()) {
+    if (dimensions != sizes.length) {
       System.out.println("Error: initial and declaration dimensions mismatch");
     }
     if (firstChild.children.isEmpty()) {
       arr = new Array(firstChild.getValue(), typeSymbol.name, dimensions);
       for (int i = 0; i < dimensions; i++) {
-        arr.length[i] = sizes.get(i);
+        arr.length[i] = sizes[i];
       }
     }
 

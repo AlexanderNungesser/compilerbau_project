@@ -22,12 +22,12 @@ int &ref = aclass.value;
 int i;
  i = 5 == 4;
 int arr[5];
-int j = arr[6];
+int j = arr[0];
 A u = aclass;
  i = true <= 5;
 
 // Destfall 5: Array-Deklaration mit Initialisierung
-int arr2[] = {1, 2, 3};
+int arr2[3] = {4, 2, 3};
 
 // Destfall 6: Mehrdimensionales Array
 int matrix[3][3];
@@ -38,7 +38,7 @@ char cc = 'c';
 int matrix2[2][2] = {{4, 2}, {3, 4}};
 
 // Destfall 8: Komplexe Referenz mit Array
-int (&ref_arr)[five] = arr;
+int (&ref_arr)[2] = matrix2[0];
 
 return 0;
 }
