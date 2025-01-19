@@ -15,11 +15,13 @@ public class Environment {
 
   public void define(String name, Object value) {
     this.values.put(name, value);
+    System.out.println("  ".repeat(indentLevel) + "Define " + name + " : " + value);
   }
 
   public void assign(String name, Object value) {
     if (this.values.containsKey(name)) {
       this.values.put(name, value);
+      System.out.println("  ".repeat(indentLevel) + "Assign " + name + " : " + value.toString());
     } else if (this.enclosingEnv != null) {
       this.enclosingEnv.assign(name, value);
     } else {

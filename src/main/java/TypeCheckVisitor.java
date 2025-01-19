@@ -307,7 +307,7 @@ public class TypeCheckVisitor {
           Type.GREATER_EQUAL,
           Type.AND,
           Type.OR:
-        if (!typeIsValid(firstType)) {
+        if (!typeIsValid(getEndType(secondChild))) {
           System.out.println("Error: types need to be built in to use operators in assign");
         }
         break;

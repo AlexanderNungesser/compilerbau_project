@@ -6,6 +6,8 @@ import java.util.ArrayList;
 public class Function extends Symbol {
   private ArrayList<ASTNode> params = new ArrayList<>();
 
+  public boolean isImplemented = false;
+
   public Function(String name, String type) {
     super(name, type);
   }
