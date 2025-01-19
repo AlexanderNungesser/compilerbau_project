@@ -416,8 +416,7 @@ public class FirstScopeVisitor {
         visitParams(child);
 
         for (ASTNode param : child.children) {
-          Symbol paramSymbol = currentScope.resolve(param.getValue());
-          function.setParam(paramSymbol);
+          function.setParam(param);
         }
       }
       if (child.getType() == Type.BLOCK) {

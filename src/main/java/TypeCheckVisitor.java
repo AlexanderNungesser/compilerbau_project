@@ -2,6 +2,8 @@ import AST.ASTNode;
 import AST.Type;
 import SymbolTable.*;
 import SymbolTable.Class;
+
+import java.util.ArrayList;
 import java.util.Objects;
 
 public class TypeCheckVisitor {
@@ -229,16 +231,31 @@ public class TypeCheckVisitor {
     }
 
      Function function = (Function) currentScope.resolve(node.getValue(), "Function");
+    if(!node.children.isEmpty()) visitArgs(node.children.getFirst(), function.getParams());
 
+    return node;
+  }
+
+  private ASTNode visitArgs(ASTNode node, ArrayList<ASTNode> params) {
+    for (int i = 0; i < params.size(); i++) {
+      ASTNode args = node.children.get(i);
+      String argType = getEndType(args); String paramType = getEndType(params.get(i));
+      if(!argType.equals(paramType)) {
+        if(typeIsValid(argType) && typeIsValid(paramType)) {
+          break;
+        }
+        System.out.println("Error: Argument type mismatch in function");
+      }
+    }
 
     return node;
   }
 
   private void builtInFunctions(ASTNode node) {
-    if(node.children.size() != 1){
+    if(node.children.getFirst().children.size() != 1){
       System.out.println("Error: builtInFunction not called with 1 parameter");
     }
-    if(typeIsValid(getEndType(node.children.getFirst()))) {
+    if(!typeIsValid(getEndType(node.children.getFirst().children.getFirst()))) {
       System.out.println("Error builtInFunction was not called with built in type");
     }
   }
