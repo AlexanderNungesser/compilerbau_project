@@ -108,6 +108,6 @@ int main() {
 }
 
 
-//void bar() {
-//    print_char('b');    // 'b'
-//}
+void bar() {
+    print_char('b');    // 'b'
+}
