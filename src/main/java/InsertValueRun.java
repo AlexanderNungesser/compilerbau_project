@@ -1,3 +1,5 @@
+import AST.ASTNode;
+import AST.Type;
 import SymbolTable.*;
 import SymbolTable.Class;
 import java.util.ArrayList;
@@ -137,11 +139,11 @@ public class InsertValueRun {
               case Type.FN_DECL: // Methoden
                 visitScopes(child);
                 break;
-                //                            case Type.CONSTRUCTOR:
+                //                            case AST.Type.CONSTRUCTOR:
                 //                                visitConstructor(child,
                 // currentScope.resolve(node.getValue()));
                 //                                break;
-                //                        case Type.DESTRUCTOR:
+                //                        case AST.Type.DESTRUCTOR:
                 //                            visitDestructor(child,
                 // currentScope.resolve(classNode.getValue()));
                 //                            break;

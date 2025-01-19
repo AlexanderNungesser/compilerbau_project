@@ -1,3 +1,5 @@
+package AST;
+
 import SymbolTable.Scope;
 import java.util.ArrayList;
 
