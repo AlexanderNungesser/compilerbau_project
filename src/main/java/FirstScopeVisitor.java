@@ -319,7 +319,9 @@ public class FirstScopeVisitor {
   public ASTNode visitVarRef(ASTNode node) {
     node.setScope(currentScope);
     setChildrensScope(node);
+    setChildrensScope(node.children.getFirst());
     ASTNode lastChild = node.children.getLast();
+    setChildrensScope(lastChild);
 
     if (lastChild.getType() != Type.ID && lastChild.getType() != Type.OBJ_USAGE) {
       System.out.println("Error: reference got assigned to a value");
@@ -517,6 +519,10 @@ public class FirstScopeVisitor {
     mustHave.put(Type.OPERATOR, false);
     for (ASTNode child : classNode.children) {
       child.setScope(currentScope);
+      if(child.getValue() != null && child.getValue().equals("extends")) {
+        Symbol superClass = currentScope.resolve(child.children.getFirst().getValue(), "Class");
+        if(superClass != null) classSymbol.setSuperClass((Class) superClass);
+      }
       switch (child.getType()) {
           //        case AST.Type.VAR_DECL: // Attribute
           //          visitVardecl(child);

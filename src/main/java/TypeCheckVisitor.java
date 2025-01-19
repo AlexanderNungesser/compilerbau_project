@@ -1,6 +1,7 @@
 import AST.ASTNode;
 import AST.Type;
 import SymbolTable.*;
+import SymbolTable.Class;
 import java.util.Objects;
 
 public class TypeCheckVisitor {
@@ -454,8 +455,14 @@ public class TypeCheckVisitor {
   private String getEndType(ASTNode node) {
     this.currentScope = node.getScope();
     if (node.getType() == Type.ID) {
-      Symbol classSymbol = currentScope.resolve(node.getValue());
-      return currentScope.resolve(classSymbol.type).name;
+      Symbol objectSymbol = currentScope.resolve(node.getValue());
+      Symbol classSymbol = currentScope.resolve(objectSymbol.type);
+      if(classSymbol instanceof Class && ((Class) classSymbol).getSuperClass() != null) {
+        while (((Class) classSymbol).getSuperClass() != null) {
+          classSymbol = ((Class) classSymbol).getSuperClass();
+        }
+      }
+        return classSymbol.name;
     }
     if (!node.children.isEmpty()) {
       boolean isRef = false;
@@ -466,8 +473,18 @@ public class TypeCheckVisitor {
       if (isRef) {
         return node.getType().name().toLowerCase();
       }
-
-      if (node.getType() == Type.CLASSTYPE || node.getType() == Type.FN_CALL) {
+      if (node.getType() == Type.FN_CALL) {
+        return currentScope.resolve(node.getValue()).type;
+      }
+      if (node.getType() == Type.CLASSTYPE) {
+        Symbol objectSymbol = currentScope.resolve(node.getValue());
+        Class classSymbol = (Class) currentScope.resolve(objectSymbol.type);
+        if(classSymbol.getSuperClass() != null) {
+          while(classSymbol.getSuperClass() != null) {
+            classSymbol = classSymbol.getSuperClass();
+          }
+          return classSymbol.name;
+        }
         return currentScope.resolve(node.getValue()).type;
       }
 

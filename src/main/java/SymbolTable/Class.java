@@ -2,6 +2,7 @@ package SymbolTable;
 
 public class Class extends Symbol {
   Scope classScope;
+  Class superClass;
 
   public Class(String name) {
     super(name, null);
@@ -17,5 +18,13 @@ public class Class extends Symbol {
 
   public void setClassScope(Scope classScope) {
     this.classScope = classScope;
+  }
+
+  public Class getSuperClass() {
+    return this.superClass;
+  }
+
+  public void setSuperClass(Class superClass) {
+    this.superClass = superClass;
   }
 }
