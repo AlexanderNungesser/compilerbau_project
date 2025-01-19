@@ -2,7 +2,6 @@ import AST.ASTNode;
 import AST.Type;
 import SymbolTable.*;
 import SymbolTable.Class;
-
 import java.util.ArrayList;
 import java.util.Objects;
 
@@ -225,13 +224,16 @@ public class TypeCheckVisitor {
 
   public ASTNode visitFncall(ASTNode node) {
     this.currentScope = node.getScope();
-    if (node.getValue() != null && (node.getValue().equals("print_int") || node.getValue().equals("print_char") || node.getValue().equals("print_bool"))) {
+    if (node.getValue() != null
+        && (node.getValue().equals("print_int")
+            || node.getValue().equals("print_char")
+            || node.getValue().equals("print_bool"))) {
       builtInFunctions(node);
       return node;
     }
 
-     Function function = (Function) currentScope.resolve(node.getValue(), "Function");
-    if(!node.children.isEmpty()) visitArgs(node.children.getFirst(), function.getParams());
+    Function function = (Function) currentScope.resolve(node.getValue(), "Function");
+    if (!node.children.isEmpty()) visitArgs(node.children.getFirst(), function.getParams());
 
     return node;
   }
@@ -239,9 +241,10 @@ public class TypeCheckVisitor {
   private ASTNode visitArgs(ASTNode node, ArrayList<ASTNode> params) {
     for (int i = 0; i < params.size(); i++) {
       ASTNode args = node.children.get(i);
-      String argType = getEndType(args); String paramType = getEndType(params.get(i));
-      if(!argType.equals(paramType)) {
-        if(typeIsValid(argType) && typeIsValid(paramType)) {
+      String argType = getEndType(args);
+      String paramType = getEndType(params.get(i));
+      if (!argType.equals(paramType)) {
+        if (typeIsValid(argType) && typeIsValid(paramType)) {
           break;
         }
         System.out.println("Error: Argument type mismatch in function");
@@ -252,10 +255,10 @@ public class TypeCheckVisitor {
   }
 
   private void builtInFunctions(ASTNode node) {
-    if(node.children.getFirst().children.size() != 1){
+    if (node.children.getFirst().children.size() != 1) {
       System.out.println("Error: builtInFunction not called with 1 parameter");
     }
-    if(!typeIsValid(getEndType(node.children.getFirst().children.getFirst()))) {
+    if (!typeIsValid(getEndType(node.children.getFirst().children.getFirst()))) {
       System.out.println("Error builtInFunction was not called with built in type");
     }
   }
@@ -494,12 +497,12 @@ public class TypeCheckVisitor {
     if (node.getType() == Type.ID) {
       Symbol objectSymbol = currentScope.resolve(node.getValue());
       Symbol classSymbol = currentScope.resolve(objectSymbol.type);
-      if(classSymbol instanceof Class && ((Class) classSymbol).getSuperClass() != null) {
+      if (classSymbol instanceof Class && ((Class) classSymbol).getSuperClass() != null) {
         while (((Class) classSymbol).getSuperClass() != null) {
           classSymbol = ((Class) classSymbol).getSuperClass();
         }
       }
-        return classSymbol.name;
+      return classSymbol.name;
     }
     if (!node.children.isEmpty()) {
       boolean isRef = false;
@@ -516,8 +519,8 @@ public class TypeCheckVisitor {
       if (node.getType() == Type.CLASSTYPE) {
         Symbol objectSymbol = currentScope.resolve(node.getValue());
         Class classSymbol = (Class) currentScope.resolve(objectSymbol.type);
-        if(classSymbol.getSuperClass() != null) {
-          while(classSymbol.getSuperClass() != null) {
+        if (classSymbol.getSuperClass() != null) {
+          while (classSymbol.getSuperClass() != null) {
             classSymbol = classSymbol.getSuperClass();
           }
           return classSymbol.name;

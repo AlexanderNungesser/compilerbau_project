@@ -1,7 +1,6 @@
 package SymbolTable;
 
 import AST.ASTNode;
-
 import java.util.ArrayList;
 
 public class Function extends Symbol {
