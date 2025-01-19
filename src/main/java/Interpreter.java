@@ -82,7 +82,7 @@ public class Interpreter {
     int dim = firstChild.children.size();
     int[] sizes = new int[dim];
     for (int i = 0; i < dim; i++) {
-      sizes[i] = (int) eval(firstChild.children.get(i));
+      sizes[i] = convertToInteger(eval(firstChild.children.get(i)));
     }
     Object array =
             switch (type) {
@@ -96,8 +96,9 @@ public class Interpreter {
   }
 
   public Object evalVarDecl(ASTNode node) {
-    String name = node.children.getFirst().getValue();
-    Type type = node.children.getFirst().getType();
+    ASTNode firstChild = node.children.getFirst();
+    String name = firstChild.getValue();
+    Type type = firstChild.getType();
     Object value =
         switch (type) {
           case Type.INT -> 0;
@@ -106,16 +107,29 @@ public class Interpreter {
           default -> null;
         };
     if (node.children.size() == 2) {
-      value = eval(node.children.getLast());
+      ASTNode secondChild = node.children.getLast();
+      value = switch (type) {
+        case Type.INT -> convertToInteger(eval(secondChild));
+        case Type.BOOL -> convertToBoolean(eval(secondChild));
+        case Type.CHAR -> convertToCharacter(eval(secondChild));
+        default -> eval(secondChild);
+      };
     }
     this.env.define(name, value);
     return null;
   }
 
   public Object evalVarRef(ASTNode node) {
-    String name = node.children.getFirst().getValue();
-    Type type = node.children.getFirst().getType();
-    // TODO
+    ASTNode firstChild = node.children.getFirst();
+    String name = firstChild.getValue();
+    Type type = firstChild.getType();
+    ASTNode secondChild = node.children.getLast();
+    if (secondChild.getType() == Type.ID) {
+      this.env.define(name, secondChild.getValue());
+    }else {
+      Object obj = eval(node.children.getLast());
+      this.env.define(name, obj);
+    }
     return null;
   }
 
@@ -129,7 +143,7 @@ public class Interpreter {
   public Object evalIf(ASTNode node) {
     for (int i = 0; i < node.children.size(); i++) {
       if (node.children.get(i).getType() != Type.BLOCK) {
-        if ((boolean) eval(node.children.get(i))) {
+        if (convertToBoolean(eval(node.children.get(i)))) {
           eval(node.children.get(i + 1));
           return null;
         }
