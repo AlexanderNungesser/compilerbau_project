@@ -381,7 +381,7 @@ public class Interpreter {
   }
 
   public Object evalWhile(ASTNode node) {
-    if (convertToBoolean(eval(node.children.getFirst()))) {
+    while (convertToBoolean(eval(node.children.getFirst()))) {
       eval(node.children.getLast());
     }
     return null;
