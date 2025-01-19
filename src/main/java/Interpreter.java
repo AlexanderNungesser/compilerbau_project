@@ -86,10 +86,11 @@ public class Interpreter {
 
   public Object evalFnCall(ASTNode node) {
     if (node.getScope().resolve(node.getValue()) instanceof BuiltIn) {
+      ASTNode args = node.children.getFirst();
       switch (node.getValue()) {
-        case "print_int" -> print_int(eval(node.children.getFirst()));
-        case "print_char" -> print_char(eval(node.children.getFirst()));
-        case "print_bool" -> print_bool(eval(node.children.getFirst()));
+        case "print_int" -> print_int(eval(args.children.getFirst()));
+        case "print_char" -> print_char(eval(args.children.getFirst()));
+        case "print_bool" -> print_bool(eval(args.children.getFirst()));
       }
       return null;
     }

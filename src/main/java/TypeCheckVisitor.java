@@ -224,10 +224,7 @@ public class TypeCheckVisitor {
 
   public ASTNode visitFncall(ASTNode node) {
     this.currentScope = node.getScope();
-    if (node.getValue() != null
-        && (node.getValue().equals("print_int")
-            || node.getValue().equals("print_char")
-            || node.getValue().equals("print_bool"))) {
+    if (node.getValue() != null && currentScope.resolve(node.getValue()) instanceof BuiltIn) {
       builtInFunctions(node);
       return node;
     }
