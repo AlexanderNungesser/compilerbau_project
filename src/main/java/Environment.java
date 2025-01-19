@@ -5,6 +5,8 @@ public class Environment {
   public Environment enclosingEnv;
   public Map<String, Object> values = new HashMap<String, Object>();
 
+  public static int indentLevel = 0;
+
   public Environment(Environment enclosing) {
     this.enclosingEnv = enclosing;
   }
@@ -31,4 +33,15 @@ public class Environment {
       return null;
     }
   }
+
+  public void print(){
+    System.out.println("  ".repeat(indentLevel)+"Environment {");
+    indentLevel++;
+    for (Map.Entry<String, Object> entry : values.entrySet()) {
+      System.out.println("  ".repeat(indentLevel)+entry.getKey() + ": " + entry.getValue());
+    }
+    indentLevel--;
+    System.out.println("  ".repeat(indentLevel)+"}");
+  }
+
 }
