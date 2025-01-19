@@ -56,6 +56,7 @@ public class Interpreter {
       case Type.NOT:
         return !convertToBoolean(eval(node));
       case Type.DEC_INC:
+        evalDecInc(node);
         break;
       case Type.ADD, Type.SUB, Type.MUL, Type.DIV, Type.MOD:
         return evaluateCalculation(node);
@@ -76,6 +77,43 @@ public class Interpreter {
     return null;
   }
 
+  public Object evalDecInc(ASTNode node) {
+    ASTNode firstChild = node.children.getFirst();
+    ASTNode lastChild = node.children.getLast();
+    if (firstChild.getType() == Type.DEC) {
+      Object obj = eval(lastChild);
+      Object value =
+          switch (obj) {
+            case Integer i -> i - 1;
+            case Boolean b -> convertToBoolean(convertToInteger(b) - 1);
+            case Character c -> c - 1;
+            default -> throw new IllegalStateException("Unexpected value: " + obj);
+          };
+      this.env.assign(lastChild.getValue(), value);
+      return value;
+    } else if (firstChild.getType() == Type.INC) {
+      Object obj = eval(lastChild);
+      Object value =
+          switch (obj) {
+            case Integer i -> i + 1;
+            case Boolean b -> convertToBoolean(convertToInteger(b) + 1);
+            case Character c -> c + 1;
+            default -> throw new IllegalStateException("Unexpected value: " + obj);
+          };
+      this.env.assign(lastChild.getValue(), value);
+      return value;
+    } else if (lastChild.getType() == Type.DEC || lastChild.getType() == Type.INC) {
+      Object obj = eval(firstChild);
+      return switch (obj) {
+        case Integer i -> i;
+        case Boolean b -> convertToBoolean(convertToInteger(b));
+        case Character c -> c;
+        default -> throw new IllegalStateException("Unexpected value: " + obj);
+      };
+    }
+    return null;
+  }
+
   public Object evalArrayDecl(ASTNode node) {
     ASTNode firstChild = node.children.getFirst();
     String name = firstChild.getValue();
@@ -86,12 +124,12 @@ public class Interpreter {
       sizes[i] = convertToInteger(eval(firstChild.children.get(i)));
     }
     Object array =
-            switch (type) {
-              case Type.INT -> Array.newInstance(int.class, sizes);
-              case Type.BOOL -> Array.newInstance(boolean.class, sizes);
-              case Type.CHAR -> Array.newInstance(char.class, sizes);
-              default -> Array.newInstance(Object.class, sizes);
-            };
+        switch (type) {
+          case Type.INT -> Array.newInstance(int.class, sizes);
+          case Type.BOOL -> Array.newInstance(boolean.class, sizes);
+          case Type.CHAR -> Array.newInstance(char.class, sizes);
+          default -> Array.newInstance(Object.class, sizes);
+        };
     env.define(name, array);
     return null;
   }
@@ -109,25 +147,52 @@ public class Interpreter {
         };
     if (node.children.size() == 2) {
       ASTNode secondChild = node.children.getLast();
-      value = switch (type) {
-        case Type.INT -> convertToInteger(eval(secondChild));
-        case Type.BOOL -> convertToBoolean(eval(secondChild));
-        case Type.CHAR -> convertToCharacter(eval(secondChild));
-        default -> eval(secondChild);
-      };
+      value =
+          switch (type) {
+            case Type.INT -> convertToInteger(eval(secondChild));
+            case Type.BOOL -> convertToBoolean(eval(secondChild));
+            case Type.CHAR -> convertToCharacter(eval(secondChild));
+            default -> eval(secondChild);
+          };
     }
     this.env.define(name, value);
+    if (node.children.size() == 2) {
+      ASTNode secondChild = node.children.getLast();
+      if (secondChild.getType() == Type.DEC_INC) {
+        ASTNode lastChild = secondChild.children.getLast();
+        if (lastChild.getType() == Type.DEC) {
+          Object obj = eval(lastChild);
+          value =
+                  switch (obj) {
+                    case Integer i -> i - 1;
+                    case Boolean b -> convertToBoolean(convertToInteger(b) - 1);
+                    case Character c -> c - 1;
+                    default -> throw new IllegalStateException("Unexpected value: " + obj);
+                  };
+          this.env.assign(lastChild.getValue(), value);
+        } else if (lastChild.getType() == Type.INC) {
+          Object obj = eval(lastChild);
+          value =
+                  switch (obj) {
+                    case Integer i -> i + 1;
+                    case Boolean b -> convertToBoolean(convertToInteger(b) + 1);
+                    case Character c -> c + 1;
+                    default -> throw new IllegalStateException("Unexpected value: " + obj);
+                  };
+          this.env.assign(lastChild.getValue(), value);
+        }
+      }
+    }
     return null;
   }
 
   public Object evalVarRef(ASTNode node) {
     ASTNode firstChild = node.children.getFirst();
     String name = firstChild.getValue();
-    Type type = firstChild.getType();
     ASTNode secondChild = node.children.getLast();
     if (secondChild.getType() == Type.ID) {
       this.env.define(name, secondChild.getValue());
-    }else {
+    } else {
       Object obj = eval(node.children.getLast());
       this.env.define(name, obj);
     }
@@ -187,7 +252,7 @@ public class Interpreter {
     }
 
   public Object evalWhile(ASTNode node) {
-    if ((boolean) eval(node.children.getFirst())) {
+    if (convertToBoolean(eval(node.children.getFirst()))) {
       eval(node.children.getLast());
     }
     return null;
@@ -230,6 +295,7 @@ public class Interpreter {
       this.env = new Environment(this.env);
       evalChildren(node);
     } finally {
+      this.env.print();
       this.env = prevEnv;
     }
     return null;
