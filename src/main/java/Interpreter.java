@@ -1,10 +1,8 @@
 import AST.ASTNode;
 import AST.Type;
 import Environment.*;
-import java.lang.reflect.Array;
-
 import SymbolTable.BuiltIn;
-import jdk.jshell.spi.ExecutionControl;
+import java.lang.reflect.Array;
 
 public class Interpreter {
   Environment env;
@@ -93,6 +91,7 @@ public class Interpreter {
         case "print_char" -> print_char(eval(node.children.getFirst()));
         case "print_bool" -> print_bool(eval(node.children.getFirst()));
       }
+      return null;
     }
     Function fn = (Function) this.env.get(node.getValue());
     Environment prevEnv = this.env;
@@ -102,34 +101,37 @@ public class Interpreter {
           fn.node.children.stream()
               .filter(n -> n.getType() == Type.PARAMS)
               .findFirst()
-              .orElseThrow();
-      for (ASTNode arg : args.children) {
-        eval(arg);
-      }
-      this.env = new Environment(fn.closure);
-      for (int i = 0; i < args.children.size(); i++) {
-        this.env.define(params.children.get(i).getValue(), args.children.get(i));
+              .orElse(null);
+      if (params != null) {
+        for (ASTNode arg : args.children) {
+          eval(arg);
+        }
+        this.env = new Environment(fn.closure);
+        for (int i = 0; i < args.children.size(); i++) {
+          this.env.define(params.children.get(i).getValue(), args.children.get(i));
+        }
       }
     }
-    try {
-      eval(
-          fn.node.children.stream()
-              .filter(n -> n.getType() == Type.BLOCK)
-              .findFirst()
-              .orElseThrow(
-                  () ->
-                      new ExecutionControl.NotImplementedException(
-                          "Error: the function " + node.getValue() + " is not implemented")));
-    } catch (ExecutionControl.NotImplementedException e) {
-      throw new RuntimeException(e);
-    } finally {
-      this.env = prevEnv;
+    ASTNode block =
+        fn.node.children.stream().filter(n -> n.getType() == Type.BLOCK).findFirst().orElse(null);
+    if (block != null) {
+      eval(block);
     }
+
+    this.env = prevEnv;
+
     return null;
   }
 
   public Object evalFnDecl(ASTNode node) {
     ASTNode fnInfo = node.children.getFirst();
+    SymbolTable.Function func =
+        (SymbolTable.Function) node.getScope().resolve(fnInfo.children.getFirst().getValue());
+    if (func == null && node.children.getLast().getType() != Type.BLOCK) {
+      System.out.println(
+          "Error: the function " + fnInfo.children.getFirst().getValue() + " is not implemented");
+      return null;
+    }
     Function fn = new Function(node, this.env);
     this.env.define(fnInfo.children.getFirst().getValue(), fn);
     return null;
@@ -174,9 +176,10 @@ public class Interpreter {
   private void evalTrailingDecInc(ASTNode node) {
     Object value;
     if (node.getType() == Type.DEC_INC) {
+      ASTNode firstChild = node.children.getFirst();
       ASTNode lastChild = node.children.getLast();
       if (lastChild.getType() == Type.DEC) {
-        Object obj = eval(lastChild);
+        Object obj = eval(firstChild);
         value =
             switch (obj) {
               case Integer i -> i - 1;
@@ -184,9 +187,9 @@ public class Interpreter {
               case Character c -> c - 1;
               default -> throw new IllegalStateException("Unexpected value: " + obj);
             };
-        this.env.assign(lastChild.getValue(), value);
+        this.env.assign(firstChild.getValue(), value);
       } else if (lastChild.getType() == Type.INC) {
-        Object obj = eval(lastChild);
+        Object obj = eval(firstChild);
         value =
             switch (obj) {
               case Integer i -> i + 1;
@@ -194,7 +197,7 @@ public class Interpreter {
               case Character c -> c + 1;
               default -> throw new IllegalStateException("Unexpected value: " + obj);
             };
-        this.env.assign(lastChild.getValue(), value);
+        this.env.assign(firstChild.getValue(), value);
       }
     }
   }

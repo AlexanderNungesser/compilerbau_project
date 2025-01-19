@@ -402,7 +402,7 @@ public class FirstScopeVisitor {
     Symbol alreadyDeclared = currentScope.resolve(name);
     if (alreadyDeclared != null) {
       System.out.println("Error: such function " + name + " already exists");
-    } else {
+    } else if (fndecl.children.getLast().getType() == Type.BLOCK) {
       currentScope.bind(function);
     }
 
@@ -519,9 +519,9 @@ public class FirstScopeVisitor {
     mustHave.put(Type.OPERATOR, false);
     for (ASTNode child : classNode.children) {
       child.setScope(currentScope);
-      if(child.getValue() != null && child.getValue().equals("extends")) {
+      if (child.getValue() != null && child.getValue().equals("extends")) {
         Symbol superClass = currentScope.resolve(child.children.getFirst().getValue(), "Class");
-        if(superClass != null) classSymbol.setSuperClass((Class) superClass);
+        if (superClass != null) classSymbol.setSuperClass((Class) superClass);
       }
       switch (child.getType()) {
           //        case AST.Type.VAR_DECL: // Attribute
