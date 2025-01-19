@@ -1,21 +1,25 @@
 package SymbolTable;
 
+import AST.ASTNode;
+
+import java.util.ArrayList;
+
 public class Function extends Symbol {
-  private int paramCount = 0;
+  private ArrayList<ASTNode> params = new ArrayList<>();
 
   public Function(String name, String type) {
     super(name, type);
   }
 
   public int getParamCount() {
-    return this.paramCount;
+    return this.params.size();
   }
 
-  public void setParamCount(int paramCount) {
-    this.paramCount = paramCount;
+  public void setParam(ASTNode param) {
+    this.params.add(param);
   }
 
-  public void increaseParamCount() {
-    this.paramCount++;
+  public ArrayList<ASTNode> getParams() {
+    return params;
   }
 }
