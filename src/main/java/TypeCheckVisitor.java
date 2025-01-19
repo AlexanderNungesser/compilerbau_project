@@ -26,7 +26,7 @@ public class TypeCheckVisitor {
       case Type.FN_DECL:
         visitFndecl(node);
         break;
-      case Type.FN_CALL:
+      case Type.FN_CALL, Type.CONSTRUCTOR, Type.COPY_CONSTRUCTOR:
         visitFncall(node);
         break;
       case Type.VAR_DECL, Type.VAR_REF:
@@ -260,12 +260,6 @@ public class TypeCheckVisitor {
     }
   }
 
-  public ASTNode visitConstructor(ASTNode constructorNode, Symbol classSymbol) {
-    this.currentScope = constructorNode.getScope();
-
-    return constructorNode;
-  }
-
   public ASTNode visitProgram(ASTNode program) {
     this.currentScope = program.getScope();
     visitChildren(program);
@@ -446,6 +440,7 @@ public class TypeCheckVisitor {
   public ASTNode visitArrayItem(ASTNode node) {
     this.currentScope = node.getScope();
     String type = getEndType(node.children.getFirst());
+    this.currentScope = node.getScope();
     if (!typeIsValid(type)) {
       System.out.println("Error: type " + type + " must be built in type");
     }
