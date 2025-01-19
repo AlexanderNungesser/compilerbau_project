@@ -65,7 +65,7 @@ public class FirstScopeVisitor {
   }
 
   private void setChildrensScope(ASTNode node) {
-    for(ASTNode child : node.children) {
+    for (ASTNode child : node.children) {
       child.setScope(currentScope);
     }
   }
@@ -515,9 +515,9 @@ public class FirstScopeVisitor {
     for (ASTNode child : classNode.children) {
       child.setScope(currentScope);
       switch (child.getType()) {
-//        case Type.VAR_DECL: // Attribute
-//          visitVardecl(child);
-//          break;
+          //        case Type.VAR_DECL: // Attribute
+          //          visitVardecl(child);
+          //          break;
         case Type.CONSTRUCTOR:
           mustHave.put(Type.CONSTRUCTOR, true);
           break;
@@ -530,12 +530,12 @@ public class FirstScopeVisitor {
         case Type.OPERATOR:
           mustHave.put(Type.OPERATOR, true);
           break;
-//        case Type.FN_DECL: // Methoden
-//          visitFndecl(child);
-//          break;
-//        case Type.ABSTRACT_FN:
-//          visitAbstractFn(child);
-//          break;
+          //        case Type.FN_DECL: // Methoden
+          //          visitFndecl(child);
+          //          break;
+          //        case Type.ABSTRACT_FN:
+          //          visitAbstractFn(child);
+          //          break;
       }
     }
     if (!mustHave.get(Type.CONSTRUCTOR)) {

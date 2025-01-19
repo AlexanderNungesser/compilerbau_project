@@ -23,7 +23,7 @@ public class SecondScopeVisitor {
       case Type.BLOCK, Type.FN_DECL:
         visitChildren(node);
         break;
-        case Type.CLASS:
+      case Type.CLASS:
         visitClass(node);
         break;
       case Type.OBJ_USAGE:
@@ -103,7 +103,7 @@ public class SecondScopeVisitor {
         if (function instanceof BuiltIn) {
           params_count = 1;
         } else {
-          if(function instanceof Reference) {
+          if (function instanceof Reference) {
             function = ((Reference) function).getOrigin();
           }
           params_count = ((Function) function).getParamCount();
@@ -207,27 +207,27 @@ public class SecondScopeVisitor {
   }
 
   public ASTNode visitClass(ASTNode classNode) {
-        this.currentScope = classNode.getScope();
-        for (ASTNode child : classNode.children) {
-          switch (child.getType()) {
-            case Type.FN_DECL: // Methoden
-              visitChildren(child);
-              break;
-            case Type.CONSTRUCTOR:
-              visitConstructor(child, currentScope.resolve(classNode.getValue()));
-              break;
-            case Type.DESTRUCTOR:
-              visitDestructor(child, currentScope.resolve(classNode.getValue()));
-              break;
-            case Type.COPY_CONSTRUCTOR:
-              visitCopyConstructor(child, currentScope.resolve(classNode.getValue()));
-              break;
-            case Type.OPERATOR:
-              visitOperator(child, currentScope.resolve(classNode.getValue()));
-              break;
-          }
-        }
-        this.currentScope = this.currentScope.enclosingScope;
+    this.currentScope = classNode.getScope();
+    for (ASTNode child : classNode.children) {
+      switch (child.getType()) {
+        case Type.FN_DECL: // Methoden
+          visitChildren(child);
+          break;
+        case Type.CONSTRUCTOR:
+          visitConstructor(child, currentScope.resolve(classNode.getValue()));
+          break;
+        case Type.DESTRUCTOR:
+          visitDestructor(child, currentScope.resolve(classNode.getValue()));
+          break;
+        case Type.COPY_CONSTRUCTOR:
+          visitCopyConstructor(child, currentScope.resolve(classNode.getValue()));
+          break;
+        case Type.OPERATOR:
+          visitOperator(child, currentScope.resolve(classNode.getValue()));
+          break;
+      }
+    }
+    this.currentScope = this.currentScope.enclosingScope;
 
     return classNode;
   }
@@ -300,7 +300,6 @@ public class SecondScopeVisitor {
 
     visitChildren(destructorNode);
 
-
     return destructorNode;
   }
 
@@ -325,8 +324,9 @@ public class SecondScopeVisitor {
       return visit(classObject);
     }
 
-    if(node.getValue() != null &&( node.getValue().equals("this") || node.getValue().equals("*this"))) {
-      if(classObject.getValue().equals("this")) {
+    if (node.getValue() != null
+        && (node.getValue().equals("this") || node.getValue().equals("*this"))) {
+      if (classObject.getValue().equals("this")) {
         return null;
       }
       return node;
@@ -336,7 +336,7 @@ public class SecondScopeVisitor {
     Symbol classSymbol = currentScope.resolve(objectSymbol.type, "Class");
     Scope classScope = ((SymbolTable.Class) classSymbol).getClassScope();
 
-//    visit(node.children.getLast());
+    //    visit(node.children.getLast());
 
     return node;
   }
@@ -349,8 +349,9 @@ public class SecondScopeVisitor {
       return getSymbolOfObjUsage(classObject);
     }
 
-    if(node.getValue() != null &&( node.getValue().equals("this") || node.getValue().equals("*this"))) {
-      if(classObject.getValue().equals("this")) {
+    if (node.getValue() != null
+        && (node.getValue().equals("this") || node.getValue().equals("*this"))) {
+      if (classObject.getValue().equals("this")) {
         return null;
       }
       return currentScope.resolve(classObject.getValue());

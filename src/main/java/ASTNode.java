@@ -23,7 +23,9 @@ public class ASTNode {
     this.value = value;
   }
 
-  public Scope getScope() { return scope; }
+  public Scope getScope() {
+    return scope;
+  }
 
   public void setScope(Scope scope) {
     if (this.scope == null) {
@@ -66,7 +68,7 @@ public class ASTNode {
             + (isLast ? "'__" : "|--")
             + (this.value == null ? "" : " " + this.value)
             + (this.type == null ? "" : " (" + this.type.name() + ")")
-            + (this.scope == null ? " no " : " yes " ));
+            + (this.scope == null ? " no " : " yes "));
 
     // Anzeige der Kinder
     for (int i = 0; i < children.size(); i++) {

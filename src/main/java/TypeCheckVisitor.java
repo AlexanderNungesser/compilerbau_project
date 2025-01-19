@@ -101,8 +101,9 @@ public class TypeCheckVisitor {
       return visitObj_usage(classObject);
     }
 
-    if(node.getValue() != null &&( node.getValue().equals("this") || node.getValue().equals("*this"))) {
-      if(classObject.getValue().equals("this")) {
+    if (node.getValue() != null
+        && (node.getValue().equals("this") || node.getValue().equals("*this"))) {
+      if (classObject.getValue().equals("this")) {
         return null;
       }
       return currentScope.resolve(classObject.getValue());
@@ -111,7 +112,6 @@ public class TypeCheckVisitor {
     Symbol objectSymbol = currentScope.resolve(classObject.getValue());
     Symbol classSymbol = currentScope.resolve(objectSymbol.type, "Class");
     Scope classScope = ((SymbolTable.Class) classSymbol).getClassScope();
-
 
     String resolve = node.children.getLast().getValue().replace("(", "").replace(")", "");
     Symbol usedValueOfObject = classScope.resolve(resolve);
@@ -152,33 +152,33 @@ public class TypeCheckVisitor {
     return node;
   }
 
-
   public ASTNode visitFndecl(ASTNode node) {
     this.currentScope = node.getScope();
     this.currentScope = this.currentScope.innerScopes.getFirst();
     ASTNode returnTypeNode = node.children.getFirst();
     Type returnType = returnTypeNode.getType();
 
-    for(int i = 1; i < node.children.size(); i++) {
+    for (int i = 1; i < node.children.size(); i++) {
       ASTNode paramNode = node.children.get(i);
-      if(paramNode.getType() == Type.VAR_DECL) {
+      if (paramNode.getType() == Type.VAR_DECL) {
         ASTNode paramTypeNode = paramNode.children.getFirst();
         String paramType = paramTypeNode.getValue();
 
-        if(!typeIsValid(paramType) && returnType != Type.CLASSTYPE) {
+        if (!typeIsValid(paramType) && returnType != Type.CLASSTYPE) {
           System.out.println("Error: Invalid parameter type in function declaration: " + paramType);
         }
       }
     }
 
-    if (returnTypeNode.getType() != Type.VOID){
-      if(node.children.getLast().getType() == Type.BLOCK){
-        if(!visitReturn(node.children.getLast(), returnType.name().toLowerCase())){
-          System.out.println("Error: Return from type " + returnType.name().toLowerCase() + " expected.");
+    if (returnTypeNode.getType() != Type.VOID) {
+      if (node.children.getLast().getType() == Type.BLOCK) {
+        if (!visitReturn(node.children.getLast(), returnType.name().toLowerCase())) {
+          System.out.println(
+              "Error: Return from type " + returnType.name().toLowerCase() + " expected.");
         }
       }
     }
-    if(node.children.getLast().getType() == Type.BLOCK){
+    if (node.children.getLast().getType() == Type.BLOCK) {
       visit(node.children.getLast());
     }
     this.currentScope = this.currentScope.enclosingScope;
@@ -187,27 +187,33 @@ public class TypeCheckVisitor {
   }
 
   public boolean visitReturn(ASTNode node, String methodType) {
-        for (ASTNode child : node.children) {
-          this.currentScope = child.getScope();
-          if (child.getType() == Type.RETURN) {
-            if (child.children.isEmpty()) {
-              if (!methodType.equals("void")) {
-                System.out.println("Error: Function expects return type " + methodType + ", but got void.");
-              }
-              return true;
-            } else {
-              String returnType = getEndType(child.children.getFirst());
-              if (!methodType.equals(returnType)) {
-                System.out.println("Error: Return type mismatch. Expected " + methodType + ", but got " + returnType + ".");
-              }
-              return true;
-            }
+    for (ASTNode child : node.children) {
+      this.currentScope = child.getScope();
+      if (child.getType() == Type.RETURN) {
+        if (child.children.isEmpty()) {
+          if (!methodType.equals("void")) {
+            System.out.println(
+                "Error: Function expects return type " + methodType + ", but got void.");
           }
-
-          if (visitReturn(child, methodType)) {
-            return true;
+          return true;
+        } else {
+          String returnType = getEndType(child.children.getFirst());
+          if (!methodType.equals(returnType)) {
+            System.out.println(
+                "Error: Return type mismatch. Expected "
+                    + methodType
+                    + ", but got "
+                    + returnType
+                    + ".");
           }
+          return true;
         }
+      }
+
+      if (visitReturn(child, methodType)) {
+        return true;
+      }
+    }
 
     return false;
   }
@@ -275,7 +281,7 @@ public class TypeCheckVisitor {
         break;
       default:
         secondType = getEndType(secondChild);
-        if(typeIsValid(secondType) && typeIsValid(firstType)) {
+        if (typeIsValid(secondType) && typeIsValid(firstType)) {
           break;
         }
         if (!firstType.equals(secondType)) {
