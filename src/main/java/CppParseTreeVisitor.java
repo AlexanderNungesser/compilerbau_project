@@ -95,9 +95,9 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
       type.addChild(visit(ctx.expr(i)));
     }
     node.addChild(type);
-    if(ctx.array_item() != null){
+    if (ctx.array_item() != null) {
       node.addChild(visit(ctx.array_item()));
-    }else{
+    } else {
       node.addChild(new ASTNode(Type.ID, ctx.ID(1).getText()));
     }
     return node;
@@ -467,7 +467,7 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
 
   @Override
   public ASTNode visitChar(CppParser.CharContext ctx) {
-    return new ASTNode(Type.CHAR, ctx.getText());
+    return new ASTNode(Type.CHAR, ctx.getText().split("")[1]);
   }
 
   @Override
