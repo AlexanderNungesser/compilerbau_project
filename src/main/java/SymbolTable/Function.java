@@ -1,21 +1,19 @@
 package SymbolTable;
 
+import java.util.ArrayList;
+
 public class Function extends Symbol {
-  private int paramCount = 0;
+  private ArrayList<Symbol> params = new ArrayList<>();
 
   public Function(String name, String type) {
     super(name, type);
   }
 
   public int getParamCount() {
-    return this.paramCount;
+    return this.params.size();
   }
 
-  public void setParamCount(int paramCount) {
-    this.paramCount = paramCount;
-  }
-
-  public void increaseParamCount() {
-    this.paramCount++;
+  public void setParam(Symbol param) {
+    this.params.add(param);
   }
 }

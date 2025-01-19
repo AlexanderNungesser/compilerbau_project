@@ -411,17 +411,14 @@ public class FirstScopeVisitor {
     currentScope = newScope;
 
     for (ASTNode child : fndecl.children) {
-      if (child.getType() == Type.PARAMS) {
-        for (ASTNode param : child.children) {
-          function.increaseParamCount();
-        }
-      }
-    }
-
-    for (ASTNode child : fndecl.children) {
       child.setScope(currentScope);
       if (child.getType() == Type.PARAMS) {
         visitParams(child);
+
+        for (ASTNode param : child.children) {
+          Symbol paramSymbol = currentScope.resolve(param.getValue());
+          function.setParam(paramSymbol);
+        }
       }
       if (child.getType() == Type.BLOCK) {
         visitBlock(child);
