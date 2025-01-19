@@ -133,11 +133,20 @@ public class TypeCheckVisitor {
       return visitObj_usage(classObject);
     }
 
+    if(node.getValue() != null &&( node.getValue().equals("this") || node.getValue().equals("*this"))) {
+      if(classObject.getValue().equals("this")) {
+        return null;
+      }
+      return currentScope.resolve(classObject.getValue());
+    }
+
     Symbol objectSymbol = currentScope.resolve(classObject.getValue());
-    Symbol classSymbol = currentScope.resolve(objectSymbol.type);
+    Symbol classSymbol = currentScope.resolve(objectSymbol.type, "Class");
     Scope classScope = ((SymbolTable.Class) classSymbol).getClassScope();
 
-    Symbol usedValueOfObject = classScope.resolve(node.children.getLast().getValue());
+
+    String resolve = node.children.getLast().getValue().replace("(", "").replace(")", "");
+    Symbol usedValueOfObject = classScope.resolve(resolve);
     return usedValueOfObject;
   }
 
@@ -254,6 +263,7 @@ public class TypeCheckVisitor {
   public ASTNode visitProgram(ASTNode program) {
     this.currentScope = program.getScope();
     visitChildren(program);
+    this.currentScope = program.getScope();
     return program;
   }
 

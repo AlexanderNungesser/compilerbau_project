@@ -21,6 +21,12 @@ public:     // es reicht, wenn alles public ist (hier nur, damit das Beispiel mi
     C() { value = 0; }
     C(int x) { value = x; }
 
+    int foo() {
+            int b = 3;
+            b = b + 5;
+            return b;
+        }
+
     int value;
 };
 
@@ -93,7 +99,7 @@ int main() {
         x.value = 9;
         print_int(x.value);     // 9
         int zahl;
-        zahl = x.value + '1' + true + x;
+        zahl = x.value + '1' + true + x.foo();
 
         C y(x);
         print_int(x.value);     // 9

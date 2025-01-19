@@ -45,6 +45,7 @@ public class SecondScopeVisitor {
 
   public ASTNode visitProgram(ASTNode program) {
     visitChildren(program);
+    this.currentScope = program.getScope();
     return program;
   }
 
@@ -324,11 +325,18 @@ public class SecondScopeVisitor {
       return visit(classObject);
     }
 
+    if(node.getValue() != null &&( node.getValue().equals("this") || node.getValue().equals("*this"))) {
+      if(classObject.getValue().equals("this")) {
+        return null;
+      }
+      return node;
+    }
+
     Symbol objectSymbol = currentScope.resolve(classObject.getValue());
-    Symbol classSymbol = currentScope.resolve(objectSymbol.type);
+    Symbol classSymbol = currentScope.resolve(objectSymbol.type, "Class");
     Scope classScope = ((SymbolTable.Class) classSymbol).getClassScope();
 
-    visit(node.children.getLast());
+//    visit(node.children.getLast());
 
     return node;
   }

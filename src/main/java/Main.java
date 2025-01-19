@@ -20,7 +20,7 @@ public class Main {
 
   public static void main(String... args) throws IOException {
 
-    String relativePath = "src/main/antlr/test_files/func.cpp";
+    String relativePath = "src/main/antlr/test_files/refs.cpp";
 
     String input = readFileWithPaths(relativePath);
     if (input != null) {
