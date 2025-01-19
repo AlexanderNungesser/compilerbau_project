@@ -90,6 +90,8 @@ public class Interpreter {
     if (node.getScope().resolve(node.getValue()) instanceof BuiltIn) {
       switch (node.getValue()) {
         case "print_int" -> print_int(eval(node.children.getFirst()));
+        case "print_char" -> print_char(eval(node.children.getFirst()));
+        case "print_bool" -> print_bool(eval(node.children.getFirst()));
       }
     }
     Function fn = (Function) this.env.get(node.getValue());
