@@ -28,6 +28,9 @@ public class SecondScopeVisitor {
       case Type.CLASS:
         visitClass(node);
         break;
+      case Type.ARRAY_ITEM:
+        visitArrayitem(node);
+        break;
       case Type.OBJ_USAGE:
         visitObjUsage(node);
         break;
@@ -43,6 +46,12 @@ public class SecondScopeVisitor {
         break;
     }
     return node;
+  }
+
+  private void setChildrensScope(ASTNode node) {
+    for (ASTNode child : node.children) {
+      child.setScope(currentScope);
+    }
   }
 
   public ASTNode visitProgram(ASTNode program) {
@@ -121,6 +130,14 @@ public class SecondScopeVisitor {
     }
 
     return fncall;
+  }
+
+  public ASTNode visitArrayitem(ASTNode node) {
+    this.currentScope = node.getScope();
+    setChildrensScope(node);
+    visitChildren(node);
+
+    return node;
   }
 
   public ASTNode visitArgs(ASTNode args) {

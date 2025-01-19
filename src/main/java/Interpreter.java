@@ -264,9 +264,25 @@ public class Interpreter {
       indices[i] = convertToInteger(eval(node.children.getFirst().children.get(i)));
     }
 
-    if (indices.length != sizes.length) {
-      System.out.println("Error: Dimension mismatch");
-      return null;
+    if (arrayNameNode.children.isEmpty()) {
+      if (indices.length != sizes.length) {
+        System.out.println("Error: Dimension mismatch");
+        return null;
+      }
+    } else if (arrayNameNode.children.getFirst().getType() != Type.ID){
+      int index = Integer.parseInt(arrayNameNode.children.getFirst().getValue());
+
+      if(index >= sizes.length || index < 0) {
+        System.out.println(
+                "Error: Index "
+                        + index
+                        + " out of bounds for dimensions of array "
+                        + arrayName);
+        return null;
+      } else if (indices[index] != sizes[index]) {
+        System.out.println("Error: Dimension mismatch");
+        return null;
+      }
     }
 
     for (int i = 0; i < indices.length; i++) {
@@ -300,6 +316,7 @@ public class Interpreter {
               case Type.CHAR -> Array.newInstance(char.class, sizes);
               default -> Array.newInstance(Object.class, sizes);
             };
+
 
 
     env.define(name, array);

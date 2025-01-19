@@ -440,6 +440,7 @@ public class TypeCheckVisitor {
   public ASTNode visitArrayItem(ASTNode node) {
     this.currentScope = node.getScope();
     String type = getEndType(node.children.getFirst());
+    this.currentScope = node.getScope();
     if (!typeIsValid(type)) {
       System.out.println("Error: type " + type + " must be built in type");
     }
