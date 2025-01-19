@@ -75,38 +75,6 @@ public class TypeCheckVisitor {
     return node;
   }
 
-//  private ASTNode visitScopes(ASTNode node) {
-//    for (Scope scope : this.currentScope.innerScopes) {
-//      if (!visitedScopes.contains(scope)) {
-//        this.currentScope = scope;
-//        if (node.getType() == Type.CLASS) {
-//          for (ASTNode child : node.children) {
-//            switch (child.getType()) {
-//              case Type.FN_DECL: // Methoden
-//                visitScopes(child);
-//                break;
-//              case Type.CONSTRUCTOR:
-//                visitConstructor(child, currentScope.resolve(node.getValue()));
-//                break;
-//                //                        case Type.DESTRUCTOR:
-//                //                            visitDestructor(child,
-//                // currentScope.resolve(classNode.getValue()));
-//                //                            break;
-//            }
-//          }
-//          this.currentScope = this.currentScope.enclosingScope;
-//          visitedScopes.add(scope);
-//          break;
-//        } else {
-//          visitChildren(node);
-//        }
-//        this.currentScope = this.currentScope.enclosingScope;
-//        visitedScopes.add(scope);
-//      }
-//    }
-//    return node;
-//  }
-
   public ASTNode visitExpr(ASTNode node) {
     this.currentScope = node.getScope();
     Symbol variable;

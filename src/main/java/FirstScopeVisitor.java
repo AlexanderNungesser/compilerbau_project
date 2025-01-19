@@ -318,6 +318,12 @@ public class FirstScopeVisitor {
     node.setScope(currentScope);
     setChildrensScope(node);
     ASTNode lastChild = node.children.getLast();
+
+    if (lastChild.getType() != Type.ID && lastChild.getType() != Type.OBJ_USAGE) {
+      System.out.println("Error: reference got assigned to a value");
+      return null;
+    }
+
     Symbol lastSymbol;
     if (lastChild.getType() == Type.OBJ_USAGE) {
       lastSymbol = visitObj_usage(lastChild);
