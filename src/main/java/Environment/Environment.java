@@ -37,7 +37,7 @@ public class Environment {
   }
 
   public void print() {
-    System.out.println("  ".repeat(indentLevel) + "Environment.Environment {");
+    System.out.println("  ".repeat(indentLevel) + "Environment {");
     indentLevel++;
     for (Map.Entry<String, Object> entry : values.entrySet()) {
       System.out.println("  ".repeat(indentLevel) + entry.getKey() + ": " + entry.getValue());

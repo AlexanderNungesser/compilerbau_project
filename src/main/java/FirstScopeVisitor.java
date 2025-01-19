@@ -369,7 +369,8 @@ public class FirstScopeVisitor {
       //      for (int i = 0; i < node.children.size(); i++) {
       //        AST.ASTNode expr = visitExpr(node.children.get(i));
       //        // TODO was wenn expr kein Int?
-      //        if (expr.getType() == AST.Type.INT && ((Array) symbol).length[i] instanceof Integer) {
+      //        if (expr.getType() == AST.Type.INT && ((Array) symbol).length[i] instanceof Integer)
+      // {
       //          if (((Array) symbol).length[i] <= Integer.parseInt(expr.getValue())
       //                  || Integer.parseInt(expr.getValue()) < 0) {
       //            System.out.println(

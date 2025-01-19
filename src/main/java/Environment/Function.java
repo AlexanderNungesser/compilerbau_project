@@ -1,11 +1,13 @@
 package Environment;
+
 import AST.ASTNode;
 
-public class Function extends Environment{
-    ASTNode node;
+public class Function {
+  public ASTNode node;
+  public Environment closure;
 
-    public Function(ASTNode node, Environment closure){
-        super(closure);
-        this.node = node;
-    }
+  public Function(ASTNode node, Environment closure) {
+    this.closure = closure;
+    this.node = node;
+  }
 }

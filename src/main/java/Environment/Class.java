@@ -2,12 +2,12 @@ package Environment;
 
 import AST.ASTNode;
 
-public class Class extends Environment{
+public class Class {
+  public ASTNode node;
+  public Environment closure;
 
-    ASTNode node;
-
-    public Class(ASTNode node, Environment closure) {
-        super(closure);
-        this.node = node;
-    }
+  public Class(ASTNode node, Environment closure) {
+    this.node = node;
+    this.closure = closure;
+  }
 }

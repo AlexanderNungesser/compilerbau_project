@@ -1,8 +1,10 @@
 import AST.ASTNode;
 import AST.Type;
 import Environment.*;
-
 import java.lang.reflect.Array;
+
+import SymbolTable.BuiltIn;
+import jdk.jshell.spi.ExecutionControl;
 
 public class Interpreter {
   Environment env;
@@ -33,6 +35,7 @@ public class Interpreter {
         evalFnDecl(node);
         break;
       case Type.FN_CALL:
+        evalFnCall(node);
         break;
       case Type.VAR_DECL:
         evalVarDecl(node);
@@ -75,10 +78,50 @@ public class Interpreter {
       case Type.CHAR:
         return node.getValue().charAt(0);
       case ID:
-        return env.get(node.getValue());
+        return this.env.get(node.getValue());
       default:
         evalChildren(node);
         break;
+    }
+    return null;
+  }
+
+  public Object evalFnCall(ASTNode node) {
+    if (node.getScope().resolve(node.getValue()) instanceof BuiltIn) {
+      switch (node.getValue()) {
+        case "print_int" -> print_int(eval(node.children.getFirst()));
+      }
+    }
+    Function fn = (Function) this.env.get(node.getValue());
+    Environment prevEnv = this.env;
+    if (!node.children.isEmpty()) {
+      ASTNode args = node.children.getFirst();
+      ASTNode params =
+          fn.node.children.stream()
+              .filter(n -> n.getType() == Type.PARAMS)
+              .findFirst()
+              .orElseThrow();
+      for (ASTNode arg : args.children) {
+        eval(arg);
+      }
+      this.env = new Environment(fn.closure);
+      for (int i = 0; i < args.children.size(); i++) {
+        this.env.define(params.children.get(i).getValue(), args.children.get(i));
+      }
+    }
+    try {
+      eval(
+          fn.node.children.stream()
+              .filter(n -> n.getType() == Type.BLOCK)
+              .findFirst()
+              .orElseThrow(
+                  () ->
+                      new ExecutionControl.NotImplementedException(
+                          "Error: the function " + node.getValue() + " is not implemented")));
+    } catch (ExecutionControl.NotImplementedException e) {
+      throw new RuntimeException(e);
+    } finally {
+      this.env = prevEnv;
     }
     return null;
   }
@@ -452,20 +495,18 @@ public class Interpreter {
     return chr;
   }
 
-  private void print_int(Object object){
+  private void print_int(Object object) {
     int i = convertToInteger(object);
     System.out.println("Print int: " + i);
   }
-  private void print_char(Object object){
+
+  private void print_char(Object object) {
     char c = convertToCharacter(object);
     System.out.println("Print char: " + c);
   }
-  private void print_bool(Object object){
+
+  private void print_bool(Object object) {
     boolean b = convertToBoolean(object);
     System.out.println("Print bool: " + b);
   }
-
-
-
-
 }
