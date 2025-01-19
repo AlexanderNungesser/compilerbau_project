@@ -44,7 +44,8 @@ public class Interpreter {
       case Type.ARRAY_DECL:
         evalArrayDecl(node);
         break;
-      case Type.ARRAY_ITEM:
+        case Type.ARRAY_ITEM:
+        evalArrayItem(node);
         break;
       case Type.GREATER, Type.GREATER_EQUAL, Type.LESS, Type.LESS_EQUAL, Type.EQUAL, Type.NOT_EQUAL:
         evaluateComparison(node);
@@ -132,6 +133,58 @@ public class Interpreter {
     }
     return null;
   }
+
+  public Object evalArrayItem(ASTNode node) {
+      String arrayName = node.getValue();
+      Object arrayObject = this.env.get(arrayName);
+
+      if (arrayObject == null) {
+          System.out.println("Error: array " + arrayName + " not found in the current environment");
+          return null;
+      }
+
+      int[] sizes = getArraySizes(arrayObject);
+
+      for (int i = 0; i < node.children.size(); i++) {
+          ASTNode indexNode = node.children.get(i);
+          Object evaluatedIndex = eval(indexNode);
+          int index = convertToInteger(evaluatedIndex);
+
+          if (index < 0 || index >= sizes[i]) {
+              System.out.println("Error: index " + index + " is out of bounds for dimension " + (i + 1) +
+                      " of array " + arrayName + " (size: " + sizes[i] + ")");
+              return null;
+          }
+      }
+
+      System.out.println("Accessing array " + arrayName + " with valid indices.");
+
+      return null;
+  }
+
+    public static int[] getArraySizes(Object array) {
+        int dimensions = 0;
+        Class<?> clazz = array.getClass();
+
+        // Anzahl der Dimensionen ermitteln
+        while (clazz.isArray()) {
+            dimensions++;
+            clazz = clazz.getComponentType();
+        }
+
+        int[] sizes = new int[dimensions];
+        Object currentArray = array;
+
+        // Größen der einzelnen Dimensionen ermitteln
+        for (int i = 0; i < dimensions; i++) {
+            sizes[i] = Array.getLength(currentArray);
+            if (sizes[i] > 0) {
+                currentArray = Array.get(currentArray, 0);
+            }
+        }
+
+        return sizes;
+    }
 
   public Object evalWhile(ASTNode node) {
     if ((boolean) eval(node.children.getFirst())) {

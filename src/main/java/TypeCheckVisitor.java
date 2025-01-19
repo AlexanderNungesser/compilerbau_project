@@ -75,38 +75,6 @@ public class TypeCheckVisitor {
     return node;
   }
 
-//  private ASTNode visitScopes(ASTNode node) {
-//    for (Scope scope : this.currentScope.innerScopes) {
-//      if (!visitedScopes.contains(scope)) {
-//        this.currentScope = scope;
-//        if (node.getType() == Type.CLASS) {
-//          for (ASTNode child : node.children) {
-//            switch (child.getType()) {
-//              case Type.FN_DECL: // Methoden
-//                visitScopes(child);
-//                break;
-//              case Type.CONSTRUCTOR:
-//                visitConstructor(child, currentScope.resolve(node.getValue()));
-//                break;
-//                //                        case Type.DESTRUCTOR:
-//                //                            visitDestructor(child,
-//                // currentScope.resolve(classNode.getValue()));
-//                //                            break;
-//            }
-//          }
-//          this.currentScope = this.currentScope.enclosingScope;
-//          visitedScopes.add(scope);
-//          break;
-//        } else {
-//          visitChildren(node);
-//        }
-//        this.currentScope = this.currentScope.enclosingScope;
-//        visitedScopes.add(scope);
-//      }
-//    }
-//    return node;
-//  }
-
   public ASTNode visitExpr(ASTNode node) {
     this.currentScope = node.getScope();
     Symbol variable;
@@ -133,11 +101,20 @@ public class TypeCheckVisitor {
       return visitObj_usage(classObject);
     }
 
+    if(node.getValue() != null &&( node.getValue().equals("this") || node.getValue().equals("*this"))) {
+      if(classObject.getValue().equals("this")) {
+        return null;
+      }
+      return currentScope.resolve(classObject.getValue());
+    }
+
     Symbol objectSymbol = currentScope.resolve(classObject.getValue());
-    Symbol classSymbol = currentScope.resolve(objectSymbol.type);
+    Symbol classSymbol = currentScope.resolve(objectSymbol.type, "Class");
     Scope classScope = ((SymbolTable.Class) classSymbol).getClassScope();
 
-    Symbol usedValueOfObject = classScope.resolve(node.children.getLast().getValue());
+
+    String resolve = node.children.getLast().getValue().replace("(", "").replace(")", "");
+    Symbol usedValueOfObject = classScope.resolve(resolve);
     return usedValueOfObject;
   }
 
@@ -254,6 +231,7 @@ public class TypeCheckVisitor {
   public ASTNode visitProgram(ASTNode program) {
     this.currentScope = program.getScope();
     visitChildren(program);
+    this.currentScope = program.getScope();
     return program;
   }
 

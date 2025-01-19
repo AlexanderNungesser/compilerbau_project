@@ -21,7 +21,7 @@ int &ref = aclass.value;
 int i;
  i = 5 == 4;
 int arr[5];
-int j = arr[0];
+int j = arr[6];
 A u = aclass;
  i = true <= 5;
 
