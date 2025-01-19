@@ -1,3 +1,5 @@
+import java.lang.reflect.Array;
+
 public class Interpreter {
   Environment env;
 
@@ -40,6 +42,7 @@ public class Interpreter {
       case Type.ARRAY_INIT:
         break;
       case Type.ARRAY_DECL:
+        evalArrayDecl(node);
         break;
       case Type.ARRAY_ITEM:
         break;
@@ -63,10 +66,32 @@ public class Interpreter {
         return Boolean.parseBoolean(node.getValue());
       case Type.CHAR:
         return node.getValue().charAt(0);
+      case ID:
+        return env.get(node.getValue());
       default:
         evalChildren(node);
         break;
     }
+    return null;
+  }
+
+  public Object evalArrayDecl(ASTNode node) {
+    ASTNode firstChild = node.children.getFirst();
+    String name = firstChild.getValue();
+    Type type = firstChild.getType();
+    int dim = firstChild.children.size();
+    int[] sizes = new int[dim];
+    for (int i = 0; i < dim; i++) {
+      sizes[i] = (int) eval(firstChild.children.get(i));
+    }
+    Object array =
+            switch (type) {
+              case Type.INT -> Array.newInstance(int.class, sizes);
+              case Type.BOOL -> Array.newInstance(boolean.class, sizes);
+              case Type.CHAR -> Array.newInstance(char.class, sizes);
+              default -> Array.newInstance(Object.class, sizes);
+            };
+    env.define(name, array);
     return null;
   }
 
@@ -90,7 +115,7 @@ public class Interpreter {
   public Object evalVarRef(ASTNode node) {
     String name = node.children.getFirst().getValue();
     Type type = node.children.getFirst().getType();
-
+    // TODO
     return null;
   }
 
