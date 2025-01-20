@@ -4,6 +4,7 @@ import Environment.*;
 import SymbolTable.BuiltIn;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class Interpreter {
   Environment env;
@@ -88,7 +89,23 @@ public class Interpreter {
   }
 
   public Object evalClass(ASTNode node) {
-
+    HashMap<String, Function> methods = new HashMap<>();
+    HashMap<String, Object> attributes = new HashMap<>();
+    for (ASTNode child : node.children) {
+      switch (child.getType()) {
+        case Type.FN_DECL:
+          methods.put(child.children.getFirst().children.getFirst().getValue(), new Function(child, this.env));
+          break;
+          case Type.CONSTRUCTOR, Type.COPY_CONSTRUCTOR, Type.DESTRUCTOR, Type.OPERATOR:
+            methods.put(child.children.getFirst().getValue(), new Function(child, this.env));
+          break;
+          case Type.VAR_DECL, Type.VAR_REF, ARRAY_INIT, ARRAY_DECL:
+            attributes.put(child.children.getFirst().getValue(), child.children.getLast().getValue());
+            break;
+      }
+    }
+    Clazz clazz = new Clazz(methods, attributes);
+    this.env.define(node.getValue(), clazz);
     return null;
   }
 
