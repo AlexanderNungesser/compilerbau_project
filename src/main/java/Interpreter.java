@@ -97,7 +97,7 @@ public class Interpreter {
           methods.put(child.children.getFirst().children.getFirst().getValue(), new Function(child, this.env));
           break;
           case Type.CONSTRUCTOR, Type.COPY_CONSTRUCTOR, Type.DESTRUCTOR, Type.OPERATOR:
-            methods.put(child.children.getFirst().getValue(), new Function(child, this.env));
+            methods.put(child.getValue(), new Function(child, this.env));
           break;
           case Type.VAR_DECL, Type.VAR_REF, ARRAY_INIT, ARRAY_DECL:
             attributes.put(child.children.getFirst().getValue(), child.children.getLast().getValue());
