@@ -14,5 +14,8 @@ public class Clazz {
   public Function getMethod(String name) {
     return methods.get(name);
   }
-  public Attribute getAttribute(String name) {return attributes.get(name);}
+
+  public Attribute getAttribute(String name) {
+    return attributes.get(name);
+  }
 }

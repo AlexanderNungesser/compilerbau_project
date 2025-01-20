@@ -229,7 +229,7 @@ public class TypeCheckVisitor {
       return node;
     }
 
-    if(!node.children.isEmpty() && node.children.getFirst().getType() == Type.CLASSTYPE){
+    if (!node.children.isEmpty() && node.children.getFirst().getType() == Type.CLASSTYPE) {
       return node;
     }
 
