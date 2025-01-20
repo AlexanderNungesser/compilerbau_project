@@ -1,14 +1,12 @@
 package Environment;
 
-import AST.ASTNode;
-
 import java.util.HashMap;
 
 public class Clazz {
   HashMap<String, Function> methods;
-  HashMap<String, Object> attributes;
+  HashMap<String, Attribute> attributes;
 
-  public Clazz(HashMap<String, Function> methods, HashMap<String, Object> attributes) {
+  public Clazz(HashMap<String, Function> methods, HashMap<String, Attribute> attributes) {
     this.methods = methods;
     this.attributes = attributes;
   }
@@ -16,4 +14,5 @@ public class Clazz {
   public Function getMethod(String name) {
     return methods.get(name);
   }
+  public Attribute getAttribute(String name) {return attributes.get(name);}
 }

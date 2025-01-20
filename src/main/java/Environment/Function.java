@@ -14,7 +14,6 @@ public class Function {
   public Function bind(Instance instance) {
     Environment environment = new Environment(this.closure);
     environment.define("this", instance);
-    environment.define("self", instance);
     return new Function(this.node, environment);
   }
 }
