@@ -55,11 +55,6 @@ public class Main {
     System.out.println("\nType Check Run:");
     typeCheckVisitor.currentScope.print();
 
-    //    InsertValueRun insertValueRun = new InsertValueRun(typeCheckVisitor.currentScope);
-    //    insertValueRun.visit(scopedAst);
-    //    System.out.println("\nInsert Value Run:");
-    //    insertValueRun.currentScope.printValues();
-
     Interpreter interpreter = new Interpreter();
     System.out.println("\nInterpret Run:");
     interpreter.eval(scopedAst);
