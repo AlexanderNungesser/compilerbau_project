@@ -1,9 +1,9 @@
 package Environment;
 
 public class Instance {
-    private final Class clazz;
+    private final Clazz clazz;
 
-    public Instance(Class clazz) {
+    public Instance(Clazz clazz) {
         this.clazz = clazz;
     }
 

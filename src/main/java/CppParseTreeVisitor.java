@@ -543,13 +543,11 @@ public class CppParseTreeVisitor extends CppBaseVisitor<ASTNode> {
    */
   @Override
   public ASTNode visitDestructor(CppParser.DestructorContext ctx) {
-    ASTNode node = new ASTNode(Type.DESTRUCTOR);
+    ASTNode node = new ASTNode(Type.DESTRUCTOR, "~"+ctx.ID().getText());
 
     if (ctx.children.getFirst().getText().equals("virtual")) {
-      node.setValue("virtual");
+      node.addChild(new ASTNode("virtual"));
     }
-
-    node.addChild(new ASTNode(Type.ID, ctx.ID().getText()));
 
     if (ctx.block() != null) {
       node.addChild(visit(ctx.block()));

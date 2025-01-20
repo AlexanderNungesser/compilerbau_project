@@ -586,10 +586,9 @@ public class FirstScopeVisitor {
       setChildrensScope(copyConstructorNode);
     }
     if (!mustHave.get(Type.DESTRUCTOR)) {
-      ASTNode destructorNode = new ASTNode(Type.DESTRUCTOR);
+      ASTNode destructorNode = new ASTNode(Type.DESTRUCTOR, "~"+classNode.getValue());
       destructorNode.setScope(currentScope);
       // TODO: how to handle "virtual" -> should be value of destructorNode
-      destructorNode.addChild(new ASTNode(Type.ID, classNode.getValue()));
       classNode.addChild(destructorNode);
       setChildrensScope(destructorNode);
     }

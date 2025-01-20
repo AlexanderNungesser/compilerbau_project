@@ -307,7 +307,7 @@ public class SecondScopeVisitor {
 
   public ASTNode visitDestructor(ASTNode destructorNode, Symbol classSymbol) {
     this.currentScope = destructorNode.getScope();
-    String destructorName = "~" + destructorNode.children.getFirst().getValue();
+    String destructorName = destructorNode.getValue();
 
     Symbol alreadyDeclared = currentScope.resolve(destructorName);
     if (alreadyDeclared != null) {
