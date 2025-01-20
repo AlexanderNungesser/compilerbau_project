@@ -400,11 +400,11 @@ public class FirstScopeVisitor {
     Symbol typeSymbol = getTypeEqual(type, functionInformation);
 
     Function function = new Function(name, typeSymbol.name);
-
+    function.isImplemented = fndecl.children.getLast().getType() == Type.BLOCK;
     Symbol alreadyDeclared = currentScope.resolve(name);
-    if (alreadyDeclared != null) {
+    if (alreadyDeclared != null && ((Function) alreadyDeclared).isImplemented) {
       System.out.println("Error: such function " + name + " already exists");
-    } else if (fndecl.children.getLast().getType() == Type.BLOCK) {
+    } else {
       currentScope.bind(function);
     }
 

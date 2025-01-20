@@ -3,6 +3,7 @@ import AST.Type;
 import Environment.*;
 import SymbolTable.BuiltIn;
 import java.lang.reflect.Array;
+import java.util.ArrayList;
 
 public class Interpreter {
   Environment env;
@@ -27,6 +28,8 @@ public class Interpreter {
       case Type.BLOCK:
         evalBlock(node);
         break;
+      case Type.RETURN:
+        evalReturn(node);
       case Type.CLASS:
         evalClass(node);
         break;
@@ -55,14 +58,11 @@ public class Interpreter {
         evalArrayDecl(node);
         break;
       case Type.ARRAY_ITEM:
-        evalArrayItem(node);
-        break;
+        return evalArrayItem(node);
       case Type.GREATER, Type.GREATER_EQUAL, Type.LESS, Type.LESS_EQUAL, Type.EQUAL, Type.NOT_EQUAL:
-        evaluateComparison(node);
-        break;
+        return evaluateComparison(node);
       case Type.AND, Type.OR:
-        evaluateLogical(node);
-        break;
+        return evaluateLogical(node);
       case Type.NOT:
         return !convertToBoolean(eval(node));
       case Type.DEC_INC:
@@ -92,39 +92,46 @@ public class Interpreter {
     return null;
   }
 
+  public Object evalReturn(ASTNode node) {
+    if (node.children.size() > 1) {
+      return eval(node.children.getLast());
+    }
+    return null;
+  }
+
   public Object evalFnCall(ASTNode node) {
     if (node.getScope().resolve(node.getValue()) instanceof BuiltIn) {
-      ASTNode args = node.children.getFirst();
+      ASTNode argsNode = node.children.getFirst();
       switch (node.getValue()) {
-        case "print_int" -> print_int(eval(args.children.getFirst()));
-        case "print_char" -> print_char(eval(args.children.getFirst()));
-        case "print_bool" -> print_bool(eval(args.children.getFirst()));
+        case "print_int" -> print_int(eval(argsNode.children.getFirst()));
+        case "print_char" -> print_char(eval(argsNode.children.getFirst()));
+        case "print_bool" -> print_bool(eval(argsNode.children.getFirst()));
       }
       return null;
     }
     Function fn = (Function) this.env.get(node.getValue());
     Environment prevEnv = this.env;
     if (!node.children.isEmpty()) {
-      ASTNode args = node.children.getFirst();
+      ASTNode argsNode = node.children.getFirst();
       ASTNode params =
           fn.node.children.stream()
               .filter(n -> n.getType() == Type.PARAMS)
               .findFirst()
               .orElse(null);
+      ArrayList<Object> args = new ArrayList<>();
       if (params != null) {
-        for (ASTNode arg : args.children) {
-          eval(arg);
+        for (ASTNode arg : argsNode.children) {
+          args.add(eval(arg));
         }
         this.env = new Environment(fn.closure);
-        for (int i = 0; i < args.children.size(); i++) {
-          this.env.define(params.children.get(i).getValue(), args.children.get(i));
+        for (int i = 0; i < argsNode.children.size(); i++) {
+          this.env.define(params.children.get(i).getValue(), args.get(i));
         }
       }
     }
-    ASTNode block =
-        fn.node.children.stream().filter(n -> n.getType() == Type.BLOCK).findFirst().orElse(null);
-    if (block != null) {
-      eval(block);
+    ASTNode blockNode = fn.node.children.getLast();
+    if (blockNode != null && blockNode.getType() == Type.BLOCK) {
+      eval(blockNode);
     }
 
     this.env = prevEnv;
@@ -133,10 +140,13 @@ public class Interpreter {
   }
 
   public Object evalFnDecl(ASTNode node) {
+    if (node.children.getLast().getType() != Type.BLOCK) {
+      return null;
+    }
     ASTNode fnInfo = node.children.getFirst();
     SymbolTable.Function func =
         (SymbolTable.Function) node.getScope().resolve(fnInfo.children.getFirst().getValue());
-    if (func == null && node.children.getLast().getType() != Type.BLOCK) {
+    if (func == null) {
       System.out.println(
           "Error: the function " + fnInfo.children.getFirst().getValue() + " is not implemented");
       return null;
@@ -168,6 +178,8 @@ public class Interpreter {
         indices[i] = convertToInteger(eval(firstChild.children.get(i)));
       }
       setArrayItem(array, value, indices);
+      this.env.assign(name, array);
+      return null;
     }
     int old = convertToInteger(this.env.get(secondChild.getValue()));
     int num = convertToInteger(value);
@@ -270,9 +282,25 @@ public class Interpreter {
       indices[i] = convertToInteger(eval(node.children.getFirst().children.get(i)));
     }
 
-    if (indices.length != sizes.length) {
-      System.out.println("Error: Dimension mismatch");
-      return null;
+    if (arrayNameNode.children.isEmpty()) {
+      if (indices.length != sizes.length) {
+        System.out.println("Error: Dimension mismatch");
+        return null;
+      }
+    } else if (arrayNameNode.children.getFirst().getType() != Type.ID){
+      int index = Integer.parseInt(arrayNameNode.children.getFirst().getValue());
+
+      if(index >= sizes.length || index < 0) {
+        System.out.println(
+                "Error: Index "
+                        + index
+                        + " out of bounds for dimensions of array "
+                        + arrayName);
+        return null;
+      } else if (indices[index] != sizes[index]) {
+        System.out.println("Error: Dimension mismatch");
+        return null;
+      }
     }
 
     for (int i = 0; i < indices.length; i++) {
@@ -306,6 +334,7 @@ public class Interpreter {
               case Type.CHAR -> Array.newInstance(char.class, sizes);
               default -> Array.newInstance(Object.class, sizes);
             };
+
 
 
     env.define(name, array);
