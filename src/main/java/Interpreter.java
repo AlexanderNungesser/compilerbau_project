@@ -19,8 +19,7 @@ public class Interpreter {
         eval(node.children.getLast());
         break;
       case Type.OBJ_USAGE:
-        evalObjUsage(node);
-        break;
+        return evalObjUsage(node);
       case IF:
         evalIf(node);
         break;
@@ -91,18 +90,20 @@ public class Interpreter {
 
   public Object evalClass(ASTNode node) {
     HashMap<String, Function> methods = new HashMap<>();
-    HashMap<String, Object> attributes = new HashMap<>();
+    HashMap<String, Attribute> attributes = new HashMap<>();
     for (ASTNode child : node.children) {
       switch (child.getType()) {
         case Type.FN_DECL:
-          methods.put(child.children.getFirst().children.getFirst().getValue(), new Function(child, this.env));
+          methods.put(
+              child.children.getFirst().children.getFirst().getValue(),
+              new Function(child, this.env));
           break;
-          case Type.CONSTRUCTOR, Type.COPY_CONSTRUCTOR, Type.DESTRUCTOR, Type.OPERATOR:
-            methods.put(child.getValue(), new Function(child, this.env));
+        case Type.CONSTRUCTOR, Type.COPY_CONSTRUCTOR, Type.DESTRUCTOR, Type.OPERATOR:
+          methods.put(child.getValue(), new Function(child, this.env));
           break;
-          case Type.VAR_DECL, Type.VAR_REF, ARRAY_INIT, ARRAY_DECL:
-            attributes.put(child.children.getFirst().getValue(), child.children.getLast().getValue());
-            break;
+        case Type.VAR_DECL, Type.VAR_REF, ARRAY_INIT, ARRAY_DECL:
+          attributes.put(child.children.getFirst().getValue(), new Attribute(child, this.env));
+          break;
       }
     }
     Clazz clazz = new Clazz(methods, attributes);
@@ -118,28 +119,19 @@ public class Interpreter {
   }
 
   public Object evalObjUsage(ASTNode node) {
-    Environment currentEnv = this.env;
 
-    ASTNode classObject = node.children.getFirst();
-
-    if (classObject.getType() == Type.OBJ_USAGE) {
-      return eval(classObject);
-    }
-
-    if (node.getValue() != null && (node.getValue().equals("this") || node.getValue().equals("*this"))) {
-      if (classObject.getValue().equals("this")) {
-        return currentEnv.get("this");
+    ASTNode objNode = node.children.getFirst();
+    ASTNode fieldNode = node.children.get(1);
+    Object obj = eval(objNode);
+    if (obj instanceof Instance) {
+      if (objNode.getType() == Type.ID) {
+        return ((Instance) obj).getAttribute(fieldNode.getValue());
+      } else {
+        return ((Instance) obj).getMethod(fieldNode.getValue());
       }
-      return node;
     }
-
-    Object objectInstance = currentEnv.get(classObject.getValue());
-
-    if (objectInstance == null) {
-      System.out.println("Error: Object not found in the environment: " + classObject.getValue());
-      return null;
-    }
-    return objectInstance;
+    throw new RuntimeException(
+        "Object of type " + objNode.getValue() + " is not an instance of " + obj.getClass());
   }
 
   public Object evalFnCall(ASTNode node) {
@@ -151,6 +143,9 @@ public class Interpreter {
         case "print_bool" -> print_bool(eval(argsNode.children.getFirst()));
       }
       return null;
+    } else if (node.children.getFirst().getType() == Type.CLASSTYPE) {
+      Instance inst = (Instance) eval(node.children.getLast().children.getFirst());
+      this.env.define(node.getValue(), inst);
     }
     Function fn = (Function) this.env.get(node.getValue());
     Environment prevEnv = this.env;
@@ -212,8 +207,13 @@ public class Interpreter {
     ASTNode secondChild = node.children.getLast();
     Object value = eval(secondChild);
     if (firstChild.getType() == Type.OBJ_USAGE) {
-      // TODO: wie hier???
-      // eval(firstChild);
+      Attribute attribute = (Attribute) evalObjUsage(firstChild);
+      name = attribute.node.children.getFirst().getValue();
+      int num = convertToInteger(value);
+      //
+      //      Attribute clazzAttribute = attribute.closure.get("this");
+      //      clazzAttribute.closure.assign(name, num);
+      return null;
     } else if (firstChild.getType() == Type.ARRAY_ITEM) {
       Object array = this.env.get(name);
       int[] indices = new int[firstChild.children.size()];
@@ -231,7 +231,7 @@ public class Interpreter {
       case "-=" -> this.env.assign(name, old - num);
       case "*=" -> this.env.assign(name, old * num);
       case "/=" -> this.env.assign(name, old / num);
-      default -> this.env.assign(name, value);
+      default -> this.env.assign(name, num);
     }
     evalTrailingDecInc(secondChild);
     return null;
@@ -330,15 +330,12 @@ public class Interpreter {
         System.out.println("Error: Dimension mismatch");
         return null;
       }
-    } else if (arrayNameNode.children.getFirst().getType() != Type.ID){
+    } else if (arrayNameNode.children.getFirst().getType() != Type.ID) {
       int index = Integer.parseInt(arrayNameNode.children.getFirst().getValue());
 
-      if(index >= sizes.length || index < 0) {
+      if (index >= sizes.length || index < 0) {
         System.out.println(
-                "Error: Index "
-                        + index
-                        + " out of bounds for dimensions of array "
-                        + arrayName);
+            "Error: Index " + index + " out of bounds for dimensions of array " + arrayName);
         return null;
       } else if (indices[index] != sizes[index]) {
         System.out.println("Error: Dimension mismatch");
@@ -349,12 +346,12 @@ public class Interpreter {
     for (int i = 0; i < indices.length; i++) {
       if (indices[i] != sizes[i]) {
         System.out.println(
-                "Error: Index "
-                        + indices[i]
-                        + " out of bounds for dimension "
-                        + (i + 1)
-                        + " of array "
-                        + arrayName);
+            "Error: Index "
+                + indices[i]
+                + " out of bounds for dimension "
+                + (i + 1)
+                + " of array "
+                + arrayName);
         return null;
       }
     }
@@ -371,14 +368,12 @@ public class Interpreter {
     int[] sizes = countArray(lastChild);
 
     Object array =
-            switch (type) {
-              case Type.INT -> Array.newInstance(int.class, sizes);
-              case Type.BOOL -> Array.newInstance(boolean.class, sizes);
-              case Type.CHAR -> Array.newInstance(char.class, sizes);
-              default -> Array.newInstance(Object.class, sizes);
-            };
-
-
+        switch (type) {
+          case Type.INT -> Array.newInstance(int.class, sizes);
+          case Type.BOOL -> Array.newInstance(boolean.class, sizes);
+          case Type.CHAR -> Array.newInstance(char.class, sizes);
+          default -> Array.newInstance(Object.class, sizes);
+        };
 
     env.define(name, array);
 
@@ -404,12 +399,10 @@ public class Interpreter {
           sizes[index]++;
           break;
       }
-
     }
 
     return sizes;
   }
-
 
   public Object evalArrayDecl(ASTNode node) {
     ASTNode firstChild = node.children.getFirst();
@@ -440,7 +433,7 @@ public class Interpreter {
           case Type.INT -> 0;
           case Type.BOOL -> false;
           case Type.CHAR -> (char) 0;
-          default -> null;
+          default -> new Instance((Clazz) this.env.get(firstChild.children.getFirst().getValue()));
         };
     if (node.children.size() == 2) {
       ASTNode secondChild = node.children.getLast();

@@ -69,8 +69,7 @@ public class ASTNode {
         prefix
             + (isLast ? "'__" : "|--")
             + (this.value == null ? "" : " " + this.value)
-            + (this.type == null ? "" : " (" + this.type.name() + ")")
-            + (this.scope == null ? " no " : " yes "));
+            + (this.type == null ? "" : " (" + this.type.name() + ")"));
 
     // Anzeige der Kinder
     for (int i = 0; i < children.size(); i++) {
