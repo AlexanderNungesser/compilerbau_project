@@ -21,7 +21,7 @@ public class Main {
 
   public static void main(String... args) throws IOException {
 
-    String relativePath = "src/main/antlr/test_files/class.cpp";
+    String relativePath = "src/main/antlr/test_files/vars.cpp";
 
     String input = readFileWithPaths(relativePath);
     if (input != null) {
