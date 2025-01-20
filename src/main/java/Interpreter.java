@@ -210,9 +210,6 @@ public class Interpreter {
       Attribute attribute = (Attribute) evalObjUsage(firstChild);
       name = attribute.node.children.getFirst().getValue();
       int num = convertToInteger(value);
-      //
-      //      Attribute clazzAttribute = attribute.closure.get("this");
-      //      clazzAttribute.closure.assign(name, num);
       return null;
     } else if (firstChild.getType() == Type.ARRAY_ITEM) {
       Object array = this.env.get(name);

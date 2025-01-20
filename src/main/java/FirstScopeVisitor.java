@@ -116,20 +116,6 @@ public class FirstScopeVisitor {
     ASTNode firstChild = variableNode.children.getFirst();
     String type = firstChild.getType().name().toLowerCase();
     Symbol typeSymbol = getTypeEqual(type, firstChild);
-    // TODO: an die richtige stelle packen; BSP: B z = y; --> als FNCALL 'operator='
-    // --operator= (FN_CALL)
-    //  |-- z (CLASSTYPE)
-    //  |   '__ B (ID)
-    //  '__ (ARGS)
-    //      '__ y (ID)
-    //    if(firstChild.getType() == AST.Type.CLASSTYPE && variableNode.children.size() > 1) {
-    //      variableNode.setType(AST.Type.FN_CALL);
-    //      variableNode.setValue("operator=");
-    //      AST.ASTNode arg = variableNode.children.removeLast();
-    //      AST.ASTNode args = new AST.ASTNode(AST.Type.ARGS);
-    //      args.addChild(arg);
-    //      variableNode.addChild(args);
-    //    }
 
     Variable variable = new Variable(firstChild.getValue(), typeSymbol.name);
 
@@ -204,7 +190,6 @@ public class FirstScopeVisitor {
     Array arr = new Array(firstChild.getValue(), typeSymbol.name, firstChild.children.size());
     for (int i = 0; i < firstChild.children.size(); i++) {
       ASTNode expr = visitExpr(firstChild.children.get(i));
-      // TODO was wenn expr kein Int?
       if (expr.getType() == Type.INT) {
         arr.length[i] = Integer.parseInt(expr.getValue());
       }
@@ -236,7 +221,6 @@ public class FirstScopeVisitor {
       arr = new Array(firstChild.getValue(), typeSymbol.name, dimensions);
       for (int i = 0; i < firstChild.children.size(); i++) {
         ASTNode expr = visitExpr(firstChild.children.get(i));
-        // TODO was wenn expr kein Int?
         if (expr.getType() == Type.INT) {
           arr.length[i] = Integer.parseInt(expr.getValue());
         }
@@ -368,23 +352,7 @@ public class FirstScopeVisitor {
       System.out.println("Error: array " + arrayName + " not found");
     }
 
-    if (symbol instanceof Array) {
-      //      for (int i = 0; i < node.children.size(); i++) {
-      //        AST.ASTNode expr = visitExpr(node.children.get(i));
-      //        // TODO was wenn expr kein Int?
-      //        if (expr.getType() == AST.Type.INT && ((Array) symbol).length[i] instanceof Integer)
-      // {
-      //          if (((Array) symbol).length[i] <= Integer.parseInt(expr.getValue())
-      //                  || Integer.parseInt(expr.getValue()) < 0) {
-      //            System.out.println(
-      //                    "Error: index "
-      //                            + expr.getValue()
-      //                            + " is out of bounds "
-      //                            + ((Array) symbol).length[i]);
-      //          }
-      //        }
-      //      }
-    } else {
+    if (!(symbol instanceof Array)) {
       System.out.println("Error: no such array " + arrayName);
     }
 
@@ -587,7 +555,6 @@ public class FirstScopeVisitor {
     if (!mustHave.get(Type.DESTRUCTOR)) {
       ASTNode destructorNode = new ASTNode(Type.DESTRUCTOR, "~" + classNode.getValue());
       destructorNode.setScope(currentScope);
-      // TODO: how to handle "virtual" -> should be value of destructorNode
       classNode.addChild(destructorNode);
       setChildrensScope(destructorNode);
     }
