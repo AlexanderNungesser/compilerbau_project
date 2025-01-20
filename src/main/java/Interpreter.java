@@ -19,6 +19,7 @@ public class Interpreter {
         eval(node.children.getLast());
         break;
       case Type.OBJ_USAGE:
+        evalObjUsage(node);
         break;
       case IF:
         evalIf(node);
@@ -114,6 +115,31 @@ public class Interpreter {
       return eval(node.children.getLast());
     }
     return null;
+  }
+
+  public Object evalObjUsage(ASTNode node) {
+    Environment currentEnv = this.env;
+
+    ASTNode classObject = node.children.getFirst();
+
+    if (classObject.getType() == Type.OBJ_USAGE) {
+      return eval(classObject);
+    }
+
+    if (node.getValue() != null && (node.getValue().equals("this") || node.getValue().equals("*this"))) {
+      if (classObject.getValue().equals("this")) {
+        return currentEnv.get("this");
+      }
+      return node;
+    }
+
+    Object objectInstance = currentEnv.get(classObject.getValue());
+
+    if (objectInstance == null) {
+      System.out.println("Error: Object not found in the environment: " + classObject.getValue());
+      return null;
+    }
+    return objectInstance;
   }
 
   public Object evalFnCall(ASTNode node) {
