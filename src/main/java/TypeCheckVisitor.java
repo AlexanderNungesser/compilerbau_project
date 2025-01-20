@@ -229,6 +229,10 @@ public class TypeCheckVisitor {
       return node;
     }
 
+    if(!node.children.isEmpty() && node.children.getFirst().getType() == Type.CLASSTYPE){
+      return node;
+    }
+
     Function function = (Function) currentScope.resolve(node.getValue(), "Function");
     if (!node.children.isEmpty()) visitArgs(node.children.getFirst(), function.getParams());
 
@@ -440,6 +444,7 @@ public class TypeCheckVisitor {
   public ASTNode visitArrayItem(ASTNode node) {
     this.currentScope = node.getScope();
     String type = getEndType(node.children.getFirst());
+    this.currentScope = node.getScope();
     if (!typeIsValid(type)) {
       System.out.println("Error: type " + type + " must be built in type");
     }

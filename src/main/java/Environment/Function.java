@@ -10,4 +10,11 @@ public class Function {
     this.closure = closure;
     this.node = node;
   }
+
+  public Function bind(Instance instance) {
+    Environment environment = new Environment(this.closure);
+    environment.define("this", instance);
+    environment.define("self", instance);
+    return new Function(this.node, environment);
+  }
 }

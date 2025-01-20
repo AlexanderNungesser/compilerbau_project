@@ -28,6 +28,7 @@ public class Interpreter {
         evalBlock(node);
         break;
       case Type.CLASS:
+        evalClass(node);
         break;
       case Type.FN_DECL:
         evalFnDecl(node);
@@ -83,6 +84,11 @@ public class Interpreter {
         evalChildren(node);
         break;
     }
+    return null;
+  }
+
+  public Object evalClass(ASTNode node) {
+
     return null;
   }
 

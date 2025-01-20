@@ -2,12 +2,20 @@ package Environment;
 
 import AST.ASTNode;
 
+import java.util.HashMap;
+
 public class Class {
   public ASTNode node;
   public Environment closure;
+  HashMap<String, Function> methods;
+  HashMap<String, Object> attributes;
 
-  public Class(ASTNode node, Environment closure) {
-    this.node = node;
-    this.closure = closure;
+  public Class(HashMap<String, Function> methods, HashMap<String, Object> attributes) {
+    this.methods = methods;
+    this.attributes = attributes;
+  }
+
+  public Function getMethod(String name) {
+    return methods.get(name);
   }
 }
