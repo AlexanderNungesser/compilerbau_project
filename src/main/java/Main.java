@@ -21,7 +21,7 @@ public class Main {
 
   public static void main(String... args) throws IOException {
 
-    String relativePath = "src/main/antlr/test_files/var_decl_test.cpp";
+    String relativePath = "src/main/antlr/test_files/class.cpp";
 
     String input = readFileWithPaths(relativePath);
     if (input != null) {
@@ -54,11 +54,6 @@ public class Main {
     typeCheckVisitor.visit(scopedAst);
     System.out.println("\nType Check Run:");
     typeCheckVisitor.currentScope.print();
-
-    //    InsertValueRun insertValueRun = new InsertValueRun(typeCheckVisitor.currentScope);
-    //    insertValueRun.visit(scopedAst);
-    //    System.out.println("\nInsert Value Run:");
-    //    insertValueRun.currentScope.printValues();
 
     Interpreter interpreter = new Interpreter();
     System.out.println("\nInterpret Run:");
